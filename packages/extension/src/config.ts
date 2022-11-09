@@ -45,6 +45,42 @@ export const EmbedChainInfos: ChainInfo[] = [
     features: ["ibc-transfer", "ibc-go"],
   },
   {
+    rpc: "http://127.0.0.1:26657",
+    rest: "https://rest.gw.mises.site",
+    chainId: "mainnet",
+    chainName: "Mises Network",
+    stakeCurrency: {
+      coinDenom: "MIS",
+      coinMinimalDenom: "umis",
+      coinDecimals: 6,
+      coinGeckoId: "mises",
+    },
+    walletUrl: "https://portal.mises.site/",
+    walletUrlForStaking: "https://portal.mises.site/",
+    bip44: {
+      coinType: 330,
+    },
+    bech32Config: Bech32Address.defaultBech32Config("mises"),
+    currencies: [
+      {
+        coinDenom: "MIS",
+        coinMinimalDenom: "umis",
+        coinDecimals: 6,
+        coinGeckoId: "mises",
+      },
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: "MIS",
+        coinMinimalDenom: "umis",
+        coinDecimals: 6,
+        coinGeckoId: "mises",
+      },
+    ],
+    coinType: 330,
+    features: ["ibc-transfer", "ibc-go"],
+  },
+  {
     rpc: "https://rpc-osmosis.keplr.app",
     rest: "https://lcd-osmosis.keplr.app",
     chainId: "osmosis-1",
