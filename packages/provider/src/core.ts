@@ -31,6 +31,7 @@ import {
   GetTxEncryptionKeyMsg,
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
+  IsUnlockMsg,
 } from "./types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 
@@ -51,6 +52,10 @@ export class Keplr implements IKeplr {
     public readonly mode: KeplrMode,
     protected readonly requester: MessageRequester
   ) {}
+  async isunlocked(): Promise<boolean> {
+    // return true;
+    return await this.requester.sendMessage(BACKGROUND_PORT, new IsUnlockMsg());
+  }
 
   async enable(chainIds: string | string[]): Promise<void> {
     if (typeof chainIds === "string") {

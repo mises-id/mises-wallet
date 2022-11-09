@@ -30,10 +30,12 @@ import {
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
   InitNonDefaultLedgerAppMsg,
+  IsUnlockMsg,
 } from "./messages";
 import { KeyRingService } from "./service";
 import { Bech32Address } from "@keplr-wallet/cosmos";
 import { SignDoc } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
+import { KeyRingStatus } from "./keyring";
 
 export const getHandler: (service: KeyRingService) => Handler = (
   service: KeyRingService
@@ -76,6 +78,8 @@ export const getHandler: (service: KeyRingService) => Handler = (
         return handleLockKeyRingMsg(service)(env, msg as LockKeyRingMsg);
       case UnlockKeyRingMsg:
         return handleUnlockKeyRingMsg(service)(env, msg as UnlockKeyRingMsg);
+      case IsUnlockMsg:
+        return handleIsUnlockMsg(service)(env, msg as IsUnlockMsg);
       case GetKeyMsg:
         return handleGetKeyMsg(service)(env, msg as GetKeyMsg);
       case RequestSignAminoMsg:
@@ -252,6 +256,13 @@ const handleUnlockKeyRingMsg: (
     return {
       status: await service.unlock(msg.password),
     };
+  };
+};
+const handleIsUnlockMsg: (
+  service: KeyRingService
+) => InternalHandler<IsUnlockMsg> = (service) => {
+  return async () => {
+    return service.keyRingStatus === KeyRingStatus.UNLOCKED;
   };
 };
 

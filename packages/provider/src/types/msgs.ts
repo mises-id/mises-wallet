@@ -545,3 +545,28 @@ export class GetTxEncryptionKeyMsg extends Message<Uint8Array> {
     return GetTxEncryptionKeyMsg.type();
   }
 }
+
+export class IsUnlockMsg extends Message<boolean> {
+  public static type() {
+    return "isunlocked";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "keyring";
+  }
+
+  type(): string {
+    return IsUnlockMsg.type();
+  }
+}

@@ -160,4 +160,5 @@ export interface Keplr {
     signDoc: StdSignDoc,
     signOptions?: KeplrSignOptions
   ): Promise<AminoSignResponse>;
+  isunlocked(): Promise<boolean>;
 }

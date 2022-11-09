@@ -241,7 +241,6 @@ export class InjectedKeplr implements IKeplr {
         }
 
         this.eventListener.removeMessageListener(receiveResponse);
-
         const result = JSONUint8Array.unwrap(proxyResponse.result);
 
         if (!result) {
@@ -320,6 +319,9 @@ export class InjectedKeplr implements IKeplr {
         });
       }
     }
+  }
+  async isunlocked(): Promise<boolean> {
+    return await this.requestMethod("isunlocked", []);
   }
 
   async enable(chainIds: string | string[]): Promise<void> {

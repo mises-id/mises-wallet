@@ -24,6 +24,7 @@ import {
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
   InitNonDefaultLedgerAppMsg,
+  IsUnlockMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -42,6 +43,7 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(AddLedgerKeyMsg);
   router.registerMessage(LockKeyRingMsg);
   router.registerMessage(UnlockKeyRingMsg);
+  router.registerMessage(IsUnlockMsg);
   router.registerMessage(GetKeyMsg);
   router.registerMessage(RequestSignAminoMsg);
   router.registerMessage(RequestVerifyADR36AminoSignDoc);
