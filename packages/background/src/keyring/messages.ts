@@ -20,6 +20,7 @@ import {
   StdSignDoc,
   AminoSignResponse,
   StdSignature,
+  MisesSignResponse,
 } from "@keplr-wallet/types";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -580,6 +581,95 @@ export class RequestSignAminoMsg extends Message<AminoSignResponse> {
 
   type(): string {
     return RequestSignAminoMsg.type();
+  }
+}
+export class MisesRequestSignAminoMsg extends Message<MisesSignResponse> {
+  public static type() {
+    return "mises-request-sign-amino";
+  }
+
+  constructor(
+    public readonly chainId: string,
+    public readonly signer: string,
+    public readonly signDoc: StdSignDoc,
+    public readonly signOptions: KeplrSignOptions & {
+      // Hack option field to detect the sign arbitrary for string
+      isADR36WithString?: boolean;
+      ethSignType?: EthSignType;
+    } = {}
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.chainId) {
+      throw new KeplrError("keyring", 270, "chain id not set");
+    }
+
+    if (!this.signer) {
+      throw new KeplrError("keyring", 230, "signer not set");
+    }
+
+    // Validate bech32 address.
+    Bech32Address.validate(this.signer);
+
+    // Check and validate the ADR-36 sign doc.
+    // ADR-36 sign doc doesn't have the chain id
+    if (!checkAndValidateADR36AminoSignDoc(this.signDoc)) {
+      if (this.signOptions.ethSignType) {
+        throw new Error(
+          "Eth sign type can be requested with only ADR-36 amino sign doc"
+        );
+      }
+
+      if (this.signDoc.chain_id !== this.chainId) {
+        throw new KeplrError(
+          "keyring",
+          234,
+          "Chain id in the message is not matched with the requested chain id"
+        );
+      }
+    } else {
+      if (this.signDoc.msgs[0].value.signer !== this.signer) {
+        throw new KeplrError("keyring", 233, "Unmatched signer in sign doc");
+      }
+
+      if (this.signOptions.ethSignType) {
+        switch (this.signOptions.ethSignType) {
+          // TODO: Check chain id in tx data.
+          // case EthSignType.TRANSACTION:
+          case EthSignType.EIP712: {
+            const message = JSON.parse(
+              Buffer.from(this.signDoc.msgs[0].value.data, "base64").toString()
+            );
+            const { ethChainId } = EthermintChainIdHelper.parse(this.chainId);
+            if (parseFloat(message.domain?.chainId) !== ethChainId) {
+              throw new Error(
+                `Unmatched chain id for eth (expected: ${ethChainId}, actual: ${message.domain?.chainId})`
+              );
+            }
+          }
+          // XXX: There is no way to check chain id if type is message because eth personal sign standard doesn't define chain id field.
+          // case EthSignType.MESSAGE:
+        }
+      }
+    }
+
+    if (!this.signOptions) {
+      throw new KeplrError("keyring", 235, "Sign options are null");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return MisesRequestSignAminoMsg.type();
   }
 }
 

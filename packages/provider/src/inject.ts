@@ -15,6 +15,7 @@ import {
   StdTx,
   DirectSignResponse,
   OfflineDirectSigner,
+  MisesSignResponse,
 } from "@keplr-wallet/types";
 import { Result, JSONUint8Array } from "@keplr-wallet/router";
 import { SecretUtils } from "secretjs/types/enigmautils";
@@ -366,6 +367,20 @@ export class InjectedKeplr implements IKeplr {
     signOptions: KeplrSignOptions = {}
   ): Promise<AminoSignResponse> {
     return await this.requestMethod("signAmino", [
+      chainId,
+      signer,
+      signDoc,
+      deepmerge(this.defaultOptions.sign ?? {}, signOptions),
+    ]);
+  }
+
+  async signMisesAmino(
+    chainId: string,
+    signer: string,
+    signDoc: StdSignDoc,
+    signOptions: KeplrSignOptions = {}
+  ): Promise<MisesSignResponse> {
+    return await this.requestMethod("signMisesAmino", [
       chainId,
       signer,
       signDoc,

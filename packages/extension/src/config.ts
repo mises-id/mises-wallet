@@ -58,7 +58,7 @@ export const EmbedChainInfos: ChainInfo[] = [
     walletUrl: "https://portal.mises.site/",
     walletUrlForStaking: "https://portal.mises.site/",
     bip44: {
-      coinType: 330,
+      coinType: 60,
     },
     bech32Config: Bech32Address.defaultBech32Config("mises"),
     currencies: [
@@ -77,7 +77,7 @@ export const EmbedChainInfos: ChainInfo[] = [
         coinGeckoId: "mises",
       },
     ],
-    coinType: 330,
+    coinType: 60,
     features: ["ibc-transfer", "ibc-go"],
   },
   {

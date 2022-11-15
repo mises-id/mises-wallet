@@ -8,6 +8,7 @@ import {
   StdSignature,
   DirectSignResponse,
   OfflineDirectSigner,
+  MisesSignResponse,
 } from "../cosmjs";
 import { SecretUtils } from "secretjs/types/enigmautils";
 import Long from "long";
@@ -57,6 +58,12 @@ export interface Keplr {
     signDoc: StdSignDoc,
     signOptions?: KeplrSignOptions
   ): Promise<AminoSignResponse>;
+  signMisesAmino(
+    chainId: string,
+    signer: string,
+    signDoc: StdSignDoc,
+    signOptions?: KeplrSignOptions
+  ): Promise<MisesSignResponse>;
   signDirect(
     chainId: string,
     signer: string,

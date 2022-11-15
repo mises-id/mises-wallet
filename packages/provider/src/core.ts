@@ -14,6 +14,7 @@ import {
   StdSignature,
   DirectSignResponse,
   OfflineDirectSigner,
+  MisesSignResponse,
 } from "@keplr-wallet/types";
 import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
 import {
@@ -32,6 +33,7 @@ import {
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
   IsUnlockMsg,
+  MisesRequestSignAminoMsg,
 } from "./types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 
@@ -125,6 +127,21 @@ export class Keplr implements IKeplr {
     signOptions: KeplrSignOptions = {}
   ): Promise<AminoSignResponse> {
     const msg = new RequestSignAminoMsg(
+      chainId,
+      signer,
+      signDoc,
+      deepmerge(this.defaultOptions.sign ?? {}, signOptions)
+    );
+    return await this.requester.sendMessage(BACKGROUND_PORT, msg);
+  }
+
+  async signMisesAmino(
+    chainId: string,
+    signer: string,
+    signDoc: StdSignDoc,
+    signOptions: KeplrSignOptions = {}
+  ): Promise<MisesSignResponse> {
+    const msg = new MisesRequestSignAminoMsg(
       chainId,
       signer,
       signDoc,

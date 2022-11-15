@@ -31,6 +31,7 @@ import {
   RequestSignEIP712CosmosTxMsg_v0,
   InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
+  MisesRequestSignAminoMsg,
 } from "./messages";
 import { KeyRingService } from "./service";
 import { Bech32Address } from "@keplr-wallet/cosmos";
@@ -86,6 +87,11 @@ export const getHandler: (service: KeyRingService) => Handler = (
         return handleRequestSignAminoMsg(service)(
           env,
           msg as RequestSignAminoMsg
+        );
+      case MisesRequestSignAminoMsg:
+        return handleMisesRequestSignAminoMsg(service)(
+          env,
+          msg as MisesRequestSignAminoMsg
         );
       case RequestSignEIP712CosmosTxMsg_v0:
         return handleRequestSignEIP712CosmosTxMsg_v0(service)(
@@ -303,6 +309,26 @@ const handleRequestSignAminoMsg: (
     );
 
     return await service.requestSignAmino(
+      env,
+      msg.origin,
+      msg.chainId,
+      msg.signer,
+      msg.signDoc,
+      msg.signOptions
+    );
+  };
+};
+
+const handleMisesRequestSignAminoMsg: (
+  service: KeyRingService
+) => InternalHandler<MisesRequestSignAminoMsg> = (service) => {
+  return async (env, msg) => {
+    await service.permissionService.checkOrGrantBasicAccessPermission(
+      env,
+      msg.chainId,
+      msg.origin
+    );
+    return await service.requestMisesSignAmino(
       env,
       msg.origin,
       msg.chainId,

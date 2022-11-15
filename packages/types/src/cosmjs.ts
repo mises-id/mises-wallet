@@ -61,6 +61,10 @@ export interface AminoSignResponse {
   readonly signature: StdSignature;
 }
 
+export interface MisesSignResponse {
+  readonly txHash: string;
+}
+
 export interface SignDoc {
   /**
    * body_bytes is protobuf serialization of a TxBody that matches the

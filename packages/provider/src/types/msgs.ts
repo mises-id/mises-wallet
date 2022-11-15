@@ -7,6 +7,7 @@ import {
   AminoSignResponse,
   StdSignature,
   StdSignDoc,
+  MisesSignResponse,
 } from "@keplr-wallet/types";
 
 export class EnableAccessMsg extends Message<void> {
@@ -252,6 +253,77 @@ export class RequestSignAminoMsg extends Message<AminoSignResponse> {
 
   type(): string {
     return RequestSignAminoMsg.type();
+  }
+}
+
+export class MisesRequestSignAminoMsg extends Message<MisesSignResponse> {
+  public static type() {
+    return "mises-request-sign-amino";
+  }
+
+  constructor(
+    public readonly chainId: string,
+    public readonly signer: string,
+    public readonly signDoc: StdSignDoc,
+    public readonly signOptions: KeplrSignOptions & {
+      // Hack option field to detect the sign arbitrary for string
+      isADR36WithString?: boolean;
+      ethSignType?: EthSignType;
+    } = {}
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.chainId) {
+      throw new Error("chain id not set");
+    }
+
+    if (!this.signer) {
+      throw new Error("signer not set");
+    }
+
+    // It is not important to check this on the client side as opposed to increasing the bundle size.
+    // Validate bech32 address.
+    // Bech32Address.validate(this.signer);
+
+    const signDoc = this.signDoc;
+
+    // Check that the sign doc is for ADR-36,
+    // the validation should be performed on the background.
+    const hasOnlyMsgSignData = (() => {
+      if (
+        signDoc &&
+        signDoc.msgs &&
+        Array.isArray(signDoc.msgs) &&
+        signDoc.msgs.length === 1
+      ) {
+        const msg = signDoc.msgs[0];
+        return msg.type === "sign/MsgSignData";
+      } else {
+        return false;
+      }
+    })();
+
+    // If the sign doc is expected to be for ADR-36,
+    // it doesn't have to have the chain id in the sign doc.
+    if (!hasOnlyMsgSignData && signDoc.chain_id !== this.chainId) {
+      throw new Error(
+        "Chain id in the message is not matched with the requested chain id"
+      );
+    }
+
+    if (!this.signOptions) {
+      throw new Error("Sign options are null");
+    }
+  }
+
+  route(): string {
+    return "keyring";
+  }
+
+  type(): string {
+    return MisesRequestSignAminoMsg.type();
   }
 }
 
