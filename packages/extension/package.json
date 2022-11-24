@@ -39,6 +39,7 @@
     "amplitude-js": "^8.16.0",
     "argon-dashboard-react": "^1.1.0",
     "axios": "^0.27.2",
+    "mises-js-sdk": "^0.1.14",
     "bip39": "^3.0.2",
     "buffer": "^6.0.3",
     "chart.js": "^2.9.3",

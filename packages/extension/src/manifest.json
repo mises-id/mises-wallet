@@ -18,7 +18,15 @@
     "scripts": ["browser-polyfill.js", "background.bundle.js"],
     "persistent": true
   },
-  "permissions": ["storage", "notifications", "identity", "idle"],
+  "permissions": [
+    "storage",
+    "notifications",
+    "identity",
+    "idle",
+    "notifications",
+    "tabs",
+    "misesPrivate"
+  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -31,5 +39,7 @@
     "injectedScript.bundle.js",
     "assets/logo-256.png",
     "blocklist.html"
-  ]
+  ],
+
+  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self'"
 }

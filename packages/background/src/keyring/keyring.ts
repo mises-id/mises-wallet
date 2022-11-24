@@ -19,6 +19,7 @@ import * as BytesUtils from "@ethersproject/bytes";
 import { computeAddress } from "@ethersproject/transactions";
 import { EIP712MessageValidator } from "./eip712";
 import { _TypedDataEncoder } from "@ethersproject/hash";
+import { MisesService } from "../mises";
 
 export enum KeyRingStatus {
   NOTLOADED,
@@ -74,7 +75,8 @@ export class KeyRing {
     private readonly embedChainInfos: ChainInfo[],
     private readonly kvStore: KVStore,
     private readonly ledgerKeeper: LedgerService,
-    private readonly crypto: CommonCrypto
+    private readonly crypto: CommonCrypto,
+    private readonly misesService: MisesService
   ) {
     this.loaded = false;
     this.keyStore = null;
@@ -248,6 +250,10 @@ export class KeyRing {
     this.password = password;
     this.multiKeyStore.push(this.keyStore);
 
+    const privKey = this.loadPrivKey(60);
+    const ethWallet = new Wallet(privKey.toBytes());
+    this.misesService.activateUser(ethWallet.privateKey);
+
     await this.save();
 
     return {
@@ -353,13 +359,13 @@ export class KeyRing {
     this.privateKey = undefined;
     this.ledgerPublicKeyCache = undefined;
     this.password = "";
+    this.misesService.lockAll();
   }
 
   public async unlock(password: string) {
     if (!this.keyStore || this.type === "none") {
       throw new KeplrError("keyring", 144, "Key ring not initialized");
     }
-
     if (this.type === "mnemonic") {
       // If password is invalid, error will be thrown.
       this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
@@ -404,6 +410,10 @@ export class KeyRing {
     }
 
     this.password = password;
+
+    const privKey = this.loadPrivKey(60);
+    const ethWallet = new Wallet(privKey.toBytes());
+    this.misesService.activateUser(ethWallet.privateKey);
   }
 
   public async save() {
@@ -459,7 +469,6 @@ export class KeyRing {
     if (hasLegacyKeyStore) {
       await this.save();
     }
-
     this.loaded = true;
   }
 
@@ -598,6 +607,7 @@ export class KeyRing {
           this.mnemonicMasterSeed = undefined;
           this.privateKey = undefined;
           this.ledgerPublicKeyCache = undefined;
+          this.misesService.lockAll();
         }
 
         keyStoreChanged = true;

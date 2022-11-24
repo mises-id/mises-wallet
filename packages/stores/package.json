@@ -33,6 +33,7 @@
     "deepmerge": "^4.2.2",
     "eventemitter3": "^4.0.7",
     "mobx": "^6.1.7",
+    "mises-js-sdk": "^0.1.14",
     "mobx-utils": "^6.0.3",
     "p-queue": "^6.6.2",
     "utility-types": "^3.10.0"

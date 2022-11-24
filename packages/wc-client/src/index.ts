@@ -18,6 +18,7 @@ import {
   OfflineAminoSigner,
   StdSignature,
   StdSignDoc,
+  MisesSignResponse,
 } from "@keplr-wallet/types";
 import {
   CosmJSOfflineSigner,
@@ -495,5 +496,18 @@ export class KeplrWalletConnectV1 implements Keplr {
     _signOptions: KeplrSignOptions = {}
   ): Promise<AminoSignResponse> {
     throw new Error("Not yet implemented");
+  }
+
+  async signMisesAmino(
+    _chainId: string,
+    _signer: string,
+    _signDoc: StdSignDoc,
+    _signOptions: KeplrSignOptions = {}
+  ): Promise<MisesSignResponse> {
+    throw new Error("Not yet implemented");
+  }
+
+  async isunlocked(): Promise<boolean> {
+    return true;
   }
 }

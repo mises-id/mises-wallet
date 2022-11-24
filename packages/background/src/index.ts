@@ -12,11 +12,13 @@ import * as Interaction from "./interaction/internal";
 import * as Permission from "./permission/internal";
 import * as PhishingList from "./phishing-list/internal";
 import * as AutoLocker from "./auto-lock-account/internal";
+import * as Mises from "./mises/internal";
 
 export * from "./persistent-memory";
 export * from "./chains";
 export * from "./ledger";
 export * from "./keyring";
+export * from "./mises";
 export * from "./secret-wasm";
 export * from "./tx";
 export * from "./updater";
@@ -90,6 +92,8 @@ export function init(
     commonCrypto
   );
 
+  const misesService = new Mises.MisesService(storeCreator("mises"));
+
   const secretWasmService = new SecretWasm.SecretWasmService(
     storeCreator("secretwasm")
   );
@@ -131,8 +135,10 @@ export function init(
     interactionService,
     chainsService,
     permissionService,
-    ledgerService
+    ledgerService,
+    misesService
   );
+  misesService.init();
   secretWasmService.init(chainsService, keyRingService, permissionService);
   backgroundTxService.init(chainsService, permissionService);
   phishingListService.init();
@@ -151,4 +157,5 @@ export function init(
   BackgroundTx.init(router, backgroundTxService);
   PhishingList.init(router, phishingListService);
   AutoLocker.init(router, autoLockAccountService);
+  Mises.init(router, misesService);
 }

@@ -39,6 +39,7 @@ import { SignDoc } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
 import Long from "long";
 import { Buffer } from "buffer/";
 import { trimAminoSignDoc } from "./amino-sign-doc";
+import { MisesService } from "../mises";
 
 export class KeyRingService {
   private keyRing!: KeyRing;
@@ -57,7 +58,8 @@ export class KeyRingService {
     interactionService: InteractionService,
     chainsService: ChainsService,
     permissionService: PermissionService,
-    ledgerService: LedgerService
+    ledgerService: LedgerService,
+    misesService: MisesService
   ) {
     this.interactionService = interactionService;
     this.chainsService = chainsService;
@@ -67,9 +69,9 @@ export class KeyRingService {
       this.embedChainInfos,
       this.kvStore,
       ledgerService,
-      this.crypto
+      this.crypto,
+      misesService
     );
-
     this.chainsService.addChainRemovedHandler(this.onChainRemoved);
   }
 
@@ -507,7 +509,7 @@ export class KeyRingService {
         throw new Error("Invalid number of messages for Ethereum sign request");
       }
 
-      const signBytes = Buffer.from(newSignDoc.msgs[0].value.data, "base64");
+      // const signBytes = Buffer.from(newSignDoc.msgs[0].value.data, "base64");
 
       try {
         // const signatureBytes = await this.keyRing.signEthereum(
@@ -532,18 +534,15 @@ export class KeyRingService {
     }
 
     try {
-      const signature = await this.keyRing.sign(
-        env,
-        chainId,
-        coinType,
-        serializeSignDoc(newSignDoc),
-        ethereumKeyFeatures.signing
-      );
+      // const signature = await this.keyRing.sign(
+      //   env,
+      //   chainId,
+      //   coinType,
+      //   serializeSignDoc(newSignDoc),
+      //   ethereumKeyFeatures.signing
+      // );
 
-      return {
-        signed: newSignDoc,
-        signature: encodeSecp256k1Signature(key.pubKey, signature),
-      };
+      return { txHash: "" };
     } finally {
       this.interactionService.dispatchEvent(APP_PORT, "request-sign-end", {});
     }

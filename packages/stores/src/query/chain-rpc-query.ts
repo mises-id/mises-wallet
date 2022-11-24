@@ -27,7 +27,7 @@ export class ObservableChainQueryRPC<
       },
       ...chainInfo.rpcConfig,
     });
-
+    console.log(url, "url");
     super(kvStore, instance, url);
 
     this._chainId = chainId;

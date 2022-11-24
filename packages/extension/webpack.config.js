@@ -174,6 +174,11 @@ const extensionConfig = (env, args) => {
         analyzerMode: isEnvAnalyzer ? "server" : "disabled",
       }),
     ],
+    node: {
+      net: "empty",
+      tls: "empty",
+      fs: "empty",
+    },
   };
 };
 
