@@ -36,6 +36,9 @@
     "mises-js-sdk": "^0.1.14",
     "mobx-utils": "^6.0.3",
     "p-queue": "^6.6.2",
-    "utility-types": "^3.10.0"
+    "utility-types": "^3.10.0",
+    "@cosmjs/proto-signing": "0.27.1",
+    "@cosmjs/stargate": "0.27.1",
+    "@cosmjs/tendermint-rpc": "0.27.1"
   }
 }

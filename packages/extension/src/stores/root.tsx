@@ -29,6 +29,7 @@ import {
   SignInteractionStore,
   TokensStore,
   WalletStatus,
+  MisesStore,
 } from "@keplr-wallet/stores";
 import {
   KeplrETCQueries,
@@ -56,6 +57,7 @@ export class RootStore {
 
   public readonly chainStore: ChainStore;
   public readonly keyRingStore: KeyRingStore;
+  public readonly misesStore: MisesStore;
   public readonly ibcChannelStore: IBCChannelStore;
 
   protected readonly interactionStore: InteractionStore;
@@ -143,6 +145,8 @@ export class RootStore {
       this.interactionStore
     );
 
+    this.misesStore = new MisesStore(new InExtensionMessageRequester());
+
     this.ibcChannelStore = new IBCChannelStore(
       new ExtensionKVStore("store_ibc_channel")
     );
@@ -161,7 +165,7 @@ export class RootStore {
     this.queriesStore = new QueriesStore(
       new ExtensionKVStore("store_queries"),
       this.chainStore,
-      CosmosQueries.use(),
+      CosmosQueries.use(this.misesStore),
       CosmwasmQueries.use(),
       SecretQueries.use({
         apiGetter: getKeplrFromWindow,

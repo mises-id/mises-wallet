@@ -68,7 +68,10 @@
     "secretjs": "0.17.7",
     "sha.js": "^2.4.11",
     "utility-types": "^3.10.0",
-    "webextension-polyfill": "^0.7.0"
+    "webextension-polyfill": "^0.7.0",
+    "@cosmjs/proto-signing": "0.27.1",
+    "@cosmjs/stargate": "0.27.1",
+    "@cosmjs/tendermint-rpc": "0.27.1"
   },
   "devDependencies": {
     "@types/amplitude-js": "^8.0.1",
