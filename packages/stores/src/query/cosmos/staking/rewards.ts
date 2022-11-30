@@ -5,20 +5,24 @@ import {
   ObservableChainQueryMap,
 } from "../../chain-query";
 import { ChainGetter } from "../../../common";
-import { computed, makeObservable } from "mobx";
+import { computed, makeObservable, override } from "mobx";
 import { CoinPretty, Dec, Int } from "@keplr-wallet/unit";
 import { Currency } from "@keplr-wallet/types";
 import { StoreUtils } from "../../../common";
 import { computedFn } from "mobx-utils";
+import { MisesStore } from "../../../core";
 
 export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
   protected bech32Address: string;
+  duplicatedFetchCheck: boolean = true;
+  misesStore: MisesStore;
 
   constructor(
     kvStore: KVStore,
     chainId: string,
     chainGetter: ChainGetter,
-    bech32Address: string
+    bech32Address: string,
+    misesStore: MisesStore
   ) {
     super(
       kvStore,
@@ -29,6 +33,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
     makeObservable(this);
 
     this.bech32Address = bech32Address;
+
+    this.misesStore = misesStore;
   }
 
   protected canFetch(): boolean {
@@ -71,7 +77,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       }, {});
 
       const reward = this.response?.data.rewards?.find((r) => {
-        return r.validator_address === validatorAddress;
+        return r.validatorAddress === validatorAddress;
       });
 
       return StoreUtils.getBalancesFromCurrencies(
@@ -96,7 +102,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       const chainInfo = this.chainGetter.getChain(this.chainId);
 
       const reward = this.response?.data.rewards?.find((r) => {
-        return r.validator_address === validatorAddress;
+        return r.validatorAddress === validatorAddress;
       });
 
       return StoreUtils.getBalanceFromCurrency(
@@ -147,9 +153,8 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       }, {});
 
       const reward = this.response?.data.rewards?.find((r) => {
-        return r.validator_address === validatorAddress;
+        return r.validatorAddress === validatorAddress;
       });
-
       return StoreUtils.getBalancesFromCurrencies(
         currenciesMap,
         reward?.reward ?? []
@@ -170,7 +175,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
         for (const r of reward.reward) {
           const dec = new Dec(r.amount);
           if (dec.truncate().gt(new Int(0))) {
-            result.push(reward.validator_address);
+            result.push(reward.validatorAddress);
             break;
           }
         }
@@ -225,23 +230,41 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
           return false;
         })
         .slice(0, maxValiadtors)
-        .map((r) => r.validator_address);
+        .map((r) => r.validatorAddress);
     }
   );
+
+  @override
+  *fetch() {
+    if (!this.bech32Address) {
+      return;
+    }
+    this.misesStore.rewards(this.bech32Address).then((res) => {
+      res.total[0].amount = Number(res.total[0].amount) / Math.pow(10, 18);
+      this.setResponse({
+        data: res,
+        status: 200,
+        staled: true,
+        timestamp: new Date().getTime(),
+      });
+    });
+  }
 }
 
 export class ObservableQueryRewards extends ObservableChainQueryMap<Rewards> {
   constructor(
     protected readonly kvStore: KVStore,
     protected readonly chainId: string,
-    protected readonly chainGetter: ChainGetter
+    protected readonly chainGetter: ChainGetter,
+    protected readonly misesStore: MisesStore
   ) {
     super(kvStore, chainId, chainGetter, (bech32Address: string) => {
       return new ObservableQueryRewardsInner(
         this.kvStore,
         this.chainId,
         this.chainGetter,
-        bech32Address
+        bech32Address,
+        misesStore
       );
     });
   }

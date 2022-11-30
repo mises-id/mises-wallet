@@ -99,7 +99,8 @@ export function init(
   );
 
   const backgroundTxService = new BackgroundTx.BackgroundTxService(
-    notification
+    notification,
+    misesService
   );
 
   const phishingListService = new PhishingList.PhishingListService({

@@ -6,19 +6,19 @@ export type Rewards = {
 };
 
 export type DelegatorReward = {
-  validator_address: string;
+  validatorAddress: string;
   reward: CoinPrimitive[] | null;
 };
 
 export type Delegations = {
-  delegation_responses: Delegation[];
+  delegationResponses: Delegation[];
   // pagination: {}
 };
 
 export type Delegation = {
   delegation: {
-    delegator_address: string;
-    validator_address: string;
+    delegatorAddress: string;
+    validatorAddress: string;
     // Dec
     shares: string;
   };
@@ -29,18 +29,18 @@ export type Delegation = {
 };
 
 export type UnbondingDelegations = {
-  unbonding_responses: UnbondingDelegation[];
+  unbondingResponses: UnbondingDelegation[];
   // pagination: {}
 };
 
 export type UnbondingDelegation = {
-  delegator_address: string;
-  validator_address: string;
+  delegatorAddress: string;
+  validatorAddress: string;
   entries: [
     {
-      creation_height: string;
-      completion_time: string;
-      initial_balance: string;
+      creationHeight: string;
+      completionTime: string;
+      initialBalance: string;
       balance: string;
     }
   ];

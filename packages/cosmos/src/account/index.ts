@@ -25,7 +25,7 @@ export class BaseAccount implements Account {
         },
       }
     );
-
+    console.log(1321, result);
     return BaseAccount.fromProtoJSON(
       result.data,
       defaultBech32Address ? address : ""

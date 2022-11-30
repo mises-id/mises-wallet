@@ -112,7 +112,7 @@ export const DetailsTab: FunctionComponent<{
           {renderedMsgs}
         </div>
         <div style={{ flex: 1 }} />
-        {!preferNoSetMemo ? (
+        {/* {!preferNoSetMemo ? (
           <MemoInput
             memoConfig={memoConfig}
             label={intl.formatMessage({ id: "sign.info.memo" })}
@@ -191,11 +191,9 @@ export const DetailsTab: FunctionComponent<{
               </div>
             </div>
             {
-              /*
-                Even if the "preferNoSetFee" option is turned on, it provides the way to edit the fee to users.
-                However, if the interaction is internal, you can be sure that the fee is set well inside Keplr.
-                Therefore, the button is not shown in this case.
-              */
+              // Even if the "preferNoSetFee" option is turned on, it provides the way to edit the fee to users.
+              // However, if the interaction is internal, you can be sure that the fee is set well inside Keplr.
+              // Therefore, the button is not shown in this case.
               !isInternal ? (
                 <div style={{ fontSize: "12px" }}>
                   <Button
@@ -215,7 +213,7 @@ export const DetailsTab: FunctionComponent<{
               ) : null
             }
           </React.Fragment>
-        )}
+        )} */}
         {isNeedLedgerEthBlindSigning ? (
           <div className={styleDetailsTab.ethLedgerBlindSigningWarning}>
             <div className={styleDetailsTab.title}>

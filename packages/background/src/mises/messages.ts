@@ -1,30 +1,12 @@
-import { Message } from "@keplr-wallet/router";
+import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
+import { KeplrError, Message } from "@keplr-wallet/router";
+import Long from "long";
+import { PubKey } from "secretjs/types/types";
 import { ROUTE } from "./constants";
 
-export class SetPersistentMemoryMsg1 extends Message<{ success: boolean }> {
+export class BalanceUMISMsg extends Message<Long.Long> {
   public static type() {
-    return "set-persistent-memory1";
-  }
-
-  constructor(public readonly data: any) {
-    super();
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  validateBasic(): void {}
-
-  route(): string {
-    return ROUTE;
-  }
-
-  type(): string {
-    return SetPersistentMemoryMsg1.type();
-  }
-}
-
-export class GetPersistentMemoryMsg1 extends Message<any> {
-  public static type() {
-    return "get-persistent-memory1";
+    return "balance-umis";
   }
 
   constructor() {
@@ -39,6 +21,249 @@ export class GetPersistentMemoryMsg1 extends Message<any> {
   }
 
   type(): string {
-    return GetPersistentMemoryMsg1.type();
+    return BalanceUMISMsg.type();
+  }
+}
+
+export class MisesChainMsg extends Message<boolean> {
+  public static type() {
+    return "mises-chain";
+  }
+
+  constructor(public readonly chainId: string) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    if (!this.chainId) {
+      throw new KeplrError("mises", 274, "chainId not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return MisesChainMsg.type();
+  }
+}
+
+export class RecentTransactionsMsg extends Message<readonly any[]> {
+  public static type() {
+    return "recent-transaction";
+  }
+
+  constructor(public readonly height: number | undefined) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return RecentTransactionsMsg.type();
+  }
+}
+export class GetChainIdMsg extends Message<string> {
+  public static type() {
+    return "get-chain-id";
+  }
+
+  constructor() {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return GetChainIdMsg.type();
+  }
+}
+
+export class UnbondingDelegationsMsg extends Message<any> {
+  public static type() {
+    return "unbonding-delegations";
+  }
+
+  constructor(public readonly address: string) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+    if (!this.address) {
+      throw new KeplrError("mises", 274, "address not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return UnbondingDelegationsMsg.type();
+  }
+}
+
+export class DelegationsMsg extends Message<any> {
+  public static type() {
+    return "delegations";
+  }
+
+  constructor(public readonly address: string) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+    if (!this.address) {
+      throw new KeplrError("mises", 274, "address not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return DelegationsMsg.type();
+  }
+}
+
+export class RewardsMsg extends Message<any> {
+  public static type() {
+    return "rewards";
+  }
+
+  constructor(public readonly address: string) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+    if (!this.address) {
+      throw new KeplrError("mises", 274, "address not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return RewardsMsg.type();
+  }
+}
+
+export class AuthAccountsMsg extends Message<Any | null> {
+  public static type() {
+    return "auth-accounts";
+  }
+
+  constructor(public readonly address: string) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+    if (!this.address) {
+      throw new KeplrError("mises", 274, "address not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return AuthAccountsMsg.type();
+  }
+}
+
+export class BroadcastTxMsg extends Message<any> {
+  public static type() {
+    return "broadcast-tx-to-background";
+  }
+
+  constructor(public readonly tx: Uint8Array, public readonly mode: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.tx) {
+      throw new KeplrError("tx", 101, "tx is empty");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return BroadcastTxMsg.type();
+  }
+}
+
+export class SimulateMsg extends Message<{
+  gasUsed: Long.Long;
+}> {
+  public static type() {
+    return "simulate";
+  }
+
+  constructor(
+    public readonly messages: Any[],
+    public readonly memo: string | undefined,
+    public readonly signer: PubKey,
+    public readonly sequence: number
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.messages) {
+      throw new KeplrError("messages", 101, "messages is empty");
+    }
+    if (!this.signer) {
+      throw new KeplrError("signer", 101, "signer is empty");
+    }
+    if (!this.sequence) {
+      throw new KeplrError("sequence", 101, "sequence is empty");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return SimulateMsg.type();
   }
 }

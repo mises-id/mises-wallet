@@ -9,10 +9,16 @@ import { MUserMgr } from "mises-js-sdk/dist/types/muser";
 import { MISES_POINT } from "./mises-network.util";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import {
+  AuthExtension,
+  DistributionExtension,
   QueryClient,
+  setupAuthExtension,
+  setupDistributionExtension,
   setupStakingExtension,
   StakingExtension,
   StargateClient,
+  TxExtension,
+  setupTxExtension,
 } from "@cosmjs/stargate";
 export class Mises {
   config: MisesConfig;
@@ -45,19 +51,35 @@ export class Mises {
     this.misesUser = this.misesSdk.userMgr();
 
     this.misesAppMgr = this.misesSdk.appMgr();
+
     StargateClient.connect(MISES_POINT).then((res) => {
       this.stargateClient = res;
     });
   }
 
   async makeClient(): Promise<
-    [QueryClient & StakingExtension, Tendermint34Client]
+    [
+      QueryClient &
+        StakingExtension &
+        DistributionExtension &
+        AuthExtension &
+        TxExtension,
+      Tendermint34Client
+    ]
   > {
     const tmClient = await Tendermint34Client.connect(MISES_POINT);
     return [
-      QueryClient.withExtensions<StakingExtension>(
+      QueryClient.withExtensions<
+        StakingExtension,
+        DistributionExtension,
+        AuthExtension,
+        TxExtension
+      >(
         tmClient,
-        setupStakingExtension
+        setupStakingExtension,
+        setupDistributionExtension,
+        setupAuthExtension,
+        setupTxExtension
       ),
       tmClient,
     ];

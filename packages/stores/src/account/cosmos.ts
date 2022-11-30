@@ -47,6 +47,8 @@ import { Buffer } from "buffer/";
 import { MakeTxResponse, ProtoMsgsOrWithAminoMsgs } from "./types";
 import { txEventsWithPreOnFulfill } from "./utils";
 import { ExtensionOptionsWeb3Tx } from "@keplr-wallet/proto-types/ethermint/types/v1/web3";
+import { MisesStore } from "../core";
+import { accountFromAny } from "@cosmjs/stargate";
 
 export interface CosmosAccount {
   cosmos: CosmosAccountImpl;
@@ -58,6 +60,7 @@ export const CosmosAccount = {
       chainId: string
     ) => DeepPartial<CosmosMsgOpts> | undefined;
     queriesStore: IQueriesStore<CosmosQueries>;
+    misesStore: MisesStore;
     wsObject?: new (url: string, protocols?: string | string[]) => WebSocket;
     preTxEvents?: {
       onBroadcastFailed?: (chainId: string, e?: Error) => void;
@@ -160,6 +163,7 @@ export class CosmosAccountImpl {
         onBroadcasted?: (chainId: string, txHash: Uint8Array) => void;
         onFulfill?: (chainId: string, tx: any) => void;
       };
+      misesStore: MisesStore;
     }
   ) {
     this.base.registerMakeSendTokenFn(this.processMakeSendTokenTx.bind(this));
@@ -371,7 +375,7 @@ export class CosmosAccountImpl {
       );
       txHash = result.txHash;
       signDoc = result.signDoc;
-    } catch (e) {
+    } catch (e: any) {
       this.base.setTxTypeInProgress("");
 
       if (this.txOpts.preTxEvents?.onBroadcastFailed) {
@@ -474,12 +478,10 @@ export class CosmosAccountImpl {
     if (aminoMsgs.length !== protoMsgs.length) {
       throw new Error("The length of aminoMsgs and protoMsgs are different");
     }
-
-    const account = await BaseAccount.fetchFromRest(
-      this.instance,
-      this.base.bech32Address,
-      true
+    const result = await this.txOpts.misesStore.authAccounts(
+      this.base.bech32Address
     );
+    const account = accountFromAny(result);
 
     const useEthereumSign =
       this.chainGetter
@@ -499,8 +501,8 @@ export class CosmosAccountImpl {
 
     const signDocRaw: StdSignDoc = {
       chain_id: this.chainId,
-      account_number: account.getAccountNumber().toString(),
-      sequence: account.getSequence().toString(),
+      account_number: account.accountNumber.toString(),
+      sequence: account.sequence.toString(),
       fee: fee,
       msgs: aminoMsgs,
       memo: escapeHTML(memo),
@@ -649,7 +651,6 @@ export class CosmosAccountImpl {
         ? [Buffer.from(signResponse.signature.signature, "base64")]
         : [new Uint8Array(0)],
     }).finish();
-
     return {
       txHash: await keplr.sendTx(this.chainId, signedTx, mode as BroadcastMode),
       signDoc: signResponse.signed,
@@ -680,52 +681,23 @@ export class CosmosAccountImpl {
   ): Promise<{
     gasUsed: number;
   }> {
-    const account = await BaseAccount.fetchFromRest(
-      this.instance,
-      this.base.bech32Address,
-      true
+    const result = await this.txOpts.misesStore.authAccounts(
+      this.base.bech32Address
+    );
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const account = accountFromAny(result!);
+
+    const txResult = await this.txOpts.misesStore.simulate(
+      msgs,
+      memo,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      account.pubkey!,
+      account.sequence
     );
 
-    const unsignedTx = TxRaw.encode({
-      bodyBytes: TxBody.encode(
-        TxBody.fromPartial({
-          messages: msgs,
-          memo: memo,
-        })
-      ).finish(),
-      authInfoBytes: AuthInfo.encode({
-        signerInfos: [
-          SignerInfo.fromPartial({
-            // Pub key is ignored.
-            // It is fine to ignore the pub key when simulating tx.
-            // However, the estimated gas would be slightly smaller because tx size doesn't include pub key.
-            modeInfo: {
-              single: {
-                mode: SignMode.SIGN_MODE_LEGACY_AMINO_JSON,
-              },
-              multi: undefined,
-            },
-            sequence: account.getSequence().toString(),
-          }),
-        ],
-        fee: Fee.fromPartial({
-          amount: fee.amount.map((amount) => {
-            return { amount: amount.amount, denom: amount.denom };
-          }),
-        }),
-      }).finish(),
-      // Because of the validation of tx itself, the signature must exist.
-      // However, since they do not actually verify the signature, it is okay to use any value.
-      signatures: [new Uint8Array(64)],
-    }).finish();
-
-    const result = await this.instance.post("/cosmos/tx/v1beta1/simulate", {
-      tx_bytes: Buffer.from(unsignedTx).toString("base64"),
-    });
-
-    const gasUsed = parseInt(result.data.gas_info.gas_used);
+    const gasUsed = txResult.gasUsed.low;
     if (Number.isNaN(gasUsed)) {
-      throw new Error(`Invalid integer gas: ${result.data.gas_info.gas_used}`);
+      throw new Error(`Invalid integer gas: ${txResult.gasUsed}`);
     }
 
     return {

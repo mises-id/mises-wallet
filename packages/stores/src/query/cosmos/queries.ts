@@ -39,13 +39,16 @@ import {
 import { ObservableQueryDistributionParams } from "./distribution";
 import { ObservableQueryRPCStatus } from "./status";
 import { ObservableQueryJunoAnnualProvisions } from "./supply/juno";
+import { MisesStore } from "../../core";
 
 export interface CosmosQueries {
   cosmos: CosmosQueriesImpl;
 }
 
 export const CosmosQueries = {
-  use(): (
+  use(
+    misesStore: MisesStore
+  ): (
     queriesSetBase: QueriesSetBase,
     kvStore: KVStore,
     chainId: string,
@@ -62,7 +65,8 @@ export const CosmosQueries = {
           queriesSetBase,
           kvStore,
           chainId,
-          chainGetter
+          chainGetter,
+          misesStore
         ),
       };
     };
@@ -97,7 +101,8 @@ export class CosmosQueriesImpl {
     base: QueriesSetBase,
     kvStore: KVStore,
     chainId: string,
-    chainGetter: ChainGetter
+    chainGetter: ChainGetter,
+    misesStore: MisesStore
   ) {
     this.queryRPCStatus = new ObservableQueryRPCStatus(
       kvStore,
@@ -111,13 +116,14 @@ export class CosmosQueriesImpl {
     );
 
     base.queryBalances.addBalanceRegistry(
-      new ObservableQueryCosmosBalanceRegistry(kvStore)
+      new ObservableQueryCosmosBalanceRegistry(kvStore, misesStore)
     );
 
     this.queryAccount = new ObservableQueryAccount(
       kvStore,
       chainId,
-      chainGetter
+      chainGetter,
+      misesStore
     );
     this.querySpendableBalances = new ObservableQuerySpendableBalances(
       kvStore,
@@ -179,17 +185,20 @@ export class CosmosQueriesImpl {
     this.queryRewards = new ObservableQueryRewards(
       kvStore,
       chainId,
-      chainGetter
+      chainGetter,
+      misesStore
     );
     this.queryDelegations = new ObservableQueryDelegations(
       kvStore,
       chainId,
-      chainGetter
+      chainGetter,
+      misesStore
     );
     this.queryUnbondingDelegations = new ObservableQueryUnbondingDelegations(
       kvStore,
       chainId,
-      chainGetter
+      chainGetter,
+      misesStore
     );
     this.queryValidators = new ObservableQueryValidators(
       kvStore,

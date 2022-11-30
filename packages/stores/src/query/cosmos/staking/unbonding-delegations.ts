@@ -6,16 +6,20 @@ import { UnbondingDelegation, UnbondingDelegations } from "./types";
 import { KVStore } from "@keplr-wallet/common";
 import { ChainGetter } from "../../../common";
 import { CoinPretty, Int } from "@keplr-wallet/unit";
-import { computed, makeObservable } from "mobx";
+import { computed, makeObservable, override } from "mobx";
+import { MisesStore } from "../../../core";
 
 export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQuery<UnbondingDelegations> {
   protected bech32Address: string;
+  misesStore: MisesStore;
+  duplicatedFetchCheck: boolean = true;
 
   constructor(
     kvStore: KVStore,
     chainId: string,
     chainGetter: ChainGetter,
-    bech32Address: string
+    bech32Address: string,
+    misesStore: MisesStore
   ) {
     super(
       kvStore,
@@ -26,11 +30,13 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
     makeObservable(this);
 
     this.bech32Address = bech32Address;
+
+    this.misesStore = misesStore;
   }
 
   protected canFetch(): boolean {
     // If bech32 address is empty, it will always fail, so don't need to fetch it.
-    return this.bech32Address.length > 0;
+    return this.bech32Address?.length > 0;
   }
 
   @computed
@@ -42,7 +48,7 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
     }
 
     let totalBalance = new Int(0);
-    for (const unbondingDelegation of this.response.data.unbonding_responses) {
+    for (const unbondingDelegation of this.unbondings) {
       for (const entry of unbondingDelegation.entries) {
         totalBalance = totalBalance.add(new Int(entry.balance));
       }
@@ -69,14 +75,14 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       const entries = [];
       for (const entry of unbonding.entries) {
         entries.push({
-          creationHeight: new Int(entry.creation_height),
-          completionTime: entry.completion_time,
+          creationHeight: new Int(entry.creationHeight),
+          completionTime: entry.completionTime,
           balance: new CoinPretty(stakeCurrency, new Int(entry.balance)),
         });
       }
 
       result.push({
-        validatorAddress: unbonding.validator_address,
+        validatorAddress: unbonding.validatorAddress,
         entries,
       });
     }
@@ -90,7 +96,22 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       return [];
     }
 
-    return this.response.data.unbonding_responses;
+    return this.response.data.unbondingResponses;
+  }
+
+  @override
+  *fetch() {
+    if (!this.bech32Address) {
+      return;
+    }
+    this.misesStore.unbondingDelegations(this.bech32Address).then((res) => {
+      this.setResponse({
+        data: res,
+        status: 200,
+        staled: true,
+        timestamp: new Date().getTime(),
+      });
+    });
   }
 }
 
@@ -98,14 +119,16 @@ export class ObservableQueryUnbondingDelegations extends ObservableChainQueryMap
   constructor(
     protected readonly kvStore: KVStore,
     protected readonly chainId: string,
-    protected readonly chainGetter: ChainGetter
+    protected readonly chainGetter: ChainGetter,
+    protected readonly misesStore: MisesStore
   ) {
     super(kvStore, chainId, chainGetter, (bech32Address: string) => {
       return new ObservableQueryUnbondingDelegationsInner(
         this.kvStore,
         this.chainId,
         this.chainGetter,
-        bech32Address
+        bech32Address,
+        misesStore
       );
     });
   }

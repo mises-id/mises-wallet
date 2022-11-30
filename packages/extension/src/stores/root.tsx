@@ -188,6 +188,7 @@ export class RootStore {
       },
       CosmosAccount.use({
         queriesStore: this.queriesStore,
+        misesStore: this.misesStore,
         msgOptsCreator: (chainId) => {
           // In certik, change the msg type of the MsgSend to "bank/MsgSend"
           if (chainId.startsWith("shentu-")) {

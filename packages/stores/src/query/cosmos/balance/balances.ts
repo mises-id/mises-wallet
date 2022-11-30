@@ -1,4 +1,4 @@
-import { DenomHelper, KVStore } from "@keplr-wallet/common";
+import { DenomHelper, KVStore, toGenerator } from "@keplr-wallet/common";
 import { ChainGetter, QueryResponse } from "../../../common";
 import { computed, makeObservable, override } from "mobx";
 import { CoinPretty, Int } from "@keplr-wallet/unit";
@@ -6,6 +6,7 @@ import { StoreUtils } from "../../../common";
 import { BalanceRegistry, ObservableQueryBalanceInner } from "../../balances";
 import { ObservableChainQuery } from "../../chain-query";
 import { Balances } from "./types";
+import { MisesStore } from "../../../core";
 
 export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
   constructor(
@@ -66,13 +67,16 @@ export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
 export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances> {
   protected bech32Address: string;
 
-  protected duplicatedFetchCheck: boolean = false;
+  protected duplicatedFetchCheck: boolean = true;
+
+  protected misesStore: MisesStore;
 
   constructor(
     kvStore: KVStore,
     chainId: string,
     chainGetter: ChainGetter,
-    bech32Address: string
+    bech32Address: string,
+    misesStore: MisesStore
   ) {
     super(
       kvStore,
@@ -82,6 +86,8 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
     );
 
     this.bech32Address = bech32Address;
+
+    this.misesStore = misesStore;
 
     makeObservable(this);
   }
@@ -93,17 +99,29 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   @override
   *fetch() {
-    if (!this.duplicatedFetchCheck) {
-      // Because the native "bank" module's balance shares the querying result,
-      // it is inefficient to fetching duplicately in the same loop.
-      // So, if the fetching requests are in the same tick, this prevent to refetch the result and use the prior fetching.
-      this.duplicatedFetchCheck = true;
-      setTimeout(() => {
-        this.duplicatedFetchCheck = false;
-      }, 1);
+    this.getMisesBalance().then((result) => {
+      this.setResponse(result);
+    });
+  }
 
-      yield super.fetch();
-    }
+  async getMisesBalance() {
+    const balance = await this.misesStore?.getBalanceUMIS();
+
+    const result: QueryResponse<Balances> = {
+      status: 200,
+      data: {
+        balances: [
+          {
+            denom: "umis",
+            amount: `${balance?.low || 0}`,
+          },
+        ],
+      },
+      staled: true,
+      timestamp: new Date().getTime(),
+    };
+
+    return result;
   }
 
   protected setResponse(response: Readonly<QueryResponse<Balances>>) {
@@ -124,7 +142,10 @@ export class ObservableQueryCosmosBalanceRegistry implements BalanceRegistry {
     ObservableQueryCosmosBalances
   > = new Map();
 
-  constructor(protected readonly kvStore: KVStore) {}
+  constructor(
+    protected readonly kvStore: KVStore,
+    protected readonly misesStore: MisesStore
+  ) {}
 
   getBalanceInner(
     chainId: string,
@@ -146,7 +167,8 @@ export class ObservableQueryCosmosBalanceRegistry implements BalanceRegistry {
           this.kvStore,
           chainId,
           chainGetter,
-          bech32Address
+          bech32Address,
+          this.misesStore
         )
       );
     }

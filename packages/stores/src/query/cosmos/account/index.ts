@@ -46,6 +46,7 @@ export class ObservableQueryAccountInner extends ObservableChainQuery<AuthAccoun
         this.response.data,
         this.bech32Address
       );
+      console.log(this.response.data, 2132131);
       return account.getSequence().toString();
     } catch {
       return "0";

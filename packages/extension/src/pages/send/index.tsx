@@ -1,10 +1,5 @@
 import React, { FunctionComponent, useEffect, useMemo } from "react";
-import {
-  AddressInput,
-  FeeButtons,
-  CoinInput,
-  MemoInput,
-} from "../../components/form";
+import { AddressInput, CoinInput, MemoInput } from "../../components/form";
 import { useStore } from "../../stores";
 
 import { HeaderLayout } from "../../layouts";
@@ -22,11 +17,7 @@ import queryString from "querystring";
 
 import { useGasSimulator, useSendTxConfig } from "@keplr-wallet/hooks";
 import { EthereumEndpoint } from "../../config.ui";
-import {
-  fitPopupWindow,
-  openPopupWindow,
-  PopupSize,
-} from "@keplr-wallet/popup";
+import { fitPopupWindow } from "@keplr-wallet/popup";
 import { DenomHelper, ExtensionKVStore } from "@keplr-wallet/common";
 
 export const SendPage: FunctionComponent = observer(() => {
@@ -54,13 +45,7 @@ export const SendPage: FunctionComponent = observer(() => {
 
   const notification = useNotification();
 
-  const {
-    chainStore,
-    accountStore,
-    priceStore,
-    queriesStore,
-    analyticsStore,
-  } = useStore();
+  const { chainStore, accountStore, queriesStore, analyticsStore } = useStore();
   const current = chainStore.current;
 
   const accountInfo = accountStore.getAccount(current.chainId);
@@ -111,6 +96,8 @@ export const SendPage: FunctionComponent = observer(() => {
       // Prefer not to use the gas config or fee config,
       // because gas simulator can change the gas config and fee config from the result of reaction,
       // and it can make repeated reaction.
+      console.log(sendConfigs.amountConfig.error);
+      console.log(sendConfigs.recipientConfig.error);
       if (
         sendConfigs.amountConfig.error != null ||
         sendConfigs.recipientConfig.error != null
@@ -213,58 +200,6 @@ export const SendPage: FunctionComponent = observer(() => {
               history.goBack();
             }
       }
-      rightRenderer={
-        isDetachedPage ? undefined : (
-          <div
-            style={{
-              height: "64px",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              paddingRight: "20px",
-            }}
-          >
-            <i
-              className="fas fa-external-link-alt"
-              style={{
-                cursor: "pointer",
-                padding: "4px",
-                color: "#8B8B9A",
-              }}
-              onClick={async (e) => {
-                e.preventDefault();
-
-                const windowInfo = await browser.windows.getCurrent();
-
-                let queryString = `?detached=true&defaultDenom=${sendConfigs.amountConfig.sendCurrency.coinMinimalDenom}`;
-                if (sendConfigs.recipientConfig.rawRecipient) {
-                  queryString += `&defaultRecipient=${sendConfigs.recipientConfig.rawRecipient}`;
-                }
-                if (sendConfigs.amountConfig.amount) {
-                  queryString += `&defaultAmount=${sendConfigs.amountConfig.amount}`;
-                }
-                if (sendConfigs.memoConfig.memo) {
-                  queryString += `&defaultMemo=${sendConfigs.memoConfig.memo}`;
-                }
-
-                await openPopupWindow(
-                  browser.runtime.getURL(`/popup.html#/send${queryString}`),
-                  undefined,
-                  {
-                    top: (windowInfo.top || 0) + 80,
-                    left:
-                      (windowInfo.left || 0) +
-                      (windowInfo.width || 0) -
-                      PopupSize.width -
-                      20,
-                  }
-                );
-                window.close();
-              }}
-            />
-          </div>
-        )
-      }
     >
       <form
         className={style.formContainer}
@@ -274,7 +209,6 @@ export const SendPage: FunctionComponent = observer(() => {
           if (accountInfo.isReadyToSendMsgs && txStateIsValid) {
             try {
               const stdFee = sendConfigs.feeConfig.toStdFee();
-
               const tx = accountInfo.makeSendTokenTx(
                 sendConfigs.amountConfig.amount,
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -345,7 +279,7 @@ export const SendPage: FunctionComponent = observer(() => {
               memoConfig={sendConfigs.memoConfig}
               label={intl.formatMessage({ id: "send.input.memo" })}
             />
-            <FeeButtons
+            {/* <FeeButtons
               feeConfig={sendConfigs.feeConfig}
               gasConfig={sendConfigs.gasConfig}
               priceStore={priceStore}
@@ -359,7 +293,7 @@ export const SendPage: FunctionComponent = observer(() => {
               }}
               gasLabel={intl.formatMessage({ id: "send.input.gas" })}
               gasSimulator={gasSimulator}
-            />
+            /> */}
           </div>
           <div style={{ flex: 1 }} />
           <Button
