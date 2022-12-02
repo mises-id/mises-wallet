@@ -1,4 +1,4 @@
-import { DenomHelper, KVStore, toGenerator } from "@keplr-wallet/common";
+import { DenomHelper, KVStore } from "@keplr-wallet/common";
 import { ChainGetter, QueryResponse } from "../../../common";
 import { computed, makeObservable, override } from "mobx";
 import { CoinPretty, Int } from "@keplr-wallet/unit";

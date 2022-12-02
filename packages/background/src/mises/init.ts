@@ -10,6 +10,14 @@ import {
   AuthAccountsMsg,
   BroadcastTxMsg,
   SimulateMsg,
+  MisesAccountMsg,
+  HasWalletAccountMsg,
+  DisconnectMsg,
+  ConnectMsg,
+  UserFollowMsg,
+  UserUnFollowMsg,
+  SetUserInfoMsg,
+  StakingMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -26,6 +34,14 @@ export function init(router: Router, service: MisesService) {
   router.registerMessage(AuthAccountsMsg);
   router.registerMessage(BroadcastTxMsg);
   router.registerMessage(SimulateMsg);
+  router.registerMessage(MisesAccountMsg);
+  router.registerMessage(HasWalletAccountMsg);
+  router.registerMessage(DisconnectMsg);
+  router.registerMessage(ConnectMsg);
+  router.registerMessage(UserFollowMsg);
+  router.registerMessage(UserUnFollowMsg);
+  router.registerMessage(SetUserInfoMsg);
+  router.registerMessage(StakingMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

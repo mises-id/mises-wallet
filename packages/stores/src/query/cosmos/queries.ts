@@ -122,8 +122,7 @@ export class CosmosQueriesImpl {
     this.queryAccount = new ObservableQueryAccount(
       kvStore,
       chainId,
-      chainGetter,
-      misesStore
+      chainGetter
     );
     this.querySpendableBalances = new ObservableQuerySpendableBalances(
       kvStore,

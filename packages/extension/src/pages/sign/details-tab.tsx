@@ -8,18 +8,15 @@ import styleDetailsTab from "./details-tab.module.scss";
 import { renderAminoMessage } from "./amino";
 import { Msg } from "@keplr-wallet/types";
 import { FormattedMessage, useIntl } from "react-intl";
-import { FeeButtons, MemoInput } from "../../components/form";
 import {
   IFeeConfig,
   IGasConfig,
   IMemoConfig,
   SignDocHelper,
 } from "@keplr-wallet/hooks";
-import { useLanguage } from "../../languages";
-import { Badge, Button, Label } from "reactstrap";
+import { Badge, Label } from "reactstrap";
 import { renderDirectMessage } from "./direct";
 import { AnyWithUnpacked } from "@keplr-wallet/cosmos";
-import { CoinPretty } from "@keplr-wallet/unit";
 
 export const DetailsTab: FunctionComponent<{
   signDocHelper: SignDocHelper;
@@ -33,86 +30,75 @@ export const DetailsTab: FunctionComponent<{
   preferNoSetMemo: boolean;
 
   isNeedLedgerEthBlindSigning: boolean;
-}> = observer(
-  ({
-    signDocHelper,
-    memoConfig,
-    feeConfig,
-    gasConfig,
-    isInternal,
-    preferNoSetFee,
-    preferNoSetMemo,
-    isNeedLedgerEthBlindSigning,
-  }) => {
-    const { chainStore, priceStore, accountStore } = useStore();
-    const intl = useIntl();
-    const language = useLanguage();
+}> = observer(({ signDocHelper, isNeedLedgerEthBlindSigning }) => {
+  const { chainStore, accountStore } = useStore();
+  const intl = useIntl();
 
-    const mode = signDocHelper.signDocWrapper
-      ? signDocHelper.signDocWrapper.mode
-      : "none";
-    const msgs = signDocHelper.signDocWrapper
-      ? signDocHelper.signDocWrapper.mode === "amino"
-        ? signDocHelper.signDocWrapper.aminoSignDoc.msgs
-        : signDocHelper.signDocWrapper.protoSignDoc.txMsgs
-      : [];
+  const mode = signDocHelper.signDocWrapper
+    ? signDocHelper.signDocWrapper.mode
+    : "none";
+  const msgs = signDocHelper.signDocWrapper
+    ? signDocHelper.signDocWrapper.mode === "amino"
+      ? signDocHelper.signDocWrapper.aminoSignDoc.msgs
+      : signDocHelper.signDocWrapper.protoSignDoc.txMsgs
+    : [];
 
-    const renderedMsgs = (() => {
-      if (mode === "amino") {
-        return (msgs as readonly Msg[]).map((msg, i) => {
-          const msgContent = renderAminoMessage(
-            accountStore.getAccount(chainStore.current.chainId),
-            msg,
-            chainStore.current.currencies,
-            intl
-          );
-          return (
-            <React.Fragment key={i.toString()}>
-              <MsgRender icon={msgContent.icon} title={msgContent.title}>
-                {msgContent.content}
-              </MsgRender>
-              <hr />
-            </React.Fragment>
-          );
-        });
-      } else if (mode === "direct") {
-        return (msgs as AnyWithUnpacked[]).map((msg, i) => {
-          const msgContent = renderDirectMessage(
-            msg,
-            chainStore.current.currencies,
-            intl
-          );
-          return (
-            <React.Fragment key={i.toString()}>
-              <MsgRender icon={msgContent.icon} title={msgContent.title}>
-                {msgContent.content}
-              </MsgRender>
-              <hr />
-            </React.Fragment>
-          );
-        });
-      } else {
-        return null;
-      }
-    })();
+  const renderedMsgs = (() => {
+    if (mode === "amino") {
+      return (msgs as readonly Msg[]).map((msg, i) => {
+        const msgContent = renderAminoMessage(
+          accountStore.getAccount(chainStore.current.chainId),
+          msg,
+          chainStore.current.currencies,
+          intl
+        );
+        return (
+          <React.Fragment key={i.toString()}>
+            <MsgRender icon={msgContent.icon} title={msgContent.title}>
+              {msgContent.content}
+            </MsgRender>
+            <hr />
+          </React.Fragment>
+        );
+      });
+    } else if (mode === "direct") {
+      return (msgs as AnyWithUnpacked[]).map((msg, i) => {
+        const msgContent = renderDirectMessage(
+          msg,
+          chainStore.current.currencies,
+          intl
+        );
+        return (
+          <React.Fragment key={i.toString()}>
+            <MsgRender icon={msgContent.icon} title={msgContent.title}>
+              {msgContent.content}
+            </MsgRender>
+            <hr />
+          </React.Fragment>
+        );
+      });
+    } else {
+      return null;
+    }
+  })();
 
-    return (
-      <div className={styleDetailsTab.container}>
-        <Label
-          for="signing-messages"
-          className="form-control-label"
-          style={{ display: "flex" }}
-        >
-          <FormattedMessage id="sign.list.messages.label" />
-          <Badge className="ml-2" color="primary">
-            {msgs.length}
-          </Badge>
-        </Label>
-        <div id="signing-messages" className={styleDetailsTab.msgContainer}>
-          {renderedMsgs}
-        </div>
-        <div style={{ flex: 1 }} />
-        {/* {!preferNoSetMemo ? (
+  return (
+    <div className={styleDetailsTab.container}>
+      <Label
+        for="signing-messages"
+        className="form-control-label"
+        style={{ display: "flex" }}
+      >
+        <FormattedMessage id="sign.list.messages.label" />
+        <Badge className="ml-2" color="primary">
+          {msgs.length}
+        </Badge>
+      </Label>
+      <div id="signing-messages" className={styleDetailsTab.msgContainer}>
+        {renderedMsgs}
+      </div>
+      <div style={{ flex: 1 }} />
+      {/* {!preferNoSetMemo ? (
           <MemoInput
             memoConfig={memoConfig}
             label={intl.formatMessage({ id: "sign.info.memo" })}
@@ -214,21 +200,20 @@ export const DetailsTab: FunctionComponent<{
             }
           </React.Fragment>
         )} */}
-        {isNeedLedgerEthBlindSigning ? (
-          <div className={styleDetailsTab.ethLedgerBlindSigningWarning}>
-            <div className={styleDetailsTab.title}>
-              Before you click ‘Approve’
-            </div>
-            <ul className={styleDetailsTab.list}>
-              <li>Connect your Ledger device and select the Ethereum app</li>
-              <li>Enable ‘blind signing’ on your Ledger device</li>
-            </ul>
+      {isNeedLedgerEthBlindSigning ? (
+        <div className={styleDetailsTab.ethLedgerBlindSigningWarning}>
+          <div className={styleDetailsTab.title}>
+            Before you click ‘Approve’
           </div>
-        ) : null}
-      </div>
-    );
-  }
-);
+          <ul className={styleDetailsTab.list}>
+            <li>Connect your Ledger device and select the Ethereum app</li>
+            <li>Enable ‘blind signing’ on your Ledger device</li>
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+});
 
 export const MsgRender: FunctionComponent<{
   icon?: string;

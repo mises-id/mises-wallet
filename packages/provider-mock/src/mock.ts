@@ -12,7 +12,7 @@ import {
   OfflineAminoSigner,
   OfflineDirectSigner,
   DirectSignResponse,
-  MisesSignResponse,
+  MisesAccountData,
 } from "@keplr-wallet/types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 import {
@@ -23,6 +23,7 @@ import {
 import {
   CosmJSOfflineSigner,
   CosmJSOfflineSignerOnlyAmino,
+  MisesWeb3Client,
 } from "@keplr-wallet/provider";
 import { Mnemonic, PrivKeySecp256k1 } from "@keplr-wallet/crypto";
 import Long from "long";
@@ -71,6 +72,9 @@ export class MockKeplr implements Keplr {
     }[],
     public readonly mnemonic: string
   ) {}
+  misesWeb3Client(): MisesWeb3Client {
+    return new MisesWeb3Client(this);
+  }
 
   enable(): Promise<void> {
     // noop.
@@ -266,16 +270,47 @@ export class MockKeplr implements Keplr {
     throw new Error("Not yet implemented");
   }
 
-  async signMisesAmino(
-    _chainId: string,
-    _signer: string,
-    _signDoc: StdSignDoc,
-    _signOptions: KeplrSignOptions = {}
-  ): Promise<MisesSignResponse> {
+  async isunlocked(): Promise<boolean> {
+    return true;
+  }
+
+  misesAccount(): Promise<MisesAccountData> {
     throw new Error("Not yet implemented");
   }
 
-  async isunlocked(): Promise<boolean> {
+  async hasWalletAccount(): Promise<boolean> {
+    return true;
+  }
+
+  async disconnect(_params: {
+    userid: string;
+    appid: string;
+  }): Promise<boolean> {
+    throw new Error("Not yet implemented");
+  }
+
+  async connect(_params: {
+    userid: string;
+    appid: string;
+    domain: string;
+    permissions: string[];
+  }): Promise<string | false> {
+    return false;
+  }
+
+  async userFollow(_toUid: string): Promise<void> {
+    return;
+  }
+
+  async userUnFollow(_toUid: string): Promise<void> {
+    return;
+  }
+
+  async setUserInfo(_params: any): Promise<boolean> {
+    return true;
+  }
+
+  async statking(_params: any): Promise<any> {
     return true;
   }
 }

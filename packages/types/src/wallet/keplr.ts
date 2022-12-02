@@ -8,7 +8,8 @@ import {
   StdSignature,
   DirectSignResponse,
   OfflineDirectSigner,
-  MisesSignResponse,
+  MisesWeb3Client,
+  MisesAccountData,
 } from "../cosmjs";
 import { SecretUtils } from "secretjs/types/enigmautils";
 import Long from "long";
@@ -58,12 +59,6 @@ export interface Keplr {
     signDoc: StdSignDoc,
     signOptions?: KeplrSignOptions
   ): Promise<AminoSignResponse>;
-  signMisesAmino(
-    chainId: string,
-    signer: string,
-    signDoc: StdSignDoc,
-    signOptions?: KeplrSignOptions
-  ): Promise<MisesSignResponse>;
   signDirect(
     chainId: string,
     signer: string,
@@ -112,7 +107,7 @@ export interface Keplr {
   getOfflineSignerAuto(
     chainId: string
   ): Promise<OfflineAminoSigner | OfflineDirectSigner>;
-
+  misesWeb3Client(): MisesWeb3Client;
   suggestToken(
     chainId: string,
     contractAddress: string,
@@ -168,4 +163,17 @@ export interface Keplr {
     signOptions?: KeplrSignOptions
   ): Promise<AminoSignResponse>;
   isunlocked(): Promise<boolean>;
+  misesAccount(): Promise<MisesAccountData>;
+  hasWalletAccount(): Promise<boolean>;
+  disconnect(params: { userid: string; appid: string }): Promise<boolean>;
+  connect(params: {
+    userid: string;
+    appid: string;
+    domain: string;
+    permissions: string[];
+  }): Promise<string | false>;
+  userFollow(toUid: string): Promise<void>;
+  userUnFollow(toUid: string): Promise<void>;
+  setUserInfo(params: any): Promise<boolean>;
+  staking(params: any): Promise<any>;
 }

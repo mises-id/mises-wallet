@@ -7,7 +7,7 @@ import {
   AminoSignResponse,
   StdSignature,
   StdSignDoc,
-  MisesSignResponse,
+  MisesAccountData,
 } from "@keplr-wallet/types";
 
 export class EnableAccessMsg extends Message<void> {
@@ -253,77 +253,6 @@ export class RequestSignAminoMsg extends Message<AminoSignResponse> {
 
   type(): string {
     return RequestSignAminoMsg.type();
-  }
-}
-
-export class MisesRequestSignAminoMsg extends Message<MisesSignResponse> {
-  public static type() {
-    return "mises-request-sign-amino";
-  }
-
-  constructor(
-    public readonly chainId: string,
-    public readonly signer: string,
-    public readonly signDoc: StdSignDoc,
-    public readonly signOptions: KeplrSignOptions & {
-      // Hack option field to detect the sign arbitrary for string
-      isADR36WithString?: boolean;
-      ethSignType?: EthSignType;
-    } = {}
-  ) {
-    super();
-  }
-
-  validateBasic(): void {
-    if (!this.chainId) {
-      throw new Error("chain id not set");
-    }
-
-    if (!this.signer) {
-      throw new Error("signer not set");
-    }
-
-    // It is not important to check this on the client side as opposed to increasing the bundle size.
-    // Validate bech32 address.
-    // Bech32Address.validate(this.signer);
-
-    const signDoc = this.signDoc;
-
-    // Check that the sign doc is for ADR-36,
-    // the validation should be performed on the background.
-    const hasOnlyMsgSignData = (() => {
-      if (
-        signDoc &&
-        signDoc.msgs &&
-        Array.isArray(signDoc.msgs) &&
-        signDoc.msgs.length === 1
-      ) {
-        const msg = signDoc.msgs[0];
-        return msg.type === "sign/MsgSignData";
-      } else {
-        return false;
-      }
-    })();
-
-    // If the sign doc is expected to be for ADR-36,
-    // it doesn't have to have the chain id in the sign doc.
-    if (!hasOnlyMsgSignData && signDoc.chain_id !== this.chainId) {
-      throw new Error(
-        "Chain id in the message is not matched with the requested chain id"
-      );
-    }
-
-    if (!this.signOptions) {
-      throw new Error("Sign options are null");
-    }
-  }
-
-  route(): string {
-    return "keyring";
-  }
-
-  type(): string {
-    return MisesRequestSignAminoMsg.type();
   }
 }
 
@@ -640,5 +569,230 @@ export class IsUnlockMsg extends Message<boolean> {
 
   type(): string {
     return IsUnlockMsg.type();
+  }
+}
+
+export class MisesAccountMsg extends Message<MisesAccountData> {
+  public static type() {
+    return "mises-account";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return MisesAccountMsg.type();
+  }
+}
+
+export class HasWalletAccountMsg extends Message<boolean> {
+  public static type() {
+    return "has-wallet-account";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return HasWalletAccountMsg.type();
+  }
+}
+
+export class DisconnectMsg extends Message<boolean> {
+  public static type() {
+    return "disconnect";
+  }
+
+  constructor(
+    public readonly params: {
+      readonly appid: string;
+      readonly userid: string;
+    }
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params.appid) {
+      throw new Error("appid is empty");
+    }
+    if (!this.params.userid) {
+      throw new Error("userid is empty");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return DisconnectMsg.type();
+  }
+}
+
+export class ConnectMsg extends Message<string | false> {
+  public static type() {
+    return "connect";
+  }
+  constructor(
+    public readonly params: {
+      readonly appid: string;
+      readonly userid: string;
+      readonly domain: string;
+      readonly permissions: string[];
+    }
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params.appid) {
+      throw new Error("appid is empty");
+    }
+    if (!this.params.userid) {
+      throw new Error("userid is empty");
+    }
+    if (!this.params.domain) {
+      throw new Error("domain is empty");
+    }
+    if (!this.params.permissions) {
+      throw new Error("permissions is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return ConnectMsg.type();
+  }
+}
+
+export class UserFollowMsg extends Message<void> {
+  public static type() {
+    return "userFollow";
+  }
+  constructor(public readonly toUid: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.toUid) {
+      throw new Error("toUid is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return UserFollowMsg.type();
+  }
+}
+
+export class UserUnFollowMsg extends Message<void> {
+  public static type() {
+    return "userUnFollow";
+  }
+  constructor(public readonly toUid: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.toUid) {
+      throw new Error("toUid is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return UserUnFollowMsg.type();
+  }
+}
+export class SetUserInfoMsg extends Message<boolean> {
+  public static type() {
+    return "set-user-info";
+  }
+  constructor(public readonly params: any) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params) {
+      throw new Error("params is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return SetUserInfoMsg.type();
+  }
+}
+
+export class StakingMsg extends Message<any> {
+  public static type() {
+    return "staking";
+  }
+  constructor(public readonly params: any) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params) {
+      throw new Error("params is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return StakingMsg.type();
   }
 }

@@ -21,7 +21,6 @@ import {
   TxExtension,
 } from "@cosmjs/stargate";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
-import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
 import { PubKey } from "@keplr-wallet/types";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
@@ -83,7 +82,7 @@ interface TxResponse {
   /** Amount of gas consumed by transaction. */
   gasUsed: Long;
   /** The request transaction bytes. */
-  tx?: Any;
+  tx?: any;
   /**
    * Time of the previous block. For heights > 1, it's the weighted median of
    * the timestamps of the valid votes in the block.LastCommit. For height == 1,
@@ -137,7 +136,9 @@ export class MisesService {
 
     this.storeUserInfo(userInfo);
 
-    window.localStorage.setItem("setAccount", "true");
+    browser.storage.local.set({
+      setAccount: true,
+    });
   }
 
   async misesUserInfo() {
@@ -191,6 +192,9 @@ export class MisesService {
   }
 
   async generateAuth(nonce: string): Promise<generateAuthParams> {
+    if (!this.activeUser) {
+      throw new Error("Unknown activeUser");
+    }
     const auth = await this.activeUser.generateAuth(nonce);
     return {
       auth,
@@ -199,15 +203,17 @@ export class MisesService {
   }
   // set mises browser userinfo
   setToMisesPrivate(params: userInfo): Promise<void> {
-    if (browser.misesPrivate) {
-      browser.misesPrivate.setMisesId(JSON.stringify(params));
+    if ((browser as any).misesPrivate) {
+      (browser as any).misesPrivate.setMisesId(JSON.stringify(params));
     }
     return Promise.resolve();
   }
 
   async setUnFollow(toUid: string): Promise<void> {
+    console.log(toUid);
     try {
       this.activeUser.unfollow(toUid);
+
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
@@ -215,8 +221,10 @@ export class MisesService {
   }
 
   setFollow(toUid: string): Promise<void> {
+    console.log(toUid);
     try {
       this.activeUser.follow(toUid);
+
       return Promise.resolve();
     } catch (error) {
       return Promise.reject(error);
@@ -250,8 +258,11 @@ export class MisesService {
 
   getinstallreferrer(): Promise<string> {
     return new Promise((resolve) => {
-      if (browser.misesPrivate && browser.misesPrivate.getInstallReferrer) {
-        browser.misesPrivate.getInstallReferrer(resolve);
+      if (
+        (browser as any).misesPrivate &&
+        (browser as any).misesPrivate.getInstallReferrer
+      ) {
+        (browser as any).misesPrivate.getInstallReferrer(resolve);
         return;
       }
       resolve("");
@@ -259,13 +270,14 @@ export class MisesService {
   }
 
   async setUserInfo(data: MUserInfo) {
+    console.log(data);
     try {
       const activeUser = this.activeUser;
       const userinfo = await activeUser.info();
       const version = userinfo.version.add(1);
       const { misesId, token, timestamp } = this.userInfo;
 
-      const info = await activeUser.setInfo({
+      await activeUser.setInfo({
         ...data,
         version,
       });
@@ -282,10 +294,10 @@ export class MisesService {
 
       this.storeUserInfo(updateUserInfo);
 
-      return info;
+      return true;
     } catch (error) {
       console.log(error, "error");
-      return false;
+      return Promise.reject(error);
     }
   }
 
@@ -296,6 +308,12 @@ export class MisesService {
     permissions,
   }: connectParmas & permissions) {
     try {
+      console.log({
+        domain,
+        appid,
+        userid,
+        permissions,
+      });
       await this.mises.misesAppMgr.ensureApp(appid, domain);
 
       const connect = await this.mises.misesSdk.connect(
@@ -394,7 +412,7 @@ export class MisesService {
   }
 
   async simulate(
-    messages: readonly Any[],
+    messages: readonly any[],
     memo: string | undefined,
     signer: PubKey,
     sequence: number
@@ -435,5 +453,42 @@ export class MisesService {
 
   sleep(ms = 3000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async misesAccount() {
+    try {
+      const nonce = new Date().getTime().toString();
+      const { auth } = await this.generateAuth(nonce);
+      console.log({
+        auth,
+        address: this.activeUser.address(),
+      });
+      return {
+        auth,
+        address: this.activeUser.address(),
+      };
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  async hasWalletAccount() {
+    const { setAccount } = await browser.storage.local.get("setAccount");
+    return !!setAccount;
+  }
+
+  async staking(params: any) {
+    console.log(params, "postTx:getParmas======");
+    const activeUser = this.activeUser;
+    const data = await activeUser.postTx(
+      params.msgs,
+      "",
+      params.gasFee,
+      params.gasLimit
+    );
+    if (data.code !== 0) {
+      return Promise.reject(data.rawLog);
+    }
+    return data;
   }
 }

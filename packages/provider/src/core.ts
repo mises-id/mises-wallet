@@ -14,7 +14,6 @@ import {
   StdSignature,
   DirectSignResponse,
   OfflineDirectSigner,
-  MisesSignResponse,
 } from "@keplr-wallet/types";
 import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
 import {
@@ -33,7 +32,14 @@ import {
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
   IsUnlockMsg,
-  MisesRequestSignAminoMsg,
+  MisesAccountMsg,
+  HasWalletAccountMsg,
+  DisconnectMsg,
+  ConnectMsg,
+  UserFollowMsg,
+  UserUnFollowMsg,
+  SetUserInfoMsg,
+  StakingMsg,
 } from "./types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 
@@ -43,6 +49,7 @@ import { CosmJSOfflineSigner, CosmJSOfflineSignerOnlyAmino } from "./cosmjs";
 import deepmerge from "deepmerge";
 import Long from "long";
 import { Buffer } from "buffer/";
+import { MisesWeb3Client } from "./mises";
 
 export class Keplr implements IKeplr {
   protected enigmaUtils: Map<string, SecretUtils> = new Map();
@@ -132,21 +139,7 @@ export class Keplr implements IKeplr {
       signDoc,
       deepmerge(this.defaultOptions.sign ?? {}, signOptions)
     );
-    return await this.requester.sendMessage(BACKGROUND_PORT, msg);
-  }
-
-  async signMisesAmino(
-    chainId: string,
-    signer: string,
-    signDoc: StdSignDoc,
-    signOptions: KeplrSignOptions = {}
-  ): Promise<MisesSignResponse> {
-    const msg = new MisesRequestSignAminoMsg(
-      chainId,
-      signer,
-      signDoc,
-      deepmerge(this.defaultOptions.sign ?? {}, signOptions)
-    );
+    console.log(chainId, signer, signDoc);
     return await this.requester.sendMessage(BACKGROUND_PORT, msg);
   }
 
@@ -383,5 +376,61 @@ export class Keplr implements IKeplr {
       ],
       memo: "",
     };
+  }
+
+  misesWeb3Client(): MisesWeb3Client {
+    return new MisesWeb3Client(this);
+  }
+
+  misesAccount() {
+    return this.requester.sendMessage(BACKGROUND_PORT, new MisesAccountMsg());
+  }
+
+  hasWalletAccount() {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new HasWalletAccountMsg()
+    );
+  }
+
+  disconnect(params: { userid: string; appid: string }) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new DisconnectMsg(params)
+    );
+  }
+
+  connect(params: {
+    userid: string;
+    appid: string;
+    domain: string;
+    permissions: string[];
+  }) {
+    return this.requester.sendMessage(BACKGROUND_PORT, new ConnectMsg(params));
+  }
+
+  userFollow(toUid: string) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new UserFollowMsg(toUid)
+    );
+  }
+
+  userUnFollow(toUid: string) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new UserUnFollowMsg(toUid)
+    );
+  }
+
+  setUserInfo(params: any) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new SetUserInfoMsg(params)
+    );
+  }
+
+  staking(params: any) {
+    return this.requester.sendMessage(BACKGROUND_PORT, new StakingMsg(params));
   }
 }

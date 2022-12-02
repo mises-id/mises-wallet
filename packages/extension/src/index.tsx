@@ -120,19 +120,11 @@ const StateRenderer: FunctionComponent = observer(() => {
   } else if (keyRingStore.status === KeyRingStatus.LOCKED) {
     return <LockPage />;
   } else if (keyRingStore.status === KeyRingStatus.EMPTY) {
-    browser.tabs.create({
-      url: "/popup.html#/register",
-    });
-    window.close();
-    return (
-      <div style={{ height: "100%" }}>
-        <Banner
-          icon={require("./public/assets/logo-256.png")}
-          logo={require("./public/assets/brand-text.png")}
-          subtitle="Wallet for the Interchain"
-        />
-      </div>
-    );
+    // browser.tabs.create({
+    //   url: "/popup.html#/register",
+    // });
+    // window.close();
+    return <RegisterPage />;
   } else if (keyRingStore.status === KeyRingStatus.NOTLOADED) {
     return (
       <div style={{ height: "100%" }}>

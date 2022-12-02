@@ -1,6 +1,8 @@
-import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
+import { DeliverTxResponse } from "@cosmjs/stargate";
 import { KeplrError, Message } from "@keplr-wallet/router";
+import { MisesAccountData } from "@keplr-wallet/types";
 import Long from "long";
+import { MUserInfo } from "mises-js-sdk/dist/types/muser";
 import { PubKey } from "secretjs/types/types";
 import { ROUTE } from "./constants";
 
@@ -173,7 +175,7 @@ export class RewardsMsg extends Message<any> {
   }
 }
 
-export class AuthAccountsMsg extends Message<Any | null> {
+export class AuthAccountsMsg extends Message<any> {
   public static type() {
     return "auth-accounts";
   }
@@ -228,14 +230,14 @@ export class BroadcastTxMsg extends Message<any> {
 }
 
 export class SimulateMsg extends Message<{
-  gasUsed: Long.Long;
+  gasUsed: any;
 }> {
   public static type() {
     return "simulate";
   }
 
   constructor(
-    public readonly messages: Any[],
+    public readonly messages: any[],
     public readonly memo: string | undefined,
     public readonly signer: PubKey,
     public readonly sequence: number
@@ -265,5 +267,226 @@ export class SimulateMsg extends Message<{
 
   type(): string {
     return SimulateMsg.type();
+  }
+}
+export class MisesAccountMsg extends Message<MisesAccountData> {
+  public static type() {
+    return "mises-account";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return MisesAccountMsg.type();
+  }
+}
+export class HasWalletAccountMsg extends Message<boolean> {
+  public static type() {
+    return "has-wallet-account";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return HasWalletAccountMsg.type();
+  }
+}
+
+export class DisconnectMsg extends Message<boolean> {
+  public static type() {
+    return "disconnect";
+  }
+  constructor(
+    public readonly params: {
+      readonly appid: string;
+      readonly userid: string;
+    }
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params.appid) {
+      throw new KeplrError("appid", 101, "appid is empty");
+    }
+    if (!this.params.userid) {
+      throw new KeplrError("userid", 101, "userid is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return DisconnectMsg.type();
+  }
+}
+
+export class ConnectMsg extends Message<string | false> {
+  public static type() {
+    return "connect";
+  }
+  constructor(
+    public readonly params: {
+      readonly appid: string;
+      readonly userid: string;
+      readonly domain: string;
+      readonly permissions: string[];
+    }
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params.appid) {
+      throw new KeplrError("appid", 101, "appid is empty");
+    }
+    if (!this.params.userid) {
+      throw new KeplrError("userid", 101, "userid is empty");
+    }
+    if (!this.params.domain) {
+      throw new KeplrError("domain", 101, "domain is empty");
+    }
+    if (!this.params.permissions) {
+      throw new KeplrError("permissions", 101, "permissions is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return ConnectMsg.type();
+  }
+}
+
+export class UserFollowMsg extends Message<void> {
+  public static type() {
+    return "userFollow";
+  }
+  constructor(public readonly toUid: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.toUid) {
+      throw new KeplrError("toUid", 101, "toUid is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return UserFollowMsg.type();
+  }
+}
+
+export class UserUnFollowMsg extends Message<void> {
+  public static type() {
+    return "userUnFollow";
+  }
+  constructor(public readonly toUid: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.toUid) {
+      throw new KeplrError("toUid", 101, "toUid is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return UserUnFollowMsg.type();
+  }
+}
+
+export class SetUserInfoMsg extends Message<boolean> {
+  public static type() {
+    return "set-user-info";
+  }
+  constructor(public readonly params: MUserInfo) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params) {
+      throw new KeplrError("params", 101, "params is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return SetUserInfoMsg.type();
+  }
+}
+export class StakingMsg extends Message<DeliverTxResponse> {
+  public static type() {
+    return "staking";
+  }
+  constructor(public readonly params: any) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.params) {
+      throw new KeplrError("params", 101, "params is empty");
+    }
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return StakingMsg.type();
   }
 }

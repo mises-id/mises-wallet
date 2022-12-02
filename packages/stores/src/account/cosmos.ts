@@ -13,7 +13,6 @@ import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
 import {
   AuthInfo,
   Fee,
-  SignerInfo,
   TxBody,
   TxRaw,
 } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
@@ -31,7 +30,6 @@ import { MsgWithdrawDelegatorReward } from "@keplr-wallet/proto-types/cosmos/dis
 import { MsgVote } from "@keplr-wallet/proto-types/cosmos/gov/v1beta1/tx";
 import { VoteOption } from "@keplr-wallet/proto-types/cosmos/gov/v1beta1/gov";
 import {
-  BaseAccount,
   Bech32Address,
   ChainIdHelper,
   EthermintChainIdHelper,
@@ -481,6 +479,9 @@ export class CosmosAccountImpl {
     const result = await this.txOpts.misesStore.authAccounts(
       this.base.bech32Address
     );
+    if (!result) {
+      throw new Error("not found account");
+    }
     const account = accountFromAny(result);
 
     const useEthereumSign =
@@ -676,7 +677,7 @@ export class CosmosAccountImpl {
    */
   async simulateTx(
     msgs: Any[],
-    fee: Omit<StdFee, "gas">,
+    _fee: Omit<StdFee, "gas">,
     memo: string = ""
   ): Promise<{
     gasUsed: number;

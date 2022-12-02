@@ -61,10 +61,6 @@ export interface AminoSignResponse {
   readonly signature: StdSignature;
 }
 
-export interface MisesSignResponse {
-  readonly txHash: string;
-}
-
 export interface SignDoc {
   /**
    * body_bytes is protobuf serialization of a TxBody that matches the
@@ -142,4 +138,32 @@ export interface OfflineAminoSigner {
     signerAddress: string,
     signDoc: StdSignDoc
   ) => Promise<AminoSignResponse>;
+}
+export interface MisesAccountData {
+  /** A printable address (typically bech32 encoded) */
+  readonly address: string;
+  readonly auth: string;
+}
+export interface MisesWeb3Client {
+  /**
+   * Get AccountData array from wallet. Rejects if not enabled.
+   */
+  readonly misesAccount: () => Promise<MisesAccountData>;
+
+  readonly hasWalletAccount: () => Promise<boolean>;
+
+  disconnect(params: { userid: string; appid: string }): Promise<boolean>;
+
+  readonly connect: (params: {
+    userid: string;
+    appid: string;
+    domain: string;
+    permissions: string[];
+  }) => Promise<string | false>;
+
+  readonly userFollow: (toUid: string) => Promise<void>;
+
+  readonly userUnFollow: (toUid: string) => Promise<void>;
+
+  readonly setUserInfo: (params: any) => Promise<boolean>;
 }

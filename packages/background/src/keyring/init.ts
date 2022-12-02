@@ -25,7 +25,6 @@ import {
   RequestSignEIP712CosmosTxMsg_v0,
   InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
-  MisesRequestSignAminoMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -47,7 +46,6 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(IsUnlockMsg);
   router.registerMessage(GetKeyMsg);
   router.registerMessage(RequestSignAminoMsg);
-  router.registerMessage(MisesRequestSignAminoMsg);
   router.registerMessage(RequestVerifyADR36AminoSignDoc);
   router.registerMessage(RequestSignDirectMsg);
   router.registerMessage(GetMultiKeyStoreInfoMsg);

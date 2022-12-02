@@ -15,7 +15,7 @@ import {
   StdTx,
   DirectSignResponse,
   OfflineDirectSigner,
-  MisesSignResponse,
+  MisesAccountData,
 } from "@keplr-wallet/types";
 import { Result, JSONUint8Array } from "@keplr-wallet/router";
 import { SecretUtils } from "secretjs/types/enigmautils";
@@ -23,6 +23,7 @@ import { KeplrEnigmaUtils } from "./enigma";
 import { CosmJSOfflineSigner, CosmJSOfflineSignerOnlyAmino } from "./cosmjs";
 import deepmerge from "deepmerge";
 import Long from "long";
+import { MisesWeb3Client } from "./mises";
 
 export interface ProxyRequest {
   type: "proxy-request";
@@ -76,6 +77,11 @@ export function injectKeplrToWindow(keplr: IKeplr): void {
     window,
     "getEnigmaUtils",
     keplr.getEnigmaUtils
+  );
+  defineUnwritablePropertyIfPossible(
+    window,
+    "MisesWeb3Client",
+    keplr.misesWeb3Client
   );
 }
 
@@ -198,7 +204,7 @@ export class InjectedKeplr implements IKeplr {
         };
 
         eventListener.postMessage(proxyResponse);
-      } catch (e) {
+      } catch (e: any) {
         const proxyResponse: ProxyRequestResponse = {
           type: "proxy-request-response",
           id: message.id,
@@ -212,7 +218,10 @@ export class InjectedKeplr implements IKeplr {
     });
   }
 
-  protected requestMethod(method: keyof IKeplr, args: any[]): Promise<any> {
+  protected requestMethod<T = any>(
+    method: keyof IKeplr,
+    args: any[]
+  ): Promise<T> {
     const bytes = new Uint8Array(8);
     const id: string = Array.from(crypto.getRandomValues(bytes))
       .map((value) => {
@@ -367,20 +376,6 @@ export class InjectedKeplr implements IKeplr {
     signOptions: KeplrSignOptions = {}
   ): Promise<AminoSignResponse> {
     return await this.requestMethod("signAmino", [
-      chainId,
-      signer,
-      signDoc,
-      deepmerge(this.defaultOptions.sign ?? {}, signOptions),
-    ]);
-  }
-
-  async signMisesAmino(
-    chainId: string,
-    signer: string,
-    signDoc: StdSignDoc,
-    signOptions: KeplrSignOptions = {}
-  ): Promise<MisesSignResponse> {
-    return await this.requestMethod("signMisesAmino", [
       chainId,
       signer,
       signDoc,
@@ -579,5 +574,46 @@ export class InjectedKeplr implements IKeplr {
       signDoc,
       deepmerge(this.defaultOptions.sign ?? {}, signOptions),
     ]);
+  }
+
+  misesWeb3Client(): MisesWeb3Client {
+    return new MisesWeb3Client(this);
+  }
+
+  misesAccount(): Promise<MisesAccountData> {
+    return this.requestMethod<MisesAccountData>("misesAccount", []);
+  }
+
+  hasWalletAccount(): Promise<boolean> {
+    return this.requestMethod<boolean>("hasWalletAccount", []);
+  }
+
+  disconnect(params: { userid: string; appid: string }): Promise<boolean> {
+    return this.requestMethod<boolean>("disconnect", [params]);
+  }
+
+  connect(params: {
+    userid: string;
+    appid: string;
+    domain: string;
+    permissions: string[];
+  }): Promise<string | false> {
+    return this.requestMethod<string | false>("connect", [params]);
+  }
+
+  userFollow(toUid: string): Promise<void> {
+    return this.requestMethod<void>("userFollow", [toUid]);
+  }
+
+  userUnFollow(toUid: string): Promise<void> {
+    return this.requestMethod<void>("userUnFollow", [toUid]);
+  }
+
+  setUserInfo(params: any): Promise<boolean> {
+    return this.requestMethod<boolean>("setUserInfo", [params]);
+  }
+
+  staking(params: any): Promise<any> {
+    return this.requestMethod<any>("staking", [params]);
   }
 }

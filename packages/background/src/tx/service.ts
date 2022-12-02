@@ -1,8 +1,11 @@
+import Axios from "axios";
 import { ChainsService } from "../chains";
 import { PermissionService } from "../permission";
+import { TendermintTxTracer } from "@keplr-wallet/cosmos";
 import { Notification } from "./types";
-
 import { MisesService } from "../mises";
+
+import { Buffer } from "buffer/";
 
 interface CosmosSdkError {
   codespace: string;
@@ -36,14 +39,42 @@ export class BackgroundTxService {
     tx: unknown,
     mode: "async" | "sync" | "block"
   ): Promise<Uint8Array> {
-    // const chainInfo = await this.chainsService.getChainInfo(chainId);
-    console.log(chainId);
+    const chainInfo = await this.chainsService.getChainInfo(chainId);
+    const restInstance = Axios.create({
+      ...{
+        baseURL: chainInfo.rest,
+      },
+      ...chainInfo.restConfig,
+    });
 
     this.notification.create({
       iconRelativeUrl: "assets/logo-256.png",
       title: "Tx is pending...",
       message: "Wait a second",
     });
+
+    const isProtoTx = Buffer.isBuffer(tx) || tx instanceof Uint8Array;
+
+    const params = isProtoTx
+      ? {
+          tx_bytes: Buffer.from(tx as any).toString("base64"),
+          mode: (() => {
+            switch (mode) {
+              case "async":
+                return "BROADCAST_MODE_ASYNC";
+              case "block":
+                return "BROADCAST_MODE_BLOCK";
+              case "sync":
+                return "BROADCAST_MODE_SYNC";
+              default:
+                return "BROADCAST_MODE_UNSPECIFIED";
+            }
+          })(),
+        }
+      : {
+          tx,
+          mode: mode,
+        };
 
     try {
       const result = await this.misesService.broadcastTx(
@@ -109,7 +140,7 @@ export class BackgroundTxService {
         // TODO: Let users know the tx id?
         message: "Congratulations!",
       });
-    } catch (e: any) {
+    } catch (e) {
       BackgroundTxService.processTxErrorNotification(notification, e);
     }
   }
