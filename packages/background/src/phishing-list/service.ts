@@ -21,7 +21,7 @@ class IntervalFetcher<R> {
   }
 
   start() {
-    this.fetch();
+    // this.fetch();
   }
 
   stop() {

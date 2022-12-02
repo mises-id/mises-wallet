@@ -7,4 +7,7 @@ export class ObservableQueryMintingInfation extends ObservableChainQuery<Minting
   constructor(kvStore: KVStore, chainId: string, chainGetter: ChainGetter) {
     super(kvStore, chainId, chainGetter, "/cosmos/mint/v1beta1/inflation");
   }
+  protected canFetch(): boolean {
+    return false;
+  }
 }

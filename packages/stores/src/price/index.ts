@@ -267,9 +267,10 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
   }
 
   protected canFetch(): boolean {
-    return (
-      this._coinIds.values.length > 0 && this._vsCurrencies.values.length > 0
-    );
+    // return (
+    //   this._coinIds.values.length > 0 && this._vsCurrencies.values.length > 0
+    // );
+    return false;
   }
 
   protected async fetchResponse(

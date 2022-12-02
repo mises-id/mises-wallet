@@ -52,10 +52,7 @@ export const StakeView: FunctionComponent = observer(() => {
 
         let gas: number;
         try {
-          // Gas adjustment is 1.5
-          // Since there is currently no convenient way to adjust the gas adjustment on the UI,
-          // Use high gas adjustment to prevent failure.
-          gas = (await tx.simulate()).gasUsed * 10;
+          gas = (await tx.simulate()).gasUsed;
         } catch (e) {
           console.log(e);
 
