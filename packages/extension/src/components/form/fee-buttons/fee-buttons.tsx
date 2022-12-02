@@ -30,7 +30,6 @@ import {
   NotLoadedFeeError,
 } from "@keplr-wallet/hooks";
 import { CoinGeckoPriceStore } from "@keplr-wallet/stores";
-import { useLanguage } from "../../../languages";
 import { FormattedMessage, useIntl } from "react-intl";
 import { GasInput } from "../gas-input";
 import { action, autorun, makeObservable, observable } from "mobx";
@@ -295,10 +294,8 @@ export const FeeButtonsInner: FunctionComponent<
 > = observer(
   ({
     feeConfig,
-    priceStore,
     label,
     feeSelectLabels = { low: "Low", average: "Average", high: "High" },
-    feeButtonState,
     gasSimulator,
   }) => {
     useEffect(() => {
@@ -315,8 +312,6 @@ export const FeeButtonsInner: FunctionComponent<
       return `input-${Buffer.from(bytes).toString("hex")}`;
     });
 
-    const language = useLanguage();
-
     // For chains without feeCurrencies, Keplr assumes tx doesn’t need to include information about the fee and the fee button does not have to be rendered.
     // The architecture is designed so that fee button is not rendered if the parental component doesn’t have a feeCurrency.
     // However, because there may be situations where the fee buttons is rendered before the chain information is changed,
@@ -328,8 +323,6 @@ export const FeeButtonsInner: FunctionComponent<
     if (!feeConfig.feeCurrency) {
       return <React.Fragment />;
     }
-
-    const fiatCurrency = language.fiatCurrency;
 
     const lowFee = feeConfig.getFeeTypePretty("low");
     // const lowFeePrice = priceStore.calculatePrice(lowFee, fiatCurrency);

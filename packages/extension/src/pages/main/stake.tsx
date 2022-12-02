@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent } from "react";
 
 import { Button } from "reactstrap";
 
@@ -10,20 +10,12 @@ import styleStake from "./stake.module.scss";
 import classnames from "classnames";
 import { Dec } from "@keplr-wallet/unit";
 
-import { useNotification } from "../../components/notification";
-
-import { useHistory } from "react-router";
-
 import { FormattedMessage } from "react-intl";
-import { DefaultGasMsgWithdrawRewards } from "../../config.ui";
 
 export const StakeView: FunctionComponent = observer(() => {
-  const history = useHistory();
   const { chainStore, accountStore, queriesStore, analyticsStore } = useStore();
   const accountInfo = accountStore.getAccount(chainStore.current.chainId);
   const queries = queriesStore.get(chainStore.current.chainId);
-
-  const notification = useNotification();
 
   const inflation = queries.cosmos.queryInflation;
   const rewards = queries.cosmos.queryRewards.getQueryBech32Address(
@@ -33,70 +25,70 @@ export const StakeView: FunctionComponent = observer(() => {
 
   const isRewardExist = rewards.rewards.length > 0;
 
-  const [isWithdrawingRewards, setIsWithdrawingRewards] = useState(false);
+  // const [isWithdrawingRewards, setIsWithdrawingRewards] = useState(false);
 
-  const withdrawAllRewards = async () => {
-    if (accountInfo.isReadyToSendMsgs) {
-      try {
-        setIsWithdrawingRewards(true);
+  // const withdrawAllRewards = async () => {
+  //   if (accountInfo.isReadyToSendMsgs) {
+  //     try {
+  //       setIsWithdrawingRewards(true);
 
-        // When the user delegated too many validators,
-        // it can't be sent to withdraw rewards from all validators due to the block gas limit.
-        // So, to prevent this problem, just send the msgs up to 8.
-        const validatorAddresses = rewards.getDescendingPendingRewardValidatorAddresses(
-          8
-        );
-        const tx = accountInfo.cosmos.makeWithdrawDelegationRewardTx(
-          validatorAddresses
-        );
+  //       // When the user delegated too many validators,
+  //       // it can't be sent to withdraw rewards from all validators due to the block gas limit.
+  //       // So, to prevent this problem, just send the msgs up to 8.
+  //       const validatorAddresses = rewards.getDescendingPendingRewardValidatorAddresses(
+  //         8
+  //       );
+  //       const tx = accountInfo.cosmos.makeWithdrawDelegationRewardTx(
+  //         validatorAddresses
+  //       );
 
-        let gas: number;
-        try {
-          // Gas adjustment is 1.5
-          // Since there is currently no convenient way to adjust the gas adjustment on the UI,
-          // Use high gas adjustment to prevent failure.
-          gas = (await tx.simulate()).gasUsed * 1.5;
-        } catch (e) {
-          console.log(e);
+  //       let gas: number;
+  //       try {
+  //         // Gas adjustment is 1.5
+  //         // Since there is currently no convenient way to adjust the gas adjustment on the UI,
+  //         // Use high gas adjustment to prevent failure.
+  //         gas = (await tx.simulate()).gasUsed * 1.5;
+  //       } catch (e) {
+  //         console.log(e);
 
-          gas = DefaultGasMsgWithdrawRewards * validatorAddresses.length;
-        }
+  //         gas = DefaultGasMsgWithdrawRewards * validatorAddresses.length;
+  //       }
 
-        await tx.send(
-          {
-            amount: [],
-            gas: gas.toString(),
-          },
-          "",
-          undefined,
-          {
-            onBroadcasted: () => {
-              analyticsStore.logEvent("Claim reward tx broadcasted", {
-                chainId: chainStore.current.chainId,
-                chainName: chainStore.current.chainName,
-              });
-            },
-          }
-        );
+  //       await tx.send(
+  //         {
+  //           amount: [],
+  //           gas: gas.toString(),
+  //         },
+  //         "",
+  //         undefined,
+  //         {
+  //           onBroadcasted: () => {
+  //             analyticsStore.logEvent("Claim reward tx broadcasted", {
+  //               chainId: chainStore.current.chainId,
+  //               chainName: chainStore.current.chainName,
+  //             });
+  //           },
+  //         }
+  //       );
 
-        history.replace("/");
-      } catch (e: any) {
-        history.replace("/");
-        notification.push({
-          type: "warning",
-          placement: "top-center",
-          duration: 5,
-          content: `Fail to withdraw rewards: ${e.message}`,
-          canDelete: true,
-          transition: {
-            duration: 0.25,
-          },
-        });
-      } finally {
-        setIsWithdrawingRewards(false);
-      }
-    }
-  };
+  //       history.replace("/");
+  //     } catch (e: any) {
+  //       history.replace("/");
+  //       notification.push({
+  //         type: "warning",
+  //         placement: "top-center",
+  //         duration: 5,
+  //         content: `Fail to withdraw rewards: ${e.message}`,
+  //         canDelete: true,
+  //         transition: {
+  //           duration: 0.25,
+  //         },
+  //       });
+  //     } finally {
+  //       setIsWithdrawingRewards(false);
+  //     }
+  //   }
+  // };
 
   return (
     <div>
