@@ -18,6 +18,7 @@ import {
   DistributionExtension,
   QueryClient,
   StakingExtension,
+  TimeoutError,
   TxExtension,
 } from "@cosmjs/stargate";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
@@ -51,10 +52,13 @@ type getTokenParams = {
   referrer: string;
 };
 
-type broadcastTxRes = {
+type DeliverTxResponse = {
   code: number;
-  log: string;
-  hash: Uint8Array;
+  height: Long.Long;
+  rawLog: string;
+  transactionHash: string;
+  gasUsed: Long.Long;
+  gasWanted: Long.Long;
 };
 
 interface TxResponse {
@@ -363,7 +367,7 @@ export class MisesService {
   }
 
   getBalanceUMIS() {
-    return this.activeUser.getBalanceUMIS();
+    return this.activeUser?.getBalanceUMIS();
   }
 
   recentTransactions(formHeight: number | undefined) {
@@ -390,27 +394,56 @@ export class MisesService {
     return this.queryClient.auth.account(address);
   }
 
-  broadcastTx(tx: Uint8Array, mode: string) {
-    switch (mode) {
-      case "async":
-        return (this.tmClient.broadcastTxAsync({
-          tx,
-        }) as unknown) as broadcastTxRes;
-      case "block":
-        return (this.tmClient.broadcastTxCommit({
-          tx,
-        }) as unknown) as broadcastTxRes;
-      case "sync":
-        return (this.tmClient.broadcastTxSync({
-          tx,
-        }) as unknown) as broadcastTxRes;
-      default:
-        return (this.tmClient.broadcastTxCommit({
-          tx,
-        }) as unknown) as broadcastTxRes;
-    }
-  }
+  public async broadcastTx(
+    tx: Uint8Array,
+    timeoutMs: number = 30000,
+    pollIntervalMs: number = 3000
+  ): Promise<DeliverTxResponse> {
+    let timedOut = false;
+    const txPollTimeout = setTimeout(() => {
+      timedOut = true;
+    }, timeoutMs);
 
+    const pollForTx = async (txId: string): Promise<DeliverTxResponse> => {
+      if (timedOut) {
+        throw new TimeoutError(
+          `Transaction with ID ${txId} was submitted but was not yet found on the chain. You might want to check later.`,
+          txId
+        );
+      }
+      await this.sleep(pollIntervalMs);
+      const result = await this.getTx(txId);
+      return result
+        ? {
+            code: result.code,
+            height: result.height,
+            rawLog: result.rawLog,
+            transactionHash: txId,
+            gasUsed: result.gasUsed,
+            gasWanted: result.gasWanted,
+          }
+        : pollForTx(txId);
+    };
+    const broadcasted = await this.tmClient.broadcastTxSync({ tx });
+    if (broadcasted.code) {
+      throw new Error(
+        `Broadcasting transaction failed with code ${broadcasted.code} (codespace: ${broadcasted.codeSpace}). Log: ${broadcasted.log}`
+      );
+    }
+    const transactionId = this.toHex(broadcasted.hash).toUpperCase();
+    return new Promise((resolve, reject) =>
+      pollForTx(transactionId).then(
+        (value) => {
+          clearTimeout(txPollTimeout);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(txPollTimeout);
+          reject(error);
+        }
+      )
+    );
+  }
   async simulate(
     messages: readonly any[],
     memo: string | undefined,
@@ -440,15 +473,9 @@ export class MisesService {
     return out;
   }
 
-  async getTx(hash: string): Promise<TxResponse> {
-    await this.sleep();
-
+  async getTx(hash: string): Promise<TxResponse | undefined> {
     const { txResponse } = await this.queryClient.tx.getTx(hash);
-    if (txResponse) {
-      return txResponse;
-    }
-
-    return await this.getTx(hash);
+    return txResponse;
   }
 
   sleep(ms = 3000) {

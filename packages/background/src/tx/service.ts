@@ -1,9 +1,8 @@
 import Axios from "axios";
 import { ChainsService } from "../chains";
 import { PermissionService } from "../permission";
-import { TendermintTxTracer } from "@keplr-wallet/cosmos";
-import { Notification } from "./types";
 import { MisesService } from "../mises";
+import { Notification } from "./types";
 
 import { Buffer } from "buffer/";
 
@@ -77,31 +76,22 @@ export class BackgroundTxService {
         };
 
     try {
-      const result = await this.misesService.broadcastTx(
-        tx as Uint8Array,
-        mode
-      );
+      // const result = await restInstance.post(
+      //   isProtoTx ? "/cosmos/tx/v1beta1/txs" : "/txs",
+      //   params
+      // );
+      const txResponse = await this.misesService.broadcastTx(tx as any);
 
-      if (result.code != null && result.code !== 0) {
-        throw new Error(result.log);
+      if (txResponse.code != null && txResponse.code !== 0) {
+        throw new Error(txResponse["rawLog"]);
       }
 
-      const txHash = result.hash;
+      const txHash = Buffer.from(txResponse.transactionHash, "hex");
 
-      const hash = this.misesService.toHex(txHash);
-
-      this.misesService.getTx(hash).then((txResult) => {
-        BackgroundTxService.processTxResultNotification(
-          this.notification,
-          txResult
-        );
-      });
-      // const txTracer = new TendermintTxTracer(chainInfo.rpc, "/websocket");
-      // txTracer.traceTx(txHash).then((tx) => {
-      //   txTracer.close();
-      //   BackgroundTxService.processTxResultNotification(this.notification, tx);
-      // });
-      // this.misesService.getTx()
+      BackgroundTxService.processTxResultNotification(
+        this.notification,
+        txResponse
+      );
 
       return txHash;
     } catch (e: any) {
@@ -129,7 +119,7 @@ export class BackgroundTxService {
       } else {
         if (result.code != null && result.code !== 0) {
           // XXX: Hack of the support of the stargate.
-          const log = result.log ?? (result as any)["raw_log"];
+          const log = result.log ?? (result as any)["rawLog"];
           throw new Error(log);
         }
       }
@@ -140,7 +130,7 @@ export class BackgroundTxService {
         // TODO: Let users know the tx id?
         message: "Congratulations!",
       });
-    } catch (e) {
+    } catch (e: any) {
       BackgroundTxService.processTxErrorNotification(notification, e);
     }
   }

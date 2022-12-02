@@ -52,7 +52,10 @@ export const StakeView: FunctionComponent = observer(() => {
 
         let gas: number;
         try {
-          gas = (await tx.simulate()).gasUsed;
+          // Gas adjustment is 1.5
+          // Since there is currently no convenient way to adjust the gas adjustment on the UI,
+          // Use high gas adjustment to prevent failure.
+          gas = (await tx.simulate()).gasUsed * 1.5;
         } catch (e) {
           console.log(e);
 
@@ -131,19 +134,19 @@ export const StakeView: FunctionComponent = observer(() => {
             </div>
             <div style={{ flex: 1 }} />
             {
-              <Button
-                className={styleStake.button}
-                color="primary"
-                size="sm"
-                disabled={!accountInfo.isReadyToSendMsgs}
-                onClick={withdrawAllRewards}
-                data-loading={
-                  accountInfo.isSendingMsg === "withdrawRewards" ||
-                  isWithdrawingRewards
-                }
-              >
-                <FormattedMessage id="main.stake.button.claim-rewards" />
-              </Button>
+              // <Button
+              //   className={styleStake.button}
+              //   color="primary"
+              //   size="sm"
+              //   disabled={!accountInfo.isReadyToSendMsgs}
+              //   onClick={withdrawAllRewards}
+              //   data-loading={
+              //     accountInfo.isSendingMsg === "withdrawRewards" ||
+              //     isWithdrawingRewards
+              //   }
+              // >
+              //   <FormattedMessage id="main.stake.button.claim-rewards" />
+              // </Button>
             }
           </div>
           <hr className={styleStake.hr} />

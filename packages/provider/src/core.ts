@@ -139,7 +139,7 @@ export class Keplr implements IKeplr {
       signDoc,
       deepmerge(this.defaultOptions.sign ?? {}, signOptions)
     );
-    console.log(chainId, signer, signDoc);
+
     return await this.requester.sendMessage(BACKGROUND_PORT, msg);
   }
 

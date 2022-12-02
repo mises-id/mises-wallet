@@ -1,5 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo } from "react";
-import { AddressInput, CoinInput, MemoInput } from "../../components/form";
+import {
+  AddressInput,
+  CoinInput,
+  FeeButtons,
+  MemoInput,
+} from "../../components/form";
 import { useStore } from "../../stores";
 
 import { HeaderLayout } from "../../layouts";
@@ -45,7 +50,13 @@ export const SendPage: FunctionComponent = observer(() => {
 
   const notification = useNotification();
 
-  const { chainStore, accountStore, queriesStore, analyticsStore } = useStore();
+  const {
+    chainStore,
+    accountStore,
+    queriesStore,
+    analyticsStore,
+    priceStore,
+  } = useStore();
   const current = chainStore.current;
 
   const accountInfo = accountStore.getAccount(current.chainId);
@@ -96,8 +107,6 @@ export const SendPage: FunctionComponent = observer(() => {
       // Prefer not to use the gas config or fee config,
       // because gas simulator can change the gas config and fee config from the result of reaction,
       // and it can make repeated reaction.
-      console.log(sendConfigs.amountConfig.error);
-      console.log(sendConfigs.recipientConfig.error);
       if (
         sendConfigs.amountConfig.error != null ||
         sendConfigs.recipientConfig.error != null
@@ -279,7 +288,7 @@ export const SendPage: FunctionComponent = observer(() => {
               memoConfig={sendConfigs.memoConfig}
               label={intl.formatMessage({ id: "send.input.memo" })}
             />
-            {/* <FeeButtons
+            <FeeButtons
               feeConfig={sendConfigs.feeConfig}
               gasConfig={sendConfigs.gasConfig}
               priceStore={priceStore}
@@ -293,7 +302,7 @@ export const SendPage: FunctionComponent = observer(() => {
               }}
               gasLabel={intl.formatMessage({ id: "send.input.gas" })}
               gasSimulator={gasSimulator}
-            /> */}
+            />
           </div>
           <div style={{ flex: 1 }} />
           <Button

@@ -332,13 +332,13 @@ export const FeeButtonsInner: FunctionComponent<
     const fiatCurrency = language.fiatCurrency;
 
     const lowFee = feeConfig.getFeeTypePretty("low");
-    const lowFeePrice = priceStore.calculatePrice(lowFee, fiatCurrency);
+    // const lowFeePrice = priceStore.calculatePrice(lowFee, fiatCurrency);
 
     const averageFee = feeConfig.getFeeTypePretty("average");
-    const averageFeePrice = priceStore.calculatePrice(averageFee, fiatCurrency);
+    // const averageFeePrice = priceStore.calculatePrice(averageFee, fiatCurrency);
 
     const highFee = feeConfig.getFeeTypePretty("high");
-    const highFeePrice = priceStore.calculatePrice(highFee, fiatCurrency);
+    // const highFeePrice = priceStore.calculatePrice(highFee, fiatCurrency);
 
     let isFeeLoading = false;
 
@@ -384,7 +384,7 @@ export const FeeButtonsInner: FunctionComponent<
             }}
           >
             <div className={styleFeeButtons.title}>{feeSelectLabels.low}</div>
-            {lowFeePrice ? (
+            {/* {lowFeePrice ? (
               <div
                 className={classnames(styleFeeButtons.fiat, {
                   "text-muted": feeConfig.feeType !== "low",
@@ -392,7 +392,7 @@ export const FeeButtonsInner: FunctionComponent<
               >
                 {lowFeePrice.toString()}
               </div>
-            ) : null}
+            ) : null} */}
             <div
               className={classnames(styleFeeButtons.coin, {
                 "text-muted": feeConfig.feeType !== "low",
@@ -417,7 +417,7 @@ export const FeeButtonsInner: FunctionComponent<
             <div className={styleFeeButtons.title}>
               {feeSelectLabels.average}
             </div>
-            {averageFeePrice ? (
+            {/* {averageFeePrice ? (
               <div
                 className={classnames(styleFeeButtons.fiat, {
                   "text-muted": feeConfig.feeType !== "average",
@@ -425,7 +425,7 @@ export const FeeButtonsInner: FunctionComponent<
               >
                 {averageFeePrice.toString()}
               </div>
-            ) : null}
+            ) : null} */}
             <div
               className={classnames(styleFeeButtons.coin, {
                 "text-muted": feeConfig.feeType !== "average",
@@ -444,7 +444,7 @@ export const FeeButtonsInner: FunctionComponent<
             }}
           >
             <div className={styleFeeButtons.title}>{feeSelectLabels.high}</div>
-            {highFeePrice ? (
+            {/* {highFeePrice ? (
               <div
                 className={classnames(styleFeeButtons.fiat, {
                   "text-muted": feeConfig.feeType !== "high",
@@ -452,7 +452,7 @@ export const FeeButtonsInner: FunctionComponent<
               >
                 {highFeePrice.toString()}
               </div>
-            ) : null}
+            ) : null} */}
             <div
               className={classnames(styleFeeButtons.coin, {
                 "text-muted": feeConfig.feeType !== "high",
@@ -470,7 +470,7 @@ export const FeeButtonsInner: FunctionComponent<
         {errorText != null ? (
           <FormFeedback style={{ display: "block" }}>{errorText}</FormFeedback>
         ) : null}
-        <div style={{ position: "absolute", right: 0 }}>
+        {/* <div style={{ position: "absolute", right: 0 }}>
           <Button
             size="sm"
             color="link"
@@ -479,7 +479,6 @@ export const FeeButtonsInner: FunctionComponent<
               feeButtonState.setIsGasInputOpen(!feeButtonState.isGasInputOpen);
             }}
           >
-            {/* XXX: In fact, it is not only set gas, but fee currency can also be set depending on the option. */}
             {!feeButtonState.isGasInputOpen
               ? intl.formatMessage({
                   id: "input.fee.toggle.set-gas",
@@ -488,7 +487,7 @@ export const FeeButtonsInner: FunctionComponent<
                   id: "input.fee.toggle.set-gas.close",
                 })}
           </Button>
-        </div>
+        </div> */}
       </FormGroup>
     );
   }
