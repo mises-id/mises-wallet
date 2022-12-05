@@ -38,7 +38,7 @@ export class TokensStoreInner {
 
     // If key store in the keplr extension is changed, this event will be dispatched.
     // This is needed becuase the token such as secret20 exists according to the account.
-    this.eventListener.addEventListener("keplr_keystorechange", () => {
+    this.eventListener.addEventListener("mises_keystorechange", () => {
       this.refreshTokens();
     });
   }

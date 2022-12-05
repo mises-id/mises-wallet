@@ -4,9 +4,12 @@ import styleWelcome from "./welcome.module.scss";
 import { Button } from "reactstrap";
 
 import { useIntl } from "react-intl";
+import { useStore } from "../../stores";
 
 export const WelcomePage: FunctionComponent = () => {
   const intl = useIntl();
+
+  const { keyRingStore } = useStore();
 
   return (
     <div style={{ padding: "20px" }}>
@@ -24,15 +27,16 @@ export const WelcomePage: FunctionComponent = () => {
         color="primary"
         type="submit"
         size="lg"
-        onClick={() => {
+        onClick={async () => {
+          keyRingStore.changeKeyRing(keyRingStore.multiKeyStoreInfo.length - 1);
+
           if (typeof browser !== "undefined") {
-            browser.tabs.getCurrent().then((tab) => {
-              if (tab.id) {
-                browser.tabs.remove(tab.id);
-              } else {
-                window.close();
-              }
-            });
+            const tab = await browser.tabs.getCurrent();
+            if (tab.id) {
+              browser.tabs.remove(tab.id);
+            } else {
+              window.close();
+            }
           } else {
             window.close();
           }

@@ -19,7 +19,7 @@ By using Keplr's `EnigmaUtils`, you can use Keplr to encrypt/decrypt, and the de
 // Enabling before using the Keplr is recommended.
 // This method will ask the user whether or not to allow access if they haven't visited this website.
 // Also, it will request user to unlock the wallet if the wallet is locked.
-await window.keplr.enable(chainId);
+await window.mises.enable(chainId);
 
 const offlineSigner = window.getOfflineSigner(chainId);
 **const enigmaUtils = window.getEnigmaUtils(chainId);**

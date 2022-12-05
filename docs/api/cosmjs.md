@@ -17,7 +17,7 @@ You can connect Keplr to CosmJS using the `OfflineSigner`.
 // Enabling before using the Keplr is recommended.
 // This method will ask the user whether or not to allow access if they haven't visited this website.
 // Also, it will request user to unlock the wallet if the wallet is locked.
-await window.keplr.enable(chainId);
+await window.mises.enable(chainId);
 
 const offlineSigner = window.getOfflineSigner(chainId);
 
@@ -37,13 +37,13 @@ const cosmJS = new SigningCosmosClient(
 
 To get the `OfflineSigner`, you may use `keplr.getOfflineSigner(chainId)` or `window.getOfflineSigner(chainId)`. (`window.getOfflineSigner` is an alias that runs `keplr.getOfflineSigner` and returns the value)
 
-The `window.keplr.enable(chainId)` method will request the user to unlock their Keplr extension if it's locked. If the user has not given permission to connect their extension to the website, it will first ask to connect the website.
+The `window.mises.enable(chainId)` method will request the user to unlock their Keplr extension if it's locked. If the user has not given permission to connect their extension to the website, it will first ask to connect the website.
 
 If the user cancels the unlock or rejects the permission to connect, an error will be thrown.
 
 If the extension is already unlocked and the website has permission to connect, no action will happen and resolve.
 
-`window.keplr.enable(chainId)` is not mandatory. Even if the method wasn't called, if an API that requests access to Keplr is called the flow above will automatically run. However, it is recommended that `window.keplr.enable(chainId)` is first run.
+`window.mises.enable(chainId)` is not mandatory. Even if the method wasn't called, if an API that requests access to Keplr is called the flow above will automatically run. However, it is recommended that `window.mises.enable(chainId)` is first run.
 
 ## Types of Offline Signers
 
@@ -55,7 +55,7 @@ However, if the msg to be sent is able to be serialized/deserialized using Amino
 
 If you’d like to enforce the use of Amino, you can use the following APIs: `keplr.getOfflineSignerOnlyAmino(chainId)` or `window.getOfflineSignerOnlyAmino(chainId: string)`. Because this will always return an Amino compatible signer, any CosmJS requested msg that is Amino compatible will request an Amino SignDoc to Keplr.
 
-Also, `keplr.getOfflineSignerAuto(chainId: string): Promise<OfflineSigner | OfflineDirectSigner>` or `window.getOfflineSignerAuto(chainId: string): Promise<OfflineSigner | OfflineDirectSigner>` API is supported. Please note that the value returned is async. This API automatically returns a signer that only supports Amino if the account is a Ledger-based account, and returns a signer that is compatible for both Amino and Protobuf if the account is a mnemonic/private key-based account. Because this API is affected by the type of the connected Keplr account, if [keplr_keystorechange](./README.md#change-key-store-event) event is used to detect account changes the signer must be changed using the API when this event has been triggered.
+Also, `keplr.getOfflineSignerAuto(chainId: string): Promise<OfflineSigner | OfflineDirectSigner>` or `window.getOfflineSignerAuto(chainId: string): Promise<OfflineSigner | OfflineDirectSigner>` API is supported. Please note that the value returned is async. This API automatically returns a signer that only supports Amino if the account is a Ledger-based account, and returns a signer that is compatible for both Amino and Protobuf if the account is a mnemonic/private key-based account. Because this API is affected by the type of the connected Keplr account, if [mises_keystorechange](./README.md#change-key-store-event) event is used to detect account changes the signer must be changed using the API when this event has been triggered.
 
 ## Use with Stargate
 

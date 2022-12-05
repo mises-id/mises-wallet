@@ -48,9 +48,10 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
                 e.preventDefault();
                 analyticsStore.logEvent("Add additional account started");
 
-                browser.tabs.create({
-                  url: "/popup.html#/register",
-                });
+                // browser.tabs.create({
+                //   url: "/popup.html#/register",
+                // });
+                history.push("/register");
               }}
             >
               <i
@@ -108,7 +109,7 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
                         analyticsStore.logEvent("Account changed");
                         loadingIndicator.setIsLoading("keyring", false);
                         history.push("/");
-                      } catch (e) {
+                      } catch (e: any) {
                         console.log(`Failed to change keyring: ${e.message}`);
                         loadingIndicator.setIsLoading("keyring", false);
                       }

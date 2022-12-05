@@ -2,7 +2,7 @@ import { useLocation } from "react-router";
 
 import queryString from "querystring";
 
-import { disableScroll, fitPopupWindow } from "@keplr-wallet/popup";
+import { fitPopupWindow } from "@keplr-wallet/popup";
 import { useEffect, useRef } from "react";
 
 export const useInteractionInfo = (
@@ -28,9 +28,10 @@ export const useInteractionInfo = (
 
   useEffect(() => {
     if (result.interaction && !result.interactionInternal) {
-      if (!options.enableScroll) {
-        disableScroll();
-      }
+      // if (!options.enableScroll) {
+      //   disableScroll();
+      // }
+      console.log(options);
       fitPopupWindow();
     }
   }, [result.interaction, result.interactionInternal]);

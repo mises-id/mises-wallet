@@ -18,11 +18,6 @@ import {
   RecoverMnemonicPage,
   TypeRecoverMnemonic,
 } from "./mnemonic";
-import {
-  ImportLedgerIntro,
-  ImportLedgerPage,
-  TypeImportLedger,
-} from "./ledger";
 import { WelcomePage } from "./welcome";
 import { AdditionalSignInPrepend } from "../../config.ui";
 import classnames from "classnames";
@@ -63,17 +58,6 @@ export const RegisterPage: FunctionComponent = observer(() => {
       intro: RecoverMnemonicIntro,
       page: RecoverMnemonicPage,
     },
-    // Currently, there is no way to use ledger with keplr on firefox.
-    // Temporarily, hide the ledger usage.
-    ...(uiConfigStore.platform !== "firefox"
-      ? [
-          {
-            type: TypeImportLedger,
-            intro: ImportLedgerIntro,
-            page: ImportLedgerPage,
-          },
-        ]
-      : []),
   ]);
 
   return (

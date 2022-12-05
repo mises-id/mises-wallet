@@ -399,7 +399,7 @@ export class KeyRingStore {
   }
 
   protected dispatchKeyStoreChangeEvent() {
-    this.eventDispatcher.dispatchEvent("keplr_keystorechange");
+    this.eventDispatcher.dispatchEvent("mises_keystorechange");
 
     for (const listener of this.keyStoreChangedListeners) {
       listener();

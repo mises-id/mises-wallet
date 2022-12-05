@@ -164,7 +164,7 @@ export class AccountSetBase {
     if (!this.hasInited) {
       // If key store in the keplr extension is changed, this event will be dispatched.
       this.eventListener.addEventListener(
-        "keplr_keystorechange",
+        "mises_keystorechange",
         this.handleInit
       );
     }
@@ -223,7 +223,7 @@ export class AccountSetBase {
     this._walletStatus = WalletStatus.NotInit;
     this.hasInited = false;
     this.eventListener.removeEventListener(
-      "keplr_keystorechange",
+      "mises_keystorechange",
       this.handleInit
     );
     this._bech32Address = "";

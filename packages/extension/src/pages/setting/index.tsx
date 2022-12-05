@@ -100,7 +100,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             []
           )}
         />
-        <PageButton
+        {/* <PageButton
           title={intl.formatMessage({
             id: "setting.export-to-mobile",
           })}
@@ -113,7 +113,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             () => [<i key="next" className="fas fa-chevron-right" />],
             []
           )}
-        />
+        /> */}
         <PageButton
           title={intl.formatMessage({
             id: "setting.autolock",

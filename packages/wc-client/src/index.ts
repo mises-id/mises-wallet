@@ -175,7 +175,7 @@ export class KeplrWalletConnectV1 implements Keplr {
 
       if (hasChanged) {
         await this.saveAllLastSeenKey(lastSeenKeys);
-        window.dispatchEvent(new Event("keplr_keystorechange"));
+        window.dispatchEvent(new Event("mises_keystorechange"));
       }
     }
   };

@@ -367,6 +367,7 @@ export class MisesService {
   }
 
   getBalanceUMIS() {
+    console.log(this.activeUser);
     return this.activeUser?.getBalanceUMIS();
   }
 
@@ -411,8 +412,11 @@ export class MisesService {
           txId
         );
       }
+
       await this.sleep(pollIntervalMs);
+
       const result = await this.getTx(txId);
+
       return result
         ? {
             code: result.code,
