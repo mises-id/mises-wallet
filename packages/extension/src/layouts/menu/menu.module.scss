@@ -6,7 +6,7 @@
   left: 0;
   padding-top: $header-height;
 
-  width: $popup-size-width * 0.75;
+  width: calc($popup-size-width * 0.75);
   height: 100%;
   z-index: 900;
 

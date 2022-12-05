@@ -1,4 +1,3 @@
-import Axios from "axios";
 import { ChainsService } from "../chains";
 import { PermissionService } from "../permission";
 import { MisesService } from "../mises";
@@ -34,46 +33,46 @@ export class BackgroundTxService {
   }
 
   async sendTx(
-    chainId: string,
+    _chainId: string,
     tx: unknown,
-    mode: "async" | "sync" | "block"
+    _mode: "async" | "sync" | "block"
   ): Promise<Uint8Array> {
-    const chainInfo = await this.chainsService.getChainInfo(chainId);
-    const restInstance = Axios.create({
-      ...{
-        baseURL: chainInfo.rest,
-      },
-      ...chainInfo.restConfig,
-    });
-
+    // const chainInfo = await this.chainsService.getChainInfo(chainId);
+    // const restInstance = Axios.create({
+    //   ...{
+    //     baseURL: chainInfo.rest,
+    //   },
+    //   ...chainInfo.restConfig,
+    // });
+    console.log(_mode);
     this.notification.create({
       iconRelativeUrl: "assets/logo-256.png",
       title: "Tx is pending...",
       message: "Wait a second",
     });
 
-    const isProtoTx = Buffer.isBuffer(tx) || tx instanceof Uint8Array;
+    // const isProtoTx = Buffer.isBuffer(tx) || tx instanceof Uint8Array;
 
-    const params = isProtoTx
-      ? {
-          tx_bytes: Buffer.from(tx as any).toString("base64"),
-          mode: (() => {
-            switch (mode) {
-              case "async":
-                return "BROADCAST_MODE_ASYNC";
-              case "block":
-                return "BROADCAST_MODE_BLOCK";
-              case "sync":
-                return "BROADCAST_MODE_SYNC";
-              default:
-                return "BROADCAST_MODE_UNSPECIFIED";
-            }
-          })(),
-        }
-      : {
-          tx,
-          mode: mode,
-        };
+    // const params = isProtoTx
+    //   ? {
+    //       tx_bytes: Buffer.from(tx as any).toString("base64"),
+    //       mode: (() => {
+    //         switch (mode) {
+    //           case "async":
+    //             return "BROADCAST_MODE_ASYNC";
+    //           case "block":
+    //             return "BROADCAST_MODE_BLOCK";
+    //           case "sync":
+    //             return "BROADCAST_MODE_SYNC";
+    //           default:
+    //             return "BROADCAST_MODE_UNSPECIFIED";
+    //         }
+    //       })(),
+    //     }
+    //   : {
+    //       tx,
+    //       mode: mode,
+    //     };
 
     try {
       // const result = await restInstance.post(

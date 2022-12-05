@@ -1,6 +1,6 @@
 $background-color: #fafbfd;
 
-$popup-size-width: 360px;
+$popup-size-width: var(--popup-size-width);
 $popup-size-height: 580px;
 
 $header-height: 64px;
@@ -9,3 +9,19 @@ $layout-padding: 12px;
 $layout-margin: 12px;
 
 $main-card-padding: 16px;
+
+@media screen and (min-width: 680px) {
+  :root{
+    --popup-size-width: 360px;
+    --large-container-width: 420px;
+    --container-width: 420px;
+  }
+}
+
+@media screen and (max-width: 659px) {
+  :root{
+    --popup-size-width: 100vw;
+    --large-container-width: 100vw;
+    --container-width: 100vw;
+  }
+}

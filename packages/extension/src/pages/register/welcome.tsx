@@ -9,7 +9,7 @@ export const WelcomePage: FunctionComponent = () => {
   const intl = useIntl();
 
   return (
-    <div style={{ paddingTop: "20px" }}>
+    <div style={{ padding: "20px" }}>
       <div className={styleWelcome.title}>
         {intl.formatMessage({
           id: "register.welcome.title",

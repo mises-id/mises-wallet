@@ -206,7 +206,7 @@ export class BroadcastTxMsg extends Message<any> {
     return "broadcast-tx-to-background";
   }
 
-  constructor(public readonly tx: Uint8Array, public readonly mode: string) {
+  constructor(public readonly tx: Uint8Array) {
     super();
   }
 

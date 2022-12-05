@@ -70,7 +70,7 @@
 .mnemonic-container {
   display: grid;
 
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   &.private-key {
     grid-template-columns: 1fr;
 
@@ -104,5 +104,5 @@
 }
 
 .form-inner-container {
-  width: 420px;
+  width: 100%;
 }

@@ -1,11 +1,11 @@
 @import "../../styles/var";
 
-$container-width: 420px;
+$container-width: var(--container-width);
 
 // Used only on the mnemonic recover page.
 // The overall design refactoring is needed, but now the refactoring has been delayed for various reasons.
 // For now, it is handled roughly.
-$large-container-width: 680px;
+$large-container-width: var(--large-container-width);
 
 html[data-register-page="true"] {
   height: 100%;
@@ -29,11 +29,11 @@ html[data-register-page="true"] {
 
 .container {
   width: $container-width;
-  margin-left: ($popup-size-width - $container-width) / 2;
+  margin-left: calc(($popup-size-width - $container-width) / 2);
 
   &:global(.large) {
     width: $large-container-width;
-    margin-left: ($popup-size-width - $large-container-width) / 2;
+    margin-left: calc(($popup-size-width - $large-container-width) / 2);
   }
 
   display: flex;
@@ -52,6 +52,7 @@ html[data-register-page="true"] {
   .logo-container {
     margin-top: 40px;
     margin-bottom: 40px;
+    margin-left: 40px;
 
     display: flex;
     flex-direction: column;

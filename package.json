@@ -54,10 +54,6 @@
     "*.json": [
       "eslint",
       "prettier --check"
-    ],
-    "*.{css,scss,sass}": [
-      "eslint",
-      "prettier --check"
     ]
   },
   "keywords": [],

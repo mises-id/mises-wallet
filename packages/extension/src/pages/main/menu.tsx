@@ -78,7 +78,7 @@ export const Menu: FunctionComponent = observer(() => {
       <div className={styleMenu.footer}>
         <a
           className={styleMenu.inner}
-          href="https://github.com/chainapsis/keplr-wallet"
+          href="https://github.com/mises-id"
           target="_blank"
           rel="noopener noreferrer"
         >

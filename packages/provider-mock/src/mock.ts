@@ -310,7 +310,7 @@ export class MockKeplr implements Keplr {
     return true;
   }
 
-  async statking(_params: any): Promise<any> {
+  async staking(_params: any): Promise<any> {
     return true;
   }
 }

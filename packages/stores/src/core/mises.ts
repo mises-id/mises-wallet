@@ -78,10 +78,10 @@ export class MisesStore {
     );
   }
 
-  async broadcastTx(tx: Uint8Array, mode: string) {
+  async broadcastTx(tx: Uint8Array) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new BroadcastTxMsg(tx, mode)
+      new BroadcastTxMsg(tx)
     );
   }
 

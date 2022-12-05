@@ -189,7 +189,7 @@ export class RegisterConfig {
 
   render() {
     return (
-      <div>
+      <div style={{ padding: "0 20px" }}>
         {this.isIntro
           ? this.options.map((option) => {
               return (

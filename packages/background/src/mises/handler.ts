@@ -132,7 +132,7 @@ const handlerAuthaccounts: (
 const handlerBroadcastTx: (
   service: MisesService
 ) => InternalHandler<BroadcastTxMsg> = (service: MisesService) => (_, msg) => {
-  return service.broadcastTx(msg.tx, msg.mode);
+  return service.broadcastTx(msg.tx);
 };
 
 const handlerSimulate: (
