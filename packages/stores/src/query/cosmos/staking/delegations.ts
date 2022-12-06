@@ -9,6 +9,7 @@ import { CoinPretty, Int } from "@keplr-wallet/unit";
 import { computed, makeObservable, override } from "mobx";
 import { computedFn } from "mobx-utils";
 import { MisesStore } from "../../../core";
+import { QueryClient } from "react-query";
 
 export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delegations> {
   protected bech32Address: string;
@@ -16,6 +17,7 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delega
   protected duplicatedFetchCheck: boolean = true;
 
   protected misesStore: MisesStore;
+  QueryClient: QueryClient;
 
   constructor(
     kvStore: KVStore,
@@ -30,6 +32,8 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delega
       chainGetter,
       `/cosmos/staking/v1beta1/delegations/${bech32Address}?pagination.limit=1000`
     );
+
+    this.QueryClient = new QueryClient();
     makeObservable(this);
 
     this.bech32Address = bech32Address;
@@ -123,14 +127,20 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delega
     if (!this.bech32Address) {
       return;
     }
-    this.misesStore.delegations(this.bech32Address).then((res) => {
-      this.setResponse({
-        data: res,
-        status: 200,
-        staled: true,
-        timestamp: new Date().getTime(),
-      });
-    });
+
+    this.QueryClient?.fetchQuery(
+      "delegations",
+      async () => {
+        const res = await this.misesStore.delegations(this.bech32Address);
+        this.setResponse({
+          data: res,
+          status: 200,
+          staled: true,
+          timestamp: new Date().getTime(),
+        });
+      },
+      this.fetchConfig
+    );
   }
 }
 

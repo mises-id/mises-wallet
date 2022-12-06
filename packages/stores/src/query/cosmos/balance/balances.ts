@@ -7,6 +7,7 @@ import { BalanceRegistry, ObservableQueryBalanceInner } from "../../balances";
 import { ObservableChainQuery } from "../../chain-query";
 import { Balances } from "./types";
 import { MisesStore } from "../../../core";
+import { QueryClient } from "react-query";
 
 export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
   constructor(
@@ -71,6 +72,8 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   protected misesStore: MisesStore;
 
+  QueryClient: QueryClient;
+
   constructor(
     kvStore: KVStore,
     chainId: string,
@@ -84,6 +87,8 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
       chainGetter,
       `/cosmos/bank/v1beta1/balances/${bech32Address}?pagination.limit=1000`
     );
+
+    this.QueryClient = new QueryClient();
 
     this.bech32Address = bech32Address;
 
@@ -99,7 +104,11 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   @override
   *fetch() {
-    this.getMisesBalance().then((result) => {
+    this.QueryClient?.fetchQuery(
+      "getMisesBalance",
+      () => this.getMisesBalance(),
+      this.fetchConfig
+    ).then((result) => {
       this.setResponse(result);
     });
   }

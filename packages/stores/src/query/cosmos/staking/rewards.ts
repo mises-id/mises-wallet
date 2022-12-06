@@ -11,11 +11,13 @@ import { Currency } from "@keplr-wallet/types";
 import { StoreUtils } from "../../../common";
 import { computedFn } from "mobx-utils";
 import { MisesStore } from "../../../core";
+import { QueryClient } from "react-query";
 
 export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
   protected bech32Address: string;
   duplicatedFetchCheck: boolean = true;
   misesStore: MisesStore;
+  QueryClient: QueryClient;
 
   constructor(
     kvStore: KVStore,
@@ -30,6 +32,9 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       chainGetter,
       `/cosmos/distribution/v1beta1/delegators/${bech32Address}/rewards`
     );
+
+    this.QueryClient = new QueryClient();
+
     makeObservable(this);
 
     this.bech32Address = bech32Address;
@@ -239,15 +244,21 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
     if (!this.bech32Address) {
       return;
     }
-    this.misesStore.rewards(this.bech32Address).then((res) => {
-      res.total[0].amount = Number(res.total[0].amount) / Math.pow(10, 18);
-      this.setResponse({
-        data: res,
-        status: 200,
-        staled: true,
-        timestamp: new Date().getTime(),
-      });
-    });
+    this.QueryClient?.fetchQuery(
+      "rewards",
+      async () => {
+        const res = await this.misesStore.rewards(this.bech32Address);
+        if (res.total[0])
+          res.total[0].amount = Number(res.total[0].amount) / Math.pow(10, 18);
+        this.setResponse({
+          data: res,
+          status: 200,
+          staled: true,
+          timestamp: new Date().getTime(),
+        });
+      },
+      this.fetchConfig
+    );
   }
 }
 

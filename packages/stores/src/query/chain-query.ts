@@ -12,6 +12,12 @@ export class ObservableChainQuery<
   // Chain Id should not be changed after creation.
   protected readonly _chainId: string;
   protected readonly chainGetter: ChainGetter;
+  fetchConfig: {
+    staleTime: number;
+    // To handle sequence mismatch
+    retry: number;
+    retryDelay: number;
+  };
 
   constructor(
     kvStore: KVStore,
@@ -32,6 +38,13 @@ export class ObservableChainQuery<
 
     this._chainId = chainId;
     this.chainGetter = chainGetter;
+
+    this.fetchConfig = {
+      staleTime: Infinity,
+      // To handle sequence mismatch
+      retry: 3,
+      retryDelay: 1000,
+    };
   }
 
   @override

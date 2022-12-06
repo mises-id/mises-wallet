@@ -8,11 +8,13 @@ import { ChainGetter } from "../../../common";
 import { CoinPretty, Int } from "@keplr-wallet/unit";
 import { computed, makeObservable, override } from "mobx";
 import { MisesStore } from "../../../core";
+import { QueryClient } from "react-query";
 
 export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQuery<UnbondingDelegations> {
   protected bech32Address: string;
   misesStore: MisesStore;
   duplicatedFetchCheck: boolean = true;
+  QueryClient: QueryClient;
 
   constructor(
     kvStore: KVStore,
@@ -27,6 +29,9 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       chainGetter,
       `/cosmos/staking/v1beta1/delegators/${bech32Address}/unbonding_delegations?pagination.limit=1000`
     );
+
+    this.QueryClient = new QueryClient();
+
     makeObservable(this);
 
     this.bech32Address = bech32Address;
@@ -104,14 +109,21 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
     if (!this.bech32Address) {
       return;
     }
-    this.misesStore.unbondingDelegations(this.bech32Address).then((res) => {
-      this.setResponse({
-        data: res,
-        status: 200,
-        staled: true,
-        timestamp: new Date().getTime(),
-      });
-    });
+    this.QueryClient?.fetchQuery(
+      "unbondingDelegations",
+      async () => {
+        const res = await this.misesStore.unbondingDelegations(
+          this.bech32Address
+        );
+        this.setResponse({
+          data: res,
+          status: 200,
+          staled: true,
+          timestamp: new Date().getTime(),
+        });
+      },
+      this.fetchConfig
+    );
   }
 }
 

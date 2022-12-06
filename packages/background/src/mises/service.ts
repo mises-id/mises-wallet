@@ -103,9 +103,17 @@ const defaultUserInfo = {
   timestamp: 0,
 };
 
+export const fetchConfig = {
+  staleTime: Infinity,
+  // To handle sequence mismatch
+  retry: 3,
+  retryDelay: 1000,
+};
+
 export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
+
   constructor(protected readonly kvStore: KVStore) {}
   data: any = {};
   private mises!: Mises;
@@ -120,13 +128,15 @@ export class MisesService {
   init() {
     this.mises = new Mises();
 
-    this.mises.makeClient().then((clients) => {
-      const [queryClient, tmClient] = clients;
+    this.mises.queryFetchClient
+      .fetchQuery("makeClient", () => this.mises.makeClient(), fetchConfig)
+      .then((clients) => {
+        const [queryClient, tmClient] = clients;
 
-      this.queryClient = queryClient;
-      this.tmClient = tmClient;
-      console.log("init");
-    });
+        this.queryClient = queryClient;
+        this.tmClient = tmClient;
+        console.log("init");
+      });
 
     this.gasPriceAndLimit();
   }
@@ -161,11 +171,19 @@ export class MisesService {
       const nonce = new Date().getTime().toString();
       const { auth } = await this.generateAuth(nonce);
 
-      userInfo.token = await this.getServerToken({
-        provider: "mises",
-        user_authz: { auth },
-        referrer,
-      });
+      const token = await this.mises.queryFetchClient.fetchQuery(
+        "getServerToken",
+        () => {
+          return this.getServerToken({
+            provider: "mises",
+            user_authz: { auth },
+            referrer,
+          });
+        },
+        fetchConfig
+      );
+      userInfo.token = token;
+
       userInfo.timestamp = new Date().getTime();
     }
 
@@ -339,7 +357,11 @@ export class MisesService {
 
   async gasPriceAndLimit() {
     try {
-      const gasPrices = await this.getGasPrices();
+      const gasPrices = await this.mises.queryFetchClient.fetchQuery(
+        "getGasPrices",
+        () => this.getGasPrices(),
+        fetchConfig
+      );
 
       const proposeGasprice =
         gasPrices.propose_gasprice || this.mises.config.gasPrice();
@@ -366,9 +388,10 @@ export class MisesService {
     userInfo.token && this.setToMisesPrivate(userInfo);
   }
 
-  getBalanceUMIS() {
-    console.log(this.activeUser);
-    return this.activeUser?.getBalanceUMIS();
+  async getBalanceUMIS() {
+    const balance = await this.activeUser?.getBalanceUMIS();
+    console.log(balance);
+    return balance;
   }
 
   recentTransactions(formHeight: number | undefined) {
