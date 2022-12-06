@@ -17,7 +17,7 @@ import { Input, PasswordInput } from "../../../components/form";
 import useForm from "react-hook-form";
 import { observer } from "mobx-react-lite";
 import { RegisterConfig } from "@keplr-wallet/hooks";
-import { AdvancedBIP44Option, useBIP44Option } from "../advanced-bip44";
+import { useBIP44Option } from "../advanced-bip44";
 
 import { Buffer } from "buffer/";
 import { useStore } from "../../../stores";
@@ -100,6 +100,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
   const intl = useIntl();
 
   const bip44Option = useBIP44Option();
+  console.log(bip44Option);
 
   const { analyticsStore } = useStore();
 
@@ -302,7 +303,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                 >
                   {seedTypeToParagraph(SeedType.WORDS24)}
                 </DropdownItem>
-                <DropdownItem
+                {/* <DropdownItem
                   active={seedType === SeedType.PRIVATE_KEY}
                   onClick={(e) => {
                     e.preventDefault();
@@ -311,7 +312,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                   }}
                 >
                   {seedTypeToParagraph(SeedType.PRIVATE_KEY)}
-                </DropdownItem>
+                </DropdownItem> */}
               </DropdownMenu>
             </ButtonDropdown>
           </div>
@@ -361,7 +362,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                     accountType: "mnemonic",
                   });
                 }
-              } catch (e) {
+              } catch (e: any) {
                 alert(e.message ? e.message : e.toString());
                 registerConfig.clear();
               }
@@ -540,7 +541,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                 height: "20px",
               }}
             />
-            <AdvancedBIP44Option bip44Option={bip44Option} />
+            {/* <AdvancedBIP44Option bip44Option={bip44Option} /> */}
             <Button
               color="primary"
               type="submit"

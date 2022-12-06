@@ -20,6 +20,9 @@ import {
   TxExtension,
   setupTxExtension,
 } from "@cosmjs/stargate";
+
+import { QueryClient as QueryFetchClient } from "react-query";
+import { fetchConfig } from "./service";
 export class Mises {
   config: MisesConfig;
 
@@ -34,6 +37,8 @@ export class Mises {
   misesAppMgr: MAppMgr;
 
   stargateClient!: StargateClient;
+
+  queryFetchClient: QueryFetchClient;
 
   constructor() {
     this.config = MisesSdk.newConfig();
@@ -52,9 +57,18 @@ export class Mises {
 
     this.misesAppMgr = this.misesSdk.appMgr();
 
-    StargateClient.connect(MISES_POINT).then((res) => {
-      this.stargateClient = res;
-    });
+    this.queryFetchClient = new QueryFetchClient();
+
+    this.queryFetchClient
+      .fetchQuery(
+        "StargateClient",
+        () => StargateClient.connect(MISES_POINT),
+        fetchConfig
+      )
+      .then((res) => {
+        console.log("stargateClient");
+        this.stargateClient = res;
+      });
   }
 
   async makeClient(): Promise<

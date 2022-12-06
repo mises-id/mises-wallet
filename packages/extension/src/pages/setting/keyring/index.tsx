@@ -51,7 +51,7 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
                 // browser.tabs.create({
                 //   url: "/popup.html#/register",
                 // });
-                history.push("/register");
+                history.push("/setting/keyring/CreateNamePage");
               }}
             >
               <i

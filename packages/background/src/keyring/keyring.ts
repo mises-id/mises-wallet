@@ -71,6 +71,8 @@ export class KeyRing {
 
   private password: string = "";
 
+  private mnemonic: string = "";
+
   constructor(
     private readonly embedChainInfos: ChainInfo[],
     private readonly kvStore: KVStore,
@@ -359,6 +361,7 @@ export class KeyRing {
     this.privateKey = undefined;
     this.ledgerPublicKeyCache = undefined;
     this.password = "";
+    this.mnemonic = "";
     this.misesService.lockAll();
   }
 
@@ -366,6 +369,11 @@ export class KeyRing {
     if (!this.keyStore || this.type === "none") {
       throw new KeplrError("keyring", 144, "Key ring not initialized");
     }
+
+    this.mnemonic = Buffer.from(
+      await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password)
+    ).toString();
+
     if (this.type === "mnemonic") {
       // If password is invalid, error will be thrown.
       this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
@@ -1428,5 +1436,21 @@ export class KeyRing {
     this.save();
 
     return pubKey;
+  }
+
+  async addAccount(name: string, bip44HDPath: BIP44HDPath) {
+    try {
+      const result = await this.addMnemonicKey(
+        "scrypt",
+        this.mnemonic,
+        {
+          name,
+        },
+        bip44HDPath
+      );
+      return result;
+    } catch (error: any) {
+      throw new Error(error);
+    }
   }
 }

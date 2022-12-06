@@ -1,4 +1,5 @@
 import { Env, Handler, InternalHandler, Message } from "@keplr-wallet/router";
+import { MUserInfo } from "mises-js-sdk/dist/types/muser";
 import {
   BalanceUMISMsg,
   MisesChainMsg,
@@ -83,15 +84,18 @@ const handlerBalanceUMISMsg: (
 
 const handlerMisesChainMsg: (
   service: MisesService
-) => InternalHandler<MisesChainMsg> = () => (_, msg) => {
+) => InternalHandler<MisesChainMsg> = () => (
+  _: any,
+  msg: { chainId: string }
+) => {
   return msg.chainId === "mainnet";
 };
 
 const handlerRecentTransactionsMsg: (
   service: MisesService
 ) => InternalHandler<RecentTransactionsMsg> = (service: MisesService) => (
-  _,
-  msg
+  _: any,
+  msg: { height: number | undefined }
 ) => {
   return service.recentTransactions(msg.height);
 };
@@ -105,39 +109,56 @@ const handlerGetChainIdMsg: (
 const handlerUnbondingDelegations: (
   service: MisesService
 ) => InternalHandler<UnbondingDelegationsMsg> = (service: MisesService) => (
-  _,
-  msg
+  _: any,
+  msg: { address: string }
 ) => {
   return service.unbondingDelegations(msg.address);
 };
 
 const handlerDelegations: (
   service: MisesService
-) => InternalHandler<DelegationsMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<DelegationsMsg> = (service: MisesService) => (
+  _: any,
+  msg: { address: string }
+) => {
   return service.delegations(msg.address);
 };
 
 const handlerRewards: (service: MisesService) => InternalHandler<RewardsMsg> = (
   service: MisesService
-) => (_, msg) => {
+) => (_: any, msg: { address: string }) => {
   return service.rewards(msg.address);
 };
 
 const handlerAuthaccounts: (
   service: MisesService
-) => InternalHandler<AuthAccountsMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<AuthAccountsMsg> = (service: MisesService) => (
+  _: any,
+  msg: { address: string }
+) => {
   return service.authAccounts(msg.address);
 };
 
 const handlerBroadcastTx: (
   service: MisesService
-) => InternalHandler<BroadcastTxMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<BroadcastTxMsg> = (service: MisesService) => (
+  _: any,
+  msg: { tx: Uint8Array }
+) => {
   return service.broadcastTx(msg.tx);
 };
 
 const handlerSimulate: (
   service: MisesService
-) => InternalHandler<SimulateMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<SimulateMsg> = (service: MisesService) => (
+  _: any,
+  msg: {
+    messages: readonly any[];
+    memo: string | undefined;
+    signer: any;
+    sequence: number;
+  }
+) => {
   return service.simulate(msg.messages, msg.memo, msg.signer, msg.sequence);
 };
 
@@ -155,36 +176,55 @@ const handlerHasWalletAccount: (
 
 const handlerDisconnect: (
   service: MisesService
-) => InternalHandler<DisconnectMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<DisconnectMsg> = (service: MisesService) => (
+  _: any,
+  msg: { params: { appid: string; userid: string } }
+) => {
   return service.disconnect(msg.params);
 };
 
 const handlerConnect: (service: MisesService) => InternalHandler<ConnectMsg> = (
   service: MisesService
-) => (_, msg) => {
+) => (
+  _: any,
+  msg: {
+    params: { appid: string; userid: string; domain: string } & {
+      permissions: string[];
+    };
+  }
+) => {
   return service.connect(msg.params);
 };
 
 const handlerUserFollow: (
   service: MisesService
-) => InternalHandler<UserFollowMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<UserFollowMsg> = (service: MisesService) => (
+  _: any,
+  msg: { toUid: string }
+) => {
   return service.setFollow(msg.toUid);
 };
 
 const handlerUserUnFollow: (
   service: MisesService
-) => InternalHandler<UserUnFollowMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<UserUnFollowMsg> = (service: MisesService) => (
+  _: any,
+  msg: { toUid: string }
+) => {
   return service.setUnFollow(msg.toUid);
 };
 
 const handlerSetUserInfo: (
   service: MisesService
-) => InternalHandler<SetUserInfoMsg> = (service: MisesService) => (_, msg) => {
+) => InternalHandler<SetUserInfoMsg> = (service: MisesService) => (
+  _: any,
+  msg: { params: MUserInfo }
+) => {
   return service.setUserInfo(msg.params);
 };
 
 const handlerStaking: (service: MisesService) => InternalHandler<StakingMsg> = (
   service: MisesService
-) => (_, msg) => {
+) => (_: any, msg: { params: any }) => {
   return service.staking(msg.params);
 };

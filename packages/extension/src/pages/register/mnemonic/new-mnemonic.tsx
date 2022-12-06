@@ -3,11 +3,7 @@ import { RegisterConfig } from "@keplr-wallet/hooks";
 import { observer } from "mobx-react-lite";
 import { FormattedMessage, useIntl } from "react-intl";
 import useForm from "react-hook-form";
-import {
-  AdvancedBIP44Option,
-  BIP44Option,
-  useBIP44Option,
-} from "../advanced-bip44";
+import { BIP44Option, useBIP44Option } from "../advanced-bip44";
 import style from "../style.module.scss";
 import { Alert, Button, ButtonGroup, Form } from "reactstrap";
 import { Input, PasswordInput } from "../../../components/form";
@@ -79,7 +75,7 @@ export const GenerateMnemonicModePage: FunctionComponent<{
   registerConfig: RegisterConfig;
   newMnemonicConfig: NewMnemonicConfig;
   bip44Option: BIP44Option;
-}> = observer(({ registerConfig, newMnemonicConfig, bip44Option }) => {
+}> = observer(({ registerConfig, newMnemonicConfig }) => {
   const intl = useIntl();
 
   const { register, handleSubmit, getValues, errors } = useForm<FormData>({
@@ -201,7 +197,7 @@ export const GenerateMnemonicModePage: FunctionComponent<{
             />
           </React.Fragment>
         ) : null}
-        <AdvancedBIP44Option bip44Option={bip44Option} />
+        {/* <AdvancedBIP44Option bip44Option={bip44Option} /> */}
         <Button color="primary" type="submit" block size="lg">
           <FormattedMessage id="register.create.button.next" />
         </Button>
@@ -320,7 +316,7 @@ export const VerifyMnemonicModePage: FunctionComponent<{
               registerType: "seed",
               accountType: "mnemonic",
             });
-          } catch (e) {
+          } catch (e: any) {
             alert(e.message ? e.message : e.toString());
             registerConfig.clear();
           }

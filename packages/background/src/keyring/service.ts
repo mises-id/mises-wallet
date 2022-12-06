@@ -734,4 +734,8 @@ export class KeyRingService {
   async initializeNonDefaultLedgerApp(env: Env, ledgerApp: LedgerApp) {
     return await this.keyRing.initializeNonDefaultLedgerApp(env, ledgerApp);
   }
+
+  async addAccount(name: string, bip44HDPath: BIP44HDPath) {
+    return await this.keyRing.addAccount(name, bip44HDPath);
+  }
 }

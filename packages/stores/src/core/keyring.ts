@@ -23,6 +23,7 @@ import {
   CheckPasswordMsg,
   ExportKeyRingData,
   ExportKeyRingDatasMsg,
+  AddAccountMsg,
 } from "@keplr-wallet/background";
 
 import { computed, flow, makeObservable, observable, runInAction } from "mobx";
@@ -415,5 +416,14 @@ export class KeyRingStore {
     if (i >= 0) {
       this.keyStoreChangedListeners.splice(i, 1);
     }
+  }
+
+  async addAccount(name: string, bip44HDPath: BIP44HDPath) {
+    const result = await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new AddAccountMsg(name, bip44HDPath)
+    );
+    console.log(result);
+    this.multiKeyStoreInfo = result.multiKeyStoreInfo;
   }
 }

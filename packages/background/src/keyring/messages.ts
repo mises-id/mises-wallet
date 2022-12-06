@@ -990,3 +990,28 @@ export class IsUnlockMsg extends Message<boolean> {
     return IsUnlockMsg.type();
   }
 }
+export class AddAccountMsg extends Message<{
+  multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
+}> {
+  public static type() {
+    return "add-account";
+  }
+
+  constructor(
+    public readonly name: string,
+    public readonly bip44HDPath: BIP44HDPath
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return AddAccountMsg.type();
+  }
+}
