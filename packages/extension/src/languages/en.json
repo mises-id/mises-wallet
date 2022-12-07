@@ -71,6 +71,7 @@
 
   "setting.keyring": "Select Account",
   "setting.keyring.button.add": "Add Account",
+  "setting.keyring.button.import": "Import Account",
   "setting.keyring.unnamed-account": "Keplr Account",
   "setting.keyring.selected-account": "(Selected)",
 
@@ -88,6 +89,13 @@
   "setting.keyring.create.input.name.error.required": "Account name is required",
   "setting.keyring.create.input.name.error.invalid": "Account name is invalid",
   "setting.keyring.create.name.button.save": "Created",
+
+  "setting.keyring.import.name": "Import Private Key",
+  "setting.keyring.import.input.name": "New account name",
+  "setting.keyring.import.input.name.error.required": "Account name is required",
+  "setting.keyring.import.input.name.error.invalid": "Account name is invalid",
+  "setting.keyring.import.input.private-key.title": "Input your private key",
+  "setting.keyring.import.name.button.save": "Created",
 
   "setting.export": "View Mnemonic Seed",
   "setting.export.private-key": "View Private Key",

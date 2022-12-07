@@ -153,6 +153,7 @@ export class MisesService {
     browser.storage.local.set({
       setAccount: true,
     });
+    console.log("activateUser");
   }
 
   async misesUserInfo() {
@@ -211,6 +212,14 @@ export class MisesService {
     this.mises.misesUser.lockAll();
 
     this.activeUser = undefined as any;
+
+    this.setToMisesPrivate({
+      misesId: "",
+      nickname: "",
+      avatar: undefined,
+      token: "",
+      timestamp: 0,
+    });
   }
 
   async generateAuth(nonce: string): Promise<generateAuthParams> {

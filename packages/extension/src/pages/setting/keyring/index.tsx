@@ -33,12 +33,11 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
     >
       <div className={style.container}>
         <div className={style.innerTopContainer}>
-          <div style={{ flex: 1 }} />
+          {/* <div style={{ flex: 1 }} /> */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              justifyContent: "flex-end",
             }}
           >
             <Button
@@ -59,6 +58,25 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
                 style={{ marginRight: "4px", fontSize: "8px" }}
               />
               <FormattedMessage id="setting.keyring.button.add" />
+            </Button>
+            <Button
+              color="primary"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                analyticsStore.logEvent("import additional account started");
+
+                // browser.tabs.create({
+                //   url: "/popup.html#/register",
+                // });
+                history.push("/setting/keyring/importAccount");
+              }}
+            >
+              <i
+                className="fas fa-plus"
+                style={{ marginRight: "4px", fontSize: "8px" }}
+              />
+              <FormattedMessage id="setting.keyring.button.import" />
             </Button>
           </div>
         </div>

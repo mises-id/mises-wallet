@@ -100,7 +100,6 @@ export const RecoverMnemonicPage: FunctionComponent<{
   const intl = useIntl();
 
   const bip44Option = useBIP44Option();
-  console.log(bip44Option);
 
   const { analyticsStore } = useStore();
 
@@ -303,7 +302,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                 >
                   {seedTypeToParagraph(SeedType.WORDS24)}
                 </DropdownItem>
-                {/* <DropdownItem
+                <DropdownItem
                   active={seedType === SeedType.PRIVATE_KEY}
                   onClick={(e) => {
                     e.preventDefault();
@@ -312,7 +311,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                   }}
                 >
                   {seedTypeToParagraph(SeedType.PRIVATE_KEY)}
-                </DropdownItem> */}
+                </DropdownItem>
               </DropdownMenu>
             </ButtonDropdown>
           </div>

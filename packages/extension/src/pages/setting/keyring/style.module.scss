@@ -10,7 +10,8 @@
 
 .inner-top-container {
   display: flex;
-  margin: 0 $layout-padding;
-
-  min-height: 43px;
+  width: 100%;
+  justify-content: flex-end;
+  padding: 0 $layout-padding;
+  margin-bottom: $layout-padding;
 }

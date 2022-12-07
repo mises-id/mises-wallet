@@ -46,6 +46,7 @@ import { AddressBookPage } from "./pages/setting/address-book";
 import { CreditPage } from "./pages/setting/credit";
 import { ChangeNamePage } from "./pages/setting/keyring/change";
 import { CreateNamePage } from "./pages/setting/keyring/createAccount";
+import { ImportAccountPage } from "./pages/setting/keyring/importAccount";
 import { ClearPage } from "./pages/setting/clear";
 import { ExportPage } from "./pages/setting/export";
 import { LedgerGrantPage } from "./pages/ledger";
@@ -229,6 +230,11 @@ ReactDOM.render(
                     exact
                     path="/setting/keyring/CreateNamePage"
                     component={CreateNamePage}
+                  />
+                  <Route
+                    exact
+                    path="/setting/keyring/importAccount"
+                    component={ImportAccountPage}
                   />
                   <Route
                     exact
