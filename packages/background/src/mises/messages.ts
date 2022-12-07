@@ -1,12 +1,11 @@
-import { DeliverTxResponse } from "@cosmjs/stargate";
+import { Coin, DeliverTxResponse } from "@cosmjs/stargate";
 import { KeplrError, Message } from "@keplr-wallet/router";
 import { MisesAccountData } from "@keplr-wallet/types";
-import Long from "long";
 import { MUserInfo } from "mises-js-sdk/dist/types/muser";
 import { PubKey } from "secretjs/types/types";
 import { ROUTE } from "./constants";
 
-export class BalanceUMISMsg extends Message<Long.Long> {
+export class BalanceUMISMsg extends Message<Coin> {
   public static type() {
     return "balance-umis";
   }

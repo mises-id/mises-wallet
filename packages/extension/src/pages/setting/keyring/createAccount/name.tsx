@@ -50,8 +50,8 @@ export const CreateNamePage: FunctionComponent = observer(() => {
               (val) => val.type === "mnemonic"
             );
 
-            bip44Option.setIndex(mnemonicKeyringInfo.length + 1);
-            console.log(mnemonicKeyringInfo.length + 1);
+            bip44Option.setIndex(mnemonicKeyringInfo.length);
+
             await keyRingStore.addAccount(data.name, bip44Option.bip44HDPath);
 
             setLoading(false);

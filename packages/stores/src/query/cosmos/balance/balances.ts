@@ -119,12 +119,7 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
     const result: QueryResponse<Balances> = {
       status: 200,
       data: {
-        balances: [
-          {
-            denom: "umis",
-            amount: `${balance?.low || 0}`,
-          },
-        ],
+        balances: [balance],
       },
       staled: true,
       timestamp: new Date().getTime(),
