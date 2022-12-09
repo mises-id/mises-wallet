@@ -4,7 +4,11 @@ import {
   MessageSender,
   APP_PORT,
 } from "@keplr-wallet/router";
-import { openPopupWindow as openPopupWindowInner } from "@keplr-wallet/popup";
+import {
+  openPopupWindow as openPopupWindowInner,
+  openPopupTab,
+  isMobileStatus,
+} from "@keplr-wallet/popup";
 import { InExtensionMessageRequester } from "../requester";
 
 class PromiseQueue {
@@ -60,7 +64,11 @@ async function openPopupWindow(
   url: string,
   channel: string = "default"
 ): Promise<number> {
-  return await openPopupQueue.enqueue(() => openPopupWindowInner(url, channel));
+  return await openPopupQueue.enqueue(() => {
+    return isMobileStatus()
+      ? openPopupTab(url, channel)
+      : openPopupWindowInner(url, channel);
+  });
 }
 
 export class ExtensionEnv {
@@ -84,19 +92,20 @@ export class ExtensionEnv {
 
       url = browser.runtime.getURL("/popup.html#/" + url);
 
-      if (url.includes("?")) {
-        url += "&" + queryString;
-      } else {
-        url += "?" + queryString;
-      }
+      url += `${url.includes("?") ? "&" : "?"}${queryString}`;
 
+      let tabId: number;
       const windowId = await openPopupWindow(url, options?.channel);
-      const window = await browser.windows.get(windowId, {
-        populate: true,
-      });
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const tabId = window.tabs![0].id!;
+      if (!isMobileStatus()) {
+        const window = await browser.windows.get(windowId, {
+          populate: true,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        tabId = window.tabs![0].id!;
+      } else {
+        tabId = windowId;
+      }
 
       // Wait until that tab is loaded
       await (async () => {
