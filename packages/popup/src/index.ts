@@ -5,6 +5,8 @@ export const PopupSize = {
 
 const lastWindowIds: Record<string, number | undefined> = {};
 
+const lastTabIds: Record<string, number | undefined> = {};
+
 /**
  * Try open window if no previous window exists.
  * If, previous window exists, try to change the location of this window.
@@ -54,7 +56,7 @@ export async function openPopupWindow(
       await browser.windows.update(lastWindowIds[channel] as number, {
         focused: true,
       });
-    } catch (e) {
+    } catch (e: any) {
       console.log(`Failed to update window focus: ${e.message}`);
     }
   }
@@ -73,11 +75,80 @@ export function closePopupWindow(channel: string) {
   })();
 }
 
+export async function openPopupTab(
+  url: string,
+  channel: string = "default"
+): Promise<number> {
+  const [_openerTab] = await browser.tabs.query({
+    active: true,
+    highlighted: true,
+  });
+
+  const option = {
+    url,
+    openerTabId: _openerTab && _openerTab.id,
+  };
+  console.log("_openerTab:", _openerTab.id);
+  if (lastTabIds[channel] !== undefined) {
+    try {
+      const tab = await browser.tabs.get(lastTabIds[channel] as number);
+      if (tab.id) {
+        await browser.tabs.update(tab.id, {
+          active: true,
+          highlighted: true,
+          ...option,
+        });
+      } else {
+        throw new Error("Null window or tabs");
+      }
+    } catch {
+      lastTabIds[channel] = (await browser.tabs.create(option)).id;
+    }
+  } else {
+    lastTabIds[channel] = (await browser.tabs.create(option)).id;
+  }
+
+  if (lastTabIds[channel]) {
+    try {
+      await browser.tabs.update(lastTabIds[channel] as number, {
+        highlighted: true,
+        active: true,
+        ...option,
+      });
+    } catch (e: any) {
+      console.log(`Failed to update window focus: ${e.message}`);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return lastTabIds[channel]!;
+}
+
+export function closePopupTab(channel: string) {
+  (async () => {
+    const windowId = lastTabIds[channel] as number;
+    const activeTab = await browser.tabs.get(windowId);
+    if (windowId) {
+      await browser.tabs.remove(windowId);
+
+      if (activeTab.openerTabId) {
+        await browser.tabs.update(activeTab.openerTabId, {
+          active: true,
+          highlighted: true,
+        });
+      }
+    }
+  })();
+}
+
 /**
  * window.open() has many options for sizing, but they require different ways to do this per web browser.
  * So, to avoid this problem, just manually set sizing if new window popup is opened.
  */
 export function fitPopupWindow() {
+  if (isMobileStatus()) {
+    return;
+  }
   // Get the gap size like title bar or menu bar, etc...
   const gap = {
     width: window.outerWidth - window.innerWidth,
@@ -112,4 +183,9 @@ export function disableScroll() {
 export function enableScroll() {
   const html = document.getElementsByTagName("html");
   html[0].style.overflow = "";
+}
+
+export function isMobileStatus() {
+  return /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  // return true;
 }
