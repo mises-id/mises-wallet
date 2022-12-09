@@ -24,6 +24,7 @@ import {
   ExportKeyRingData,
   ExportKeyRingDatasMsg,
   AddAccountMsg,
+  MigratorKeyRingMsg,
 } from "@keplr-wallet/background";
 
 import { computed, flow, makeObservable, observable, runInAction } from "mobx";
@@ -423,7 +424,16 @@ export class KeyRingStore {
       BACKGROUND_PORT,
       new AddAccountMsg(name, bip44HDPath)
     );
-    console.log(result);
+
+    this.multiKeyStoreInfo = result.multiKeyStoreInfo;
+  }
+
+  async migratorKeyRing(password: string) {
+    const result = await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new MigratorKeyRingMsg(password)
+    );
+
     this.multiKeyStoreInfo = result.multiKeyStoreInfo;
   }
 }

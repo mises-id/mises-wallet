@@ -65,10 +65,6 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
               onClick={(e) => {
                 e.preventDefault();
                 analyticsStore.logEvent("import additional account started");
-
-                // browser.tabs.create({
-                //   url: "/popup.html#/register",
-                // });
                 history.push("/setting/keyring/importAccount");
               }}
             >
@@ -107,7 +103,7 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
               }`}
               paragraph={
                 keyStore.type === "ledger"
-                  ? `Ledger - m/44'/118'/${bip44HDPath.account}'${
+                  ? `Ledger - m/44'/60'/${bip44HDPath.account}'${
                       bip44HDPath.change !== 0 || bip44HDPath.addressIndex !== 0
                         ? `/${bip44HDPath.change}/${bip44HDPath.addressIndex}`
                         : ""
@@ -206,7 +202,7 @@ const KeyRingToolsIcon: FunctionComponent<{
           >
             <FormattedMessage id="setting.keyring.change.name" />
           </div>
-          <div
+          {/* <div
             style={{ cursor: "pointer" }}
             onClick={(e) => {
               e.preventDefault();
@@ -216,7 +212,20 @@ const KeyRingToolsIcon: FunctionComponent<{
             }}
           >
             <FormattedMessage id="setting.clear" />
-          </div>
+          </div> */}
+          {keyStore.type === "privateKey" ? (
+            <div
+              style={{ cursor: "pointer" }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                history.push(`/setting/clear/${index}`);
+              }}
+            >
+              <FormattedMessage id="setting.clear" />
+            </div>
+          ) : null}
         </PopoverBody>
       </Popover>
       <div

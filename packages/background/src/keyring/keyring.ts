@@ -20,12 +20,14 @@ import { computeAddress } from "@ethersproject/transactions";
 import { EIP712MessageValidator } from "./eip712";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { MisesService } from "../mises";
+import { keyringParmas, Migrator } from "../migrator";
 
 export enum KeyRingStatus {
   NOTLOADED,
   EMPTY,
   LOCKED,
   UNLOCKED,
+  MIGRATOR,
 }
 
 export interface Key {
@@ -73,6 +75,10 @@ export class KeyRing {
 
   private mnemonic: string = "";
 
+  migratorStore: { vault: string } = { vault: "" };
+
+  migrator: Migrator;
+
   constructor(
     private readonly embedChainInfos: ChainInfo[],
     private readonly kvStore: KVStore,
@@ -83,6 +89,14 @@ export class KeyRing {
     this.loaded = false;
     this.keyStore = null;
     this.multiKeyStore = [];
+
+    const migrator = new Migrator();
+
+    this.migrator = migrator;
+    migrator.migrateData().then((res) => {
+      console.log("get migrateData", res);
+      this.migratorStore = res;
+    });
   }
 
   public static getTypeOfKeyStore(
@@ -156,6 +170,10 @@ export class KeyRing {
   public get status(): KeyRingStatus {
     if (!this.loaded) {
       return KeyRingStatus.NOTLOADED;
+    }
+
+    if (!this.keyStore && this.migratorStore.vault) {
+      return KeyRingStatus.MIGRATOR;
     }
 
     if (!this.keyStore) {
@@ -232,7 +250,7 @@ export class KeyRing {
     status: KeyRingStatus;
     multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
   }> {
-    if (this.status !== KeyRingStatus.EMPTY) {
+    if (![KeyRingStatus.EMPTY, KeyRingStatus.MIGRATOR].includes(this.status)) {
       throw new KeplrError(
         "keyring",
         142,
@@ -1449,6 +1467,113 @@ export class KeyRing {
         bip44HDPath
       );
       return result;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  async _restoreFirstAccount(mnemonic: string, password: string) {
+    return this.createMnemonicKey(
+      "scrypt",
+      mnemonic,
+      password,
+      {
+        name: "Account 1",
+      },
+      {
+        account: 0,
+        change: 0,
+        addressIndex: 0,
+      }
+    );
+  }
+
+  async _addAccounts(addNumber: number, mnemonicKeys: keyringParmas[]) {
+    const accounts = new Array(addNumber).fill("").map((_value, index) => {
+      const bip44HDPath: BIP44HDPath = {
+        account: 0,
+        addressIndex: index + 1,
+        change: 0,
+      };
+
+      const name: string = `Account ${index + 2}`;
+
+      return {
+        bip44HDPath,
+        name,
+      };
+    });
+
+    let multiKeyStore = {
+      multiKeyStoreInfo: [] as MultiKeyStoreInfoWithSelected,
+    };
+
+    for (let index = 0; index < accounts.length; index++) {
+      const element = accounts[index];
+      multiKeyStore = await this.addAccount(element.name, element.bip44HDPath);
+    }
+    // add private key account
+    const simpleKeys = mnemonicKeys.find(
+      (val) => val.type === "Simple Key Pair"
+    );
+
+    if (simpleKeys?.data.length > 0) {
+      for (let index = 0; index < simpleKeys?.data.length; index++) {
+        const element = simpleKeys?.data[index];
+        const privateKey = Buffer.from(element, "hex");
+
+        multiKeyStore = await this.addPrivateKey("scrypt", privateKey, {
+          name: `Account ${multiKeyStore.multiKeyStoreInfo.length + 1}`,
+        });
+      }
+    }
+
+    console.log(multiKeyStore, "multiKeyStore");
+    return multiKeyStore;
+  }
+
+  async migratorKeyRing(password: string) {
+    try {
+      const mnemonicKeys = await this.migrator.enCodeValut(
+        this.migratorStore,
+        password
+      );
+
+      const mnemonicKey = mnemonicKeys.find(
+        (val) => val.type === "HD Key Tree"
+      );
+
+      if (mnemonicKey) {
+        const mnemonic: string = Buffer.from(
+          mnemonicKey?.data.mnemonic
+        ).toString("utf8");
+
+        this.mnemonic = mnemonic;
+
+        const numberOfAccounts: number = mnemonicKey?.data.numberOfAccounts;
+
+        const firstAccount = await this._restoreFirstAccount(
+          mnemonic,
+          password
+        );
+
+        // An account has already been initialized, so need to delete first account number
+        const addNumber = numberOfAccounts > 1 ? numberOfAccounts - 1 : 0;
+
+        // clear thhe metamask cache data
+        await this.migrator.clearCache();
+        this.migratorStore = {
+          vault: "",
+        };
+
+        return addNumber > 0
+          ? await this._addAccounts(addNumber, mnemonicKeys)
+          : firstAccount;
+      }
+
+      return {
+        multiKeyStoreInfo: [],
+      };
     } catch (error: any) {
       throw new Error(error);
     }

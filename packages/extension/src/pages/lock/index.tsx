@@ -17,7 +17,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useInteractionInfo } from "@keplr-wallet/hooks";
 import { useHistory } from "react-router";
 import delay from "delay";
-import { StartAutoLockMonitoringMsg } from "@keplr-wallet/background";
+import {
+  KeyRingStatus,
+  StartAutoLockMonitoringMsg,
+} from "@keplr-wallet/background";
 import { InExtensionMessageRequester } from "@keplr-wallet/router-extension";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
@@ -58,6 +61,9 @@ export const LockPage: FunctionComponent = observer(() => {
         onSubmit={handleSubmit(async (data) => {
           setLoading(true);
           try {
+            if (keyRingStore.status === KeyRingStatus.MIGRATOR) {
+              await keyRingStore.migratorKeyRing(data.password);
+            }
             await keyRingStore.unlock(data.password);
 
             const msg = new StartAutoLockMonitoringMsg();
@@ -81,7 +87,7 @@ export const LockPage: FunctionComponent = observer(() => {
                 history.replace("/");
               }
             }
-          } catch (e) {
+          } catch (e: any) {
             console.log("Fail to decrypt: " + e.message);
             setError(
               "password",

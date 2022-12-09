@@ -32,6 +32,7 @@ import {
   InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
   AddAccountMsg,
+  MigratorKeyRingMsg,
 } from "./messages";
 import { KeyRingService } from "./service";
 import { Bech32Address } from "@keplr-wallet/cosmos";
@@ -134,6 +135,8 @@ export const getHandler: (service: KeyRingService) => Handler = (
         );
       case AddAccountMsg:
         return handleAddAccountMsg(service)(env, msg as AddAccountMsg);
+      case MigratorKeyRingMsg:
+        return handleMigratorKeyRing(service)(env, msg as MigratorKeyRingMsg);
       default:
         throw new KeplrError("keyring", 221, "Unknown msg type");
     }
@@ -459,6 +462,16 @@ const handleAddAccountMsg: (
 ) => InternalHandler<AddAccountMsg> = (service) => {
   return async (_, msg) => {
     const result = await service.addAccount(msg.name, msg.bip44HDPath);
+    return result;
+  };
+};
+
+const handleMigratorKeyRing: (
+  service: KeyRingService
+) => InternalHandler<MigratorKeyRingMsg> = (service) => {
+  return async (_, msg) => {
+    const result = await service.migratorKeyRing(msg.password);
+    console.log(result);
     return result;
   };
 };

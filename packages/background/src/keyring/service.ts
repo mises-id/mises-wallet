@@ -738,4 +738,8 @@ export class KeyRingService {
   async addAccount(name: string, bip44HDPath: BIP44HDPath) {
     return await this.keyRing.addAccount(name, bip44HDPath);
   }
+
+  async migratorKeyRing(password: string) {
+    return await this.keyRing.migratorKeyRing(password);
+  }
 }

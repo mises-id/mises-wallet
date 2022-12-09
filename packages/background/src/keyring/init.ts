@@ -26,6 +26,7 @@ import {
   InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
   AddAccountMsg,
+  MigratorKeyRingMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -58,6 +59,7 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(RequestSignEIP712CosmosTxMsg_v0);
   router.registerMessage(InitNonDefaultLedgerAppMsg);
   router.registerMessage(AddAccountMsg);
+  router.registerMessage(MigratorKeyRingMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

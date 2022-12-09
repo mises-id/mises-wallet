@@ -29,7 +29,7 @@ describe("Test gen key from mnemonic", () => {
       "celery husband drama unaware blue empower jelly twist program say prepare page";
 
     let privKey = new PrivKeySecp256k1(
-      Mnemonic.generateWalletFromMnemonic(mnemonic, "m/44'/118'/1'/0/0")
+      Mnemonic.generateWalletFromMnemonic(mnemonic, "m/44'/60'/1'/0/0")
     );
     let pubKey = privKey.getPubKey();
     expect(Buffer.from(pubKey.toBytes()).toString("hex")).toBe(
@@ -38,7 +38,7 @@ describe("Test gen key from mnemonic", () => {
 
     const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
     privKey = new PrivKeySecp256k1(
-      Mnemonic.generatePrivateKeyFromMasterSeed(masterSeed, "m/44'/118'/1'/0/0")
+      Mnemonic.generatePrivateKeyFromMasterSeed(masterSeed, "m/44'/60'/1'/0/0")
     );
     pubKey = privKey.getPubKey();
     expect(Buffer.from(pubKey.toBytes()).toString("hex")).toBe(

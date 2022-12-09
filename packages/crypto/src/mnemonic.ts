@@ -27,7 +27,7 @@ export type RNG = <
 export class Mnemonic {
   static async generateWallet(
     rng: RNG,
-    path: string = `m/44'/118'/0'/0/0`,
+    path: string = `m/44'/60'/0'/0/0`,
     password: string = "",
     strength: number = 256
   ): Promise<{ privKey: Uint8Array; mnemonic: string }> {
@@ -59,7 +59,7 @@ export class Mnemonic {
 
   static generateWalletFromMnemonic(
     mnemonic: string,
-    path: string = `m/44'/118'/0'/0/0`,
+    path: string = `m/44'/60'/0'/0/0`,
     password: string = ""
   ): Uint8Array {
     const seed = bip39.mnemonicToSeedSync(mnemonic, password);
@@ -85,7 +85,7 @@ export class Mnemonic {
 
   static generatePrivateKeyFromMasterSeed(
     seed: Uint8Array,
-    path: string = `m/44'/118'/0'/0/0`
+    path: string = `m/44'/60'/0'/0/0`
   ): Uint8Array {
     const masterSeed = bip32.fromBase58(bs58check.encode(seed));
     const hd = masterSeed.derivePath(path);

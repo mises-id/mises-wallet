@@ -191,7 +191,7 @@ export class MisesService {
     const isRegistered = await this.activeUser.isRegistered();
 
     if (isRegistered) {
-      const misesInfo = await this.activeUser.info();
+      const misesInfo = await this.activeUser?.info();
       userInfo.avatar = misesInfo.avatarUrl;
       userInfo.nickname = misesInfo.name || "";
     }
@@ -399,8 +399,7 @@ export class MisesService {
 
   async getBalanceUMIS() {
     const balance = await this.activeUser?.getBalanceUMIS();
-    console.log(balance);
-    return balance;
+    return this.mises.coinDefine.toCoinUMIS(balance);
   }
 
   recentTransactions(formHeight: number | undefined) {

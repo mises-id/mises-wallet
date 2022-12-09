@@ -121,11 +121,9 @@ const StateRenderer: FunctionComponent = observer(() => {
     return <MainPage />;
   } else if (keyRingStore.status === KeyRingStatus.LOCKED) {
     return <LockPage />;
+  } else if (keyRingStore.status === KeyRingStatus.MIGRATOR) {
+    return <LockPage />;
   } else if (keyRingStore.status === KeyRingStatus.EMPTY) {
-    // browser.tabs.create({
-    //   url: "/popup.html#/register",
-    // });
-    // window.close();
     return <RegisterPage />;
   } else if (keyRingStore.status === KeyRingStatus.NOTLOADED) {
     return (

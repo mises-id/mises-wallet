@@ -43,6 +43,7 @@
     "aes-js": "^3.1.2",
     "axios": "^0.27.2",
     "mises-js-sdk": "^0.1.14",
+    "browser-passworder": "^2.0.3",
     "react-query": "^3.35.0",
     "big-integer": "^1.6.48",
     "bip39": "^3.0.2",

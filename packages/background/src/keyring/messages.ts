@@ -990,6 +990,7 @@ export class IsUnlockMsg extends Message<boolean> {
     return IsUnlockMsg.type();
   }
 }
+
 export class AddAccountMsg extends Message<{
   multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
 }> {
@@ -1013,5 +1014,28 @@ export class AddAccountMsg extends Message<{
 
   type(): string {
     return AddAccountMsg.type();
+  }
+}
+
+export class MigratorKeyRingMsg extends Message<{
+  multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
+}> {
+  public static type() {
+    return "migrator";
+  }
+
+  constructor(public readonly password: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return MigratorKeyRingMsg.type();
   }
 }
