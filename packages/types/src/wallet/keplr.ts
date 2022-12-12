@@ -162,7 +162,7 @@ export interface Keplr {
     signDoc: StdSignDoc,
     signOptions?: KeplrSignOptions
   ): Promise<AminoSignResponse>;
-  isunlocked(): Promise<boolean>;
+  isUnlocked(): Promise<boolean>;
   misesAccount(): Promise<MisesAccountData>;
   hasWalletAccount(): Promise<boolean>;
   disconnect(params: { userid: string; appid: string }): Promise<boolean>;

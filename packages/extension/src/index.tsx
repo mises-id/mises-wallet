@@ -65,7 +65,7 @@ import { SettingEndpointsPage } from "./pages/setting/endpoints";
 import { SettingAutoLockPage } from "./pages/setting/autolock";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
-window.mises = new Keplr(
+window.misesWallet = new Keplr(
   manifest.version,
   "core",
   new InExtensionMessageRequester()

@@ -549,7 +549,7 @@ export class GetTxEncryptionKeyMsg extends Message<Uint8Array> {
 
 export class IsUnlockMsg extends Message<boolean> {
   public static type() {
-    return "isunlocked";
+    return "isUnlocked";
   }
 
   constructor() {

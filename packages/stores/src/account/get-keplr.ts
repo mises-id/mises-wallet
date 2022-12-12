@@ -7,12 +7,12 @@ export const getKeplrFromWindow: () => Promise<
     return undefined;
   }
 
-  if (window.mises) {
-    return window.mises;
+  if (window.misesWallet) {
+    return window.misesWallet;
   }
 
   if (document.readyState === "complete") {
-    return window.mises;
+    return window.misesWallet;
   }
 
   return new Promise((resolve) => {
@@ -21,7 +21,7 @@ export const getKeplrFromWindow: () => Promise<
         event.target &&
         (event.target as Document).readyState === "complete"
       ) {
-        resolve(window.mises);
+        resolve(window.misesWallet);
         document.removeEventListener("readystatechange", documentStateChange);
       }
     };

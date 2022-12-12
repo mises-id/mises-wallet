@@ -57,7 +57,7 @@ function defineUnwritablePropertyIfPossible(o: any, p: string, value: any) {
 }
 
 export function injectKeplrToWindow(keplr: IKeplr): void {
-  defineUnwritablePropertyIfPossible(window, "mises", keplr);
+  defineUnwritablePropertyIfPossible(window, "misesWallet", keplr);
   defineUnwritablePropertyIfPossible(
     window,
     "getOfflineSigner",
@@ -330,8 +330,8 @@ export class InjectedKeplr implements IKeplr {
       }
     }
   }
-  async isunlocked(): Promise<boolean> {
-    return await this.requestMethod("isunlocked", []);
+  async isUnlocked(): Promise<boolean> {
+    return await this.requestMethod("isUnlocked", []);
   }
 
   async enable(chainIds: string | string[]): Promise<void> {

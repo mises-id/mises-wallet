@@ -61,7 +61,7 @@ export class Keplr implements IKeplr {
     public readonly mode: KeplrMode,
     protected readonly requester: MessageRequester
   ) {}
-  async isunlocked(): Promise<boolean> {
+  async isUnlocked(): Promise<boolean> {
     // return true;
     return await this.requester.sendMessage(BACKGROUND_PORT, new IsUnlockMsg());
   }

@@ -499,7 +499,7 @@ export class KeplrWalletConnectV1 implements Keplr {
     throw new Error("Not yet implemented");
   }
 
-  async isunlocked(): Promise<boolean> {
+  async isUnlocked(): Promise<boolean> {
     return true;
   }
   misesWeb3Client(): MisesWeb3Client {

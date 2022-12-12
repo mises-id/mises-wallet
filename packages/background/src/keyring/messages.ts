@@ -967,7 +967,7 @@ export class InitNonDefaultLedgerAppMsg extends Message<void> {
 
 export class IsUnlockMsg extends Message<boolean> {
   public static type() {
-    return "isunlocked";
+    return "isUnlocked";
   }
 
   constructor() {

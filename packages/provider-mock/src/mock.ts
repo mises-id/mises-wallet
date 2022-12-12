@@ -270,7 +270,7 @@ export class MockKeplr implements Keplr {
     throw new Error("Not yet implemented");
   }
 
-  async isunlocked(): Promise<boolean> {
+  async isUnlocked(): Promise<boolean> {
     return true;
   }
 
