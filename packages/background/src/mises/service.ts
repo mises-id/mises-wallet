@@ -192,8 +192,8 @@ export class MisesService {
 
     if (isRegistered) {
       const misesInfo = await this.activeUser?.info();
-      userInfo.avatar = misesInfo.avatarUrl;
-      userInfo.nickname = misesInfo.name || "";
+      userInfo.avatar = misesInfo?.avatarUrl;
+      userInfo.nickname = misesInfo?.name || "";
     }
 
     const misesId = this.activeUser.address();

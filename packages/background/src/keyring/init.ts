@@ -27,6 +27,7 @@ import {
   IsUnlockMsg,
   AddAccountMsg,
   MigratorKeyRingMsg,
+  RestoreKeyStoreMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -60,6 +61,7 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(InitNonDefaultLedgerAppMsg);
   router.registerMessage(AddAccountMsg);
   router.registerMessage(MigratorKeyRingMsg);
+  router.registerMessage(RestoreKeyStoreMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

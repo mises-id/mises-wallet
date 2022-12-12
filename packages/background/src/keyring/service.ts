@@ -742,4 +742,8 @@ export class KeyRingService {
   async migratorKeyRing(password: string) {
     return await this.keyRing.migratorKeyRing(password);
   }
+
+  async restoreKeyStore() {
+    return await this.keyRing.restoreKeyStore();
+  }
 }

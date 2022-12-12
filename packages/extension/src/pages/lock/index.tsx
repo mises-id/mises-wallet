@@ -54,6 +54,10 @@ export const LockPage: FunctionComponent = observer(() => {
     }
   }, []);
 
+  const restore = () => {
+    history.push("/register?type=restore");
+  };
+
   return (
     <EmptyLayout style={{ backgroundColor: "white", height: "100%" }}>
       <Form
@@ -128,6 +132,9 @@ export const LockPage: FunctionComponent = observer(() => {
         <Button type="submit" color="primary" block data-loading={loading}>
           <FormattedMessage id="lock.button.unlock" />
         </Button>
+        <p className={style.restore} onClick={restore}>
+          <FormattedMessage id="lock.text.restore" />
+        </p>
       </Form>
     </EmptyLayout>
   );

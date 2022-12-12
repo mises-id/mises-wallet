@@ -183,6 +183,43 @@ export class RegisterConfig {
     }
   }
 
+  @flow
+  *restoreKeyStore() {
+    this._isLoading = true;
+    try {
+      yield this.keyRingStore.restoreKeyStore();
+      this._isFinalized = false;
+    } finally {
+      this._isLoading = false;
+    }
+  }
+  // Create or add the mnemonic account.
+  // If the mode is "add", password will be ignored.
+  @flow
+  *restoreMnemonic(
+    name: string,
+    mnemonic: string,
+    password: string,
+    bip44HDPath: BIP44HDPath,
+    meta: Record<string, string> = {}
+  ) {
+    this._isLoading = true;
+    try {
+      yield this.keyRingStore.createMnemonicKey(
+        mnemonic,
+        password,
+        {
+          name,
+          ...meta,
+        },
+        bip44HDPath
+      );
+      this._isFinalized = true;
+    } finally {
+      this._isLoading = false;
+    }
+  }
+
   async generateMnemonic(strenth: number = 128): Promise<string> {
     return await Mnemonic.generateSeed(this.rng, strenth);
   }

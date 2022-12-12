@@ -25,6 +25,7 @@ import {
   ExportKeyRingDatasMsg,
   AddAccountMsg,
   MigratorKeyRingMsg,
+  RestoreKeyStoreMsg,
 } from "@keplr-wallet/background";
 
 import { computed, flow, makeObservable, observable, runInAction } from "mobx";
@@ -435,5 +436,12 @@ export class KeyRingStore {
     );
 
     this.multiKeyStoreInfo = result.multiKeyStoreInfo;
+  }
+
+  async restoreKeyStore() {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new RestoreKeyStoreMsg()
+    );
   }
 }

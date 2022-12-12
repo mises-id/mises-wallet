@@ -75,6 +75,19 @@
   "setting.keyring.change.input.name.error.invalid": "계정 이름이 유효하지 않습니다",
   "setting.keyring.change.name.button.save": "저장",
 
+  "setting.keyring.create.name": "새로운 계정 이름",
+  "setting.keyring.create.input.name": "새로운 계정 이름",
+  "setting.keyring.create.input.name.error.required": "계정 이름을 입력하세요",
+  "setting.keyring.create.input.name.error.invalid": "계정 이름이 유효하지 않습니다",
+  "setting.keyring.create.name.button.save": "만들다",
+
+  "setting.keyring.import.name": "개인 키 가져오기",
+  "setting.keyring.import.input.name": "새로운 계정 이름",
+  "setting.keyring.import.input.name.error.required": "계정 이름을 입력하세요",
+  "setting.keyring.import.input.name.error.invalid": "계정 이름이 유효하지 않습니다",
+  "setting.keyring.import.input.private-key.title": "개인키를 입력해주세요",
+  "setting.keyring.import.name.button.save": "만들다",
+
   "setting.export": "니모닉 시드 보기",
   "setting.export.private-key": "개인키 보기",
   "setting.export.warning": "진행하려면 패스워드를 입력하세요",
@@ -181,6 +194,7 @@
   "lock.input.password.error.invalid": "잘못된 비밀번호입니다",
   "lock.alert.capslock": "CapsLock이 켜져 있습니다",
   "lock.button.unlock": "잠금 해제",
+  "lock.text.restore": "복원하다",
 
   "send.input.recipient": "받는 주소",
   "send.input.recipient.error.invalid": "잘못된 주소입니다",

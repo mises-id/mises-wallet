@@ -1039,3 +1039,23 @@ export class MigratorKeyRingMsg extends Message<{
     return MigratorKeyRingMsg.type();
   }
 }
+export class RestoreKeyStoreMsg extends Message<void> {
+  public static type() {
+    return "remove-all-Key-store";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return RestoreKeyStoreMsg.type();
+  }
+}

@@ -214,6 +214,7 @@
   "lock.input.password.error.invalid": "Invalid password",
   "lock.alert.capslock": "CapsLock is on",
   "lock.button.unlock": "Unlock",
+  "lock.text.restore": "Restore",
 
   "send.input.recipient": "Recipient",
   "send.input.recipient.error.invalid": "Invalid address",

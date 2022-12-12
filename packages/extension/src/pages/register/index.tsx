@@ -12,7 +12,14 @@ import { FormattedMessage } from "react-intl";
 
 import { useRegisterConfig } from "@keplr-wallet/hooks";
 import { useStore } from "../../stores";
-import { NewMnemonicIntro, NewMnemonicPage, TypeNewMnemonic } from "./mnemonic";
+import {
+  NewMnemonicIntro,
+  NewMnemonicPage,
+  RestoreMnemonicIntro,
+  RestoreMnemonicPage,
+  TypeNewMnemonic,
+  TypeRestoreMnemonic,
+} from "./mnemonic";
 import {
   RecoverMnemonicIntro,
   RecoverMnemonicPage,
@@ -21,6 +28,7 @@ import {
 import { WelcomePage } from "./welcome";
 import { AdditionalSignInPrepend } from "../../config.ui";
 import classnames from "classnames";
+import { useHistory } from "react-router";
 
 export const BackButton: FunctionComponent<{ onClick: () => void }> = ({
   onClick,
@@ -58,7 +66,20 @@ export const RegisterPage: FunctionComponent = observer(() => {
       intro: RecoverMnemonicIntro,
       page: RecoverMnemonicPage,
     },
+    {
+      type: TypeRestoreMnemonic,
+      intro: RestoreMnemonicIntro,
+      page: RestoreMnemonicPage,
+    },
   ]);
+
+  const history = useHistory();
+  useEffect(() => {
+    const query = new URLSearchParams(history.location.search);
+    if (query.get("type") === "restore") {
+      registerConfig.setType(TypeRestoreMnemonic);
+    }
+  }, []);
 
   return (
     <EmptyLayout

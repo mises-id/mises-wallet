@@ -581,7 +581,6 @@ export class KeyRing {
       delete coinTypeForChain[identifier];
       keyStore.coinTypeForChain = coinTypeForChain;
     }
-
     this.save();
   }
 
@@ -1577,5 +1576,11 @@ export class KeyRing {
     } catch (error: any) {
       throw new Error(error);
     }
+  }
+
+  restoreKeyStore() {
+    this.keyStore = null;
+    this.multiKeyStore = [];
+    this.save();
   }
 }
