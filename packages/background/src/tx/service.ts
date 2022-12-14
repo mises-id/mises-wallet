@@ -37,13 +37,6 @@ export class BackgroundTxService {
     tx: unknown,
     _mode: "async" | "sync" | "block"
   ): Promise<Uint8Array> {
-    // const chainInfo = await this.chainsService.getChainInfo(chainId);
-    // const restInstance = Axios.create({
-    //   ...{
-    //     baseURL: chainInfo.rest,
-    //   },
-    //   ...chainInfo.restConfig,
-    // });
     console.log(_mode);
     this.notification.create({
       iconRelativeUrl: "assets/logo-256.png",
@@ -51,47 +44,21 @@ export class BackgroundTxService {
       message: "Wait a second",
     });
 
-    // const isProtoTx = Buffer.isBuffer(tx) || tx instanceof Uint8Array;
-
-    // const params = isProtoTx
-    //   ? {
-    //       tx_bytes: Buffer.from(tx as any).toString("base64"),
-    //       mode: (() => {
-    //         switch (mode) {
-    //           case "async":
-    //             return "BROADCAST_MODE_ASYNC";
-    //           case "block":
-    //             return "BROADCAST_MODE_BLOCK";
-    //           case "sync":
-    //             return "BROADCAST_MODE_SYNC";
-    //           default:
-    //             return "BROADCAST_MODE_UNSPECIFIED";
-    //         }
-    //       })(),
-    //     }
-    //   : {
-    //       tx,
-    //       mode: mode,
-    //     };
-
     try {
-      // const result = await restInstance.post(
-      //   isProtoTx ? "/cosmos/tx/v1beta1/txs" : "/txs",
-      //   params
-      // );
-      const txResponse = await this.misesService.broadcastTx(tx as any);
+      const transactionHash = await this.misesService.broadcastTx(tx as any);
 
-      if (txResponse.code != null && txResponse.code !== 0) {
-        throw new Error(txResponse["rawLog"]);
-      }
+      // if (txResponse.code != null && txResponse.code !== 0) {
+      //   throw new Error(txResponse["rawLog"]);
+      // }
 
-      const txHash = Buffer.from(txResponse.transactionHash, "hex");
+      const txHash = Buffer.from(transactionHash, "hex");
 
-      BackgroundTxService.processTxResultNotification(
-        this.notification,
-        txResponse
-      );
-
+      this.misesService.pollForTx(transactionHash).then((response) => {
+        BackgroundTxService.processTxResultNotification(
+          this.notification,
+          response
+        );
+      });
       return txHash;
     } catch (e: any) {
       console.log(e);

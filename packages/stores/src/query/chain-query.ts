@@ -13,8 +13,6 @@ export class ObservableChainQuery<
   protected readonly _chainId: string;
   protected readonly chainGetter: ChainGetter;
   fetchConfig: {
-    staleTime: number;
-    // To handle sequence mismatch
     retry: number;
     retryDelay: number;
   };
@@ -40,8 +38,6 @@ export class ObservableChainQuery<
     this.chainGetter = chainGetter;
 
     this.fetchConfig = {
-      staleTime: Infinity,
-      // To handle sequence mismatch
       retry: 3,
       retryDelay: 1000,
     };

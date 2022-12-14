@@ -4,6 +4,11 @@ import { MisesAccountData } from "@keplr-wallet/types";
 import { MUserInfo } from "mises-js-sdk/dist/types/muser";
 import { PubKey } from "secretjs/types/types";
 import { ROUTE } from "./constants";
+import {
+  IndexTx,
+  userInfo,
+  DeliverTxResponse as DeliverTxResponseMises,
+} from "./service";
 
 export class BalanceUMISMsg extends Message<Coin> {
   public static type() {
@@ -51,12 +56,12 @@ export class MisesChainMsg extends Message<boolean> {
   }
 }
 
-export class RecentTransactionsMsg extends Message<readonly any[]> {
+export class RecentTransactionsMsg extends Message<readonly IndexTx[]> {
   public static type() {
     return "recent-transaction";
   }
 
-  constructor(public readonly height: number | undefined) {
+  constructor() {
     super();
   }
 
@@ -487,5 +492,50 @@ export class StakingMsg extends Message<DeliverTxResponse> {
 
   type(): string {
     return StakingMsg.type();
+  }
+}
+
+export class ActiveUserMsg extends Message<userInfo> {
+  public static type() {
+    return "active-user";
+  }
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+  approveExternal(): boolean {
+    return true;
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return ActiveUserMsg.type();
+  }
+}
+
+export class PortForTxMsg extends Message<DeliverTxResponseMises> {
+  public static type() {
+    return "port-for-tx";
+  }
+  constructor(public readonly txId: string | Uint8Array) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.txId) {
+      throw new KeplrError("txId", 101, "txId is empty");
+    }
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return PortForTxMsg.type();
   }
 }

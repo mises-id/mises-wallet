@@ -11,6 +11,7 @@ import classnames from "classnames";
 import { Dec } from "@keplr-wallet/unit";
 
 import { FormattedMessage } from "react-intl";
+import { useHistory } from "react-router";
 
 export const StakeView: FunctionComponent = observer(() => {
   const { chainStore, accountStore, queriesStore, analyticsStore } = useStore();
@@ -24,6 +25,8 @@ export const StakeView: FunctionComponent = observer(() => {
   const stakableReward = rewards.stakableReward;
 
   const isRewardExist = rewards.rewards.length > 0;
+
+  const history = useHistory();
 
   return (
     <div>
@@ -68,7 +71,7 @@ export const StakeView: FunctionComponent = observer(() => {
               //   disabled={!accountInfo.isReadyToSendMsgs}
               //   onClick={withdrawAllRewards}
               //   data-loading={
-              //     accountInfo.isSendingMsg === "withdrawRewards" ||
+              //     accountInfo.txTypeInProgress === "withdrawRewards" ||
               //     isWithdrawingRewards
               //   }
               // >
@@ -141,6 +144,38 @@ export const StakeView: FunctionComponent = observer(() => {
           </Button>
         </a>
       </div>
+      <React.Fragment>
+        <hr className={styleStake.hr} />
+        <div
+          className={classnames(styleStake.containerInner, styleStake.reward)}
+        >
+          <div className={styleStake.vertical}>
+            <p
+              className={classnames(
+                "h2",
+                "my-0",
+                "font-weight-normal",
+                styleStake.paragraphMain
+              )}
+            >
+              <FormattedMessage id="main.transfer.message.activity" />
+            </p>
+          </div>
+          <div style={{ flex: 1 }} />
+          {
+            <Button
+              className={styleStake.button}
+              color="primary"
+              size="sm"
+              onClick={() => {
+                history.push("/transfer");
+              }}
+            >
+              <FormattedMessage id="main.transfer.button.activity" />
+            </Button>
+          }
+        </div>
+      </React.Fragment>
     </div>
   );
 });

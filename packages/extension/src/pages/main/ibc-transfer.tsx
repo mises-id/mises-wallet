@@ -53,7 +53,7 @@ export const IBCTransferView: FunctionComponent = observer(() => {
         color="primary"
         size="sm"
         disabled={!hasAssets}
-        data-loading={accountInfo.isSendingMsg === "ibcTransfer"}
+        data-loading={accountInfo.txTypeInProgress === "ibcTransfer"}
         onClick={(e) => {
           e.preventDefault();
 

@@ -519,7 +519,7 @@ export const RestoreMnemonicPage: FunctionComponent<{
         </Form>
         <BackButton
           onClick={() => {
-            registerConfig.clear();
+            history.back();
           }}
         />
       </div>

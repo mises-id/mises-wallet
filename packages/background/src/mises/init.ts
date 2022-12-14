@@ -18,6 +18,8 @@ import {
   UserUnFollowMsg,
   SetUserInfoMsg,
   StakingMsg,
+  ActiveUserMsg,
+  PortForTxMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -42,6 +44,8 @@ export function init(router: Router, service: MisesService) {
   router.registerMessage(UserUnFollowMsg);
   router.registerMessage(SetUserInfoMsg);
   router.registerMessage(StakingMsg);
+  router.registerMessage(ActiveUserMsg);
+  router.registerMessage(PortForTxMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

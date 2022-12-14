@@ -64,6 +64,7 @@ import { LogPageViewWrapper } from "./components/analytics";
 import { SettingEndpointsPage } from "./pages/setting/endpoints";
 import { SettingAutoLockPage } from "./pages/setting/autolock";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
+import { TransferPage } from "./pages/transfer";
 
 window.misesWallet = new Keplr(
   manifest.version,
@@ -256,6 +257,7 @@ ReactDOM.render(
                   />
                   <Route path="/sign" component={SignPage} />
                   <Route path="/suggest-chain" component={ChainSuggestedPage} />
+                  <Route path="/transfer" component={TransferPage} />
                 </LogPageViewWrapper>
               </HashRouter>
             </ConfirmProvider>

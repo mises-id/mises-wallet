@@ -24,6 +24,8 @@ import {
 import { InExtensionMessageRequester } from "@keplr-wallet/router-extension";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
+import { ModalBody, Modal } from "reactstrap";
+
 interface FormData {
   password: string;
 }
@@ -46,6 +48,8 @@ export const LockPage: FunctionComponent = observer(() => {
   const interactionInfo = useInteractionInfo(() => {
     keyRingStore.rejectAll();
   });
+
+  const [isOpen, setisOpen] = useState(false);
 
   useEffect(() => {
     if (passwordRef.current) {
@@ -132,10 +136,57 @@ export const LockPage: FunctionComponent = observer(() => {
         <Button type="submit" color="primary" block data-loading={loading}>
           <FormattedMessage id="lock.button.unlock" />
         </Button>
-        <p className={style.restore} onClick={restore}>
+        <p className={style.restoreTips}>
+          <FormattedMessage id="lock.text.restore.tips" />
+        </p>
+        <p className={style.restore} onClick={() => setisOpen(true)}>
           <FormattedMessage id="lock.text.restore" />
         </p>
       </Form>
+      <Modal isOpen={isOpen} centered>
+        <ModalBody>
+          <div className={style.info}>
+            <img
+              style={{
+                width: "32px",
+                height: "32px",
+                marginRight: "12px",
+              }}
+              src={require("../../public/assets/svg/info-mark-danger.svg")}
+              alt="info"
+            />
+          </div>
+          <div className={style.title}>
+            <FormattedMessage id="lock.modal.text.tips" />
+          </div>
+          <div className={style.content}>
+            <FormattedMessage id="lock.modal.text.content" />
+          </div>
+          <div className={style.content}>
+            <FormattedMessage id="lock.modal.text.content_second" />
+          </div>
+          <div className={style.buttons}>
+            <Button
+              type="button"
+              color="danger"
+              block
+              onClick={restore}
+              style={{ marginTop: "10px" }}
+            >
+              <FormattedMessage id="lock.modal.button.confirm" />
+            </Button>
+            <Button
+              type="button"
+              color="primary"
+              block
+              onClick={() => setisOpen(false)}
+              style={{ marginTop: "10px" }}
+            >
+              <FormattedMessage id="lock.modal.button.cancel" />
+            </Button>
+          </div>
+        </ModalBody>
+      </Modal>
     </EmptyLayout>
   );
 });

@@ -35,7 +35,7 @@ $body-color: black;
 html {
   width: $popup-size-width;
   min-width: 360px;
-  height: $popup-size-height;
+  height: var(--window-height);
   margin: auto;
   background-color: white;
 
@@ -45,7 +45,7 @@ html {
 body {
   width: $popup-size-width;
   min-width: 360px;
-  height: $popup-size-height;
+  height: var(--window-height);
 
   background-color: $background-color;
 
@@ -59,7 +59,7 @@ body {
 
 #app {
   width: $popup-size-width;
-  height: $popup-size-height;
+  height: var(--window-height);
 }
 
 @keyframes spinAround {

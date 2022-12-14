@@ -1,0 +1,41 @@
+.transtionItem{
+  padding: 15px 0;
+  display: flex;
+  align-items: center;
+  &:not(last-child){
+    border-bottom: 1px solid #e9ecef;
+  }
+}
+.transtionContent{
+  flex: 1;
+  margin-left: 16px;
+}
+.category{
+  color: #24272a;
+  font-size: 18px;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.itemDesc{
+  margin-bottom: 0;
+  color: #bbc0c5;
+}
+.height{
+  color: #28a745;
+  font-size: 12px;
+  display: inline-block;
+  &::after{
+    content: "·";
+    margin: 0 4px;
+  }
+}
+.primaryCurrency{
+  color: #24272a;
+  font-size: 14px;
+  
+}
+.loadingStatus{
+  text-align: center;
+  padding: 0 20px;
+  
+}

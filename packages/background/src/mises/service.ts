@@ -23,6 +23,7 @@ import {
 } from "@cosmjs/stargate";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import { PubKey } from "@keplr-wallet/types";
+import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -38,12 +39,13 @@ type gasprice = {
   propose_gasprice: number;
 };
 
-type userInfo = {
+export type userInfo = {
   misesId: string;
   nickname: string;
   avatar: string | undefined;
   token: string;
   timestamp: number;
+  transtions: IndexTx[];
 };
 
 type getTokenParams = {
@@ -52,48 +54,14 @@ type getTokenParams = {
   referrer: string;
 };
 
-type DeliverTxResponse = {
+export type DeliverTxResponse = {
   code: number;
-  height: Long.Long;
+  height: number;
   rawLog: string;
-  transactionHash: string;
-  gasUsed: Long.Long;
-  gasWanted: Long.Long;
+  hash: string;
+  gasUsed: number;
+  gasWanted: number;
 };
-
-interface TxResponse {
-  /** The block height */
-  height: Long;
-  /** The transaction hash. */
-  txhash: string;
-  /** Namespace for the Code */
-  codespace: string;
-  /** Response code. */
-  code: number;
-  /** Result bytes, if any. */
-  data: string;
-  /**
-   * The output of the application's logger (raw string). May be
-   * non-deterministic.
-   */
-  rawLog: string;
-  /** The output of the application's logger (typed). May be non-deterministic. */
-  logs: any[];
-  /** Additional information. May be non-deterministic. */
-  info: string;
-  /** Amount of gas requested for transaction. */
-  gasWanted: Long;
-  /** Amount of gas consumed by transaction. */
-  gasUsed: Long;
-  /** The request transaction bytes. */
-  tx?: any;
-  /**
-   * Time of the previous block. For heights > 1, it's the weighted median of
-   * the timestamps of the valid votes in the block.LastCommit. For height == 1,
-   * it's genesis time.
-   */
-  timestamp: string;
-}
 
 const defaultUserInfo = {
   misesId: "",
@@ -101,6 +69,7 @@ const defaultUserInfo = {
   avatar: undefined,
   token: "",
   timestamp: 0,
+  transtions: [],
 };
 
 export const fetchConfig = {
@@ -108,6 +77,23 @@ export const fetchConfig = {
   // To handle sequence mismatch
   retry: 3,
   retryDelay: 1000,
+};
+
+export type IndexTx = {
+  category: string;
+  date: string;
+  height: number;
+  initialTransaction: {
+    hash: string;
+    id: string;
+  };
+  primaryCurrency: string;
+  recipientAddress: string;
+  secondaryCurrency: string;
+  senderAddress: string;
+  title: string;
+  transactionGroupType: string;
+  resultLength: number;
 };
 
 export class MisesService {
@@ -138,7 +124,11 @@ export class MisesService {
         console.log("init");
       });
 
-    this.gasPriceAndLimit();
+    this.mises.queryFetchClient.fetchQuery(
+      "gasPriceAndLimit",
+      () => this.gasPriceAndLimit(),
+      fetchConfig
+    );
   }
 
   async activateUser(priKey: string): Promise<void> {
@@ -213,13 +203,7 @@ export class MisesService {
 
     this.activeUser = undefined as any;
 
-    this.setToMisesPrivate({
-      misesId: "",
-      nickname: "",
-      avatar: undefined,
-      token: "",
-      timestamp: 0,
-    });
+    this.setToMisesPrivate(defaultUserInfo);
   }
 
   async generateAuth(nonce: string): Promise<generateAuthParams> {
@@ -321,6 +305,7 @@ export class MisesService {
         token,
         misesId,
         timestamp,
+        transtions: this.userInfo.transtions,
       };
 
       this.storeUserInfo(updateUserInfo);
@@ -366,11 +351,7 @@ export class MisesService {
 
   async gasPriceAndLimit() {
     try {
-      const gasPrices = await this.mises.queryFetchClient.fetchQuery(
-        "getGasPrices",
-        () => this.getGasPrices(),
-        fetchConfig
-      );
+      const gasPrices = await this.getGasPrices();
 
       const proposeGasprice =
         gasPrices.propose_gasprice || this.mises.config.gasPrice();
@@ -402,10 +383,6 @@ export class MisesService {
     return this.mises.coinDefine.toCoinUMIS(balance);
   }
 
-  recentTransactions(formHeight: number | undefined) {
-    return this.activeUser.recentTransactions(formHeight);
-  }
-
   getChainId() {
     return this.mises.stargateClient.getChainId();
   }
@@ -426,17 +403,20 @@ export class MisesService {
     return this.queryClient.auth.account(address);
   }
 
-  public async broadcastTx(
-    tx: Uint8Array,
-    timeoutMs: number = 30000,
+  public async pollForTx(
+    txId: string | Uint8Array,
+    timeoutMs: number = 3000 * 15,
     pollIntervalMs: number = 3000
   ): Promise<DeliverTxResponse> {
     let timedOut = false;
+
     const txPollTimeout = setTimeout(() => {
       timedOut = true;
     }, timeoutMs);
-
-    const pollForTx = async (txId: string): Promise<DeliverTxResponse> => {
+    if (typeof txId !== "string") {
+      txId = this.toHex(txId);
+    }
+    try {
       if (timedOut) {
         throw new TimeoutError(
           `Transaction with ID ${txId} was submitted but was not yet found on the chain. You might want to check later.`,
@@ -445,39 +425,31 @@ export class MisesService {
       }
 
       await this.sleep(pollIntervalMs);
-
+      console.log(txId);
       const result = await this.getTx(txId);
 
-      return result
-        ? {
-            code: result.code,
-            height: result.height,
-            rawLog: result.rawLog,
-            transactionHash: txId,
-            gasUsed: result.gasUsed,
-            gasWanted: result.gasWanted,
-          }
-        : pollForTx(txId);
-    };
-    const broadcasted = await this.tmClient.broadcastTxSync({ tx });
-    if (broadcasted.code) {
-      throw new Error(
-        `Broadcasting transaction failed with code ${broadcasted.code} (codespace: ${broadcasted.codeSpace}). Log: ${broadcasted.log}`
-      );
+      clearTimeout(txPollTimeout);
+
+      return result || this.pollForTx(txId);
+    } catch (error) {
+      clearTimeout(txPollTimeout);
+      return Promise.reject(error);
     }
-    const transactionId = this.toHex(broadcasted.hash).toUpperCase();
-    return new Promise((resolve, reject) =>
-      pollForTx(transactionId).then(
-        (value) => {
-          clearTimeout(txPollTimeout);
-          resolve(value);
-        },
-        (error) => {
-          clearTimeout(txPollTimeout);
-          reject(error);
-        }
-      )
-    );
+  }
+
+  public async broadcastTx(tx: Uint8Array): Promise<string> {
+    try {
+      const broadcasted = await this.tmClient.broadcastTxSync({ tx });
+      if (broadcasted.code) {
+        throw new Error(
+          `Broadcasting transaction failed with code ${broadcasted.code} (codespace: ${broadcasted.codeSpace}). Log: ${broadcasted.log}`
+        );
+      }
+      const transactionId = this.toHex(broadcasted.hash).toUpperCase();
+      return transactionId;
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
   async simulate(
     messages: readonly any[],
@@ -494,7 +466,6 @@ export class MisesService {
       sequence
     );
 
-    // const gasUsed = proposeGasprice * (res.gasInfo?.gasUsed.low || 67751);
     return {
       gasUsed: res.gasInfo?.gasUsed,
     };
@@ -508,9 +479,63 @@ export class MisesService {
     return out;
   }
 
-  async getTx(hash: string): Promise<TxResponse | undefined> {
-    const { txResponse } = await this.queryClient.tx.getTx(hash);
-    return txResponse;
+  async getTx(hash: string): Promise<DeliverTxResponse | undefined> {
+    const results = await this.txsQuery(`tx.hash='${hash}'`, {
+      minHeight: 0,
+      maxHeight: undefined,
+      page: 1,
+    });
+    if (results.totalCount === 0 || !results.txs) {
+      return undefined;
+    }
+    const result = results.txs[0];
+    return {
+      code: result.code,
+      height: result.height,
+      rawLog: result.rawLog,
+      hash: result.hash,
+      gasUsed: result.gasUsed,
+      gasWanted: result.gasWanted,
+    };
+  }
+
+  public async txsQuery(
+    query: string,
+    param: TxSearchParam
+  ): Promise<TxSearchResp> {
+    const minHeight = param.minHeight || 0;
+    const maxHeight = param.maxHeight || Number.MAX_SAFE_INTEGER;
+    const page = param.page || 1;
+    function withFilters(originalQuery: string): string {
+      return `${originalQuery} AND tx.height>=${minHeight} AND tx.height<=${maxHeight}`;
+    }
+    let results;
+    try {
+      results = await this.tmClient.txSearch({
+        query: withFilters(query),
+        page,
+      });
+    } catch (_err) {
+      results = {
+        totalCount: 0,
+        txs: [],
+      };
+    }
+    this.tmClient.disconnect();
+    return {
+      totalCount: results.totalCount,
+      txs: results.txs.map((tx) => {
+        return {
+          height: tx.height,
+          hash: this.toHex(tx.hash).toUpperCase(),
+          code: tx.result.code,
+          rawLog: tx.result.log || "",
+          tx: tx.tx,
+          gasUsed: tx.result.gasUsed,
+          gasWanted: tx.result.gasWanted,
+        };
+      }),
+    };
   }
 
   sleep(ms = 3000) {
@@ -521,10 +546,7 @@ export class MisesService {
     try {
       const nonce = new Date().getTime().toString();
       const { auth } = await this.generateAuth(nonce);
-      console.log({
-        auth,
-        address: this.activeUser.address(),
-      });
+
       return {
         auth,
         address: this.activeUser.address(),
@@ -552,5 +574,191 @@ export class MisesService {
       return Promise.reject(data.rawLog);
     }
     return data;
+  }
+
+  parseAmountItem(item: { value: string }) {
+    const amount = item.value?.replace("umis", "|umis").split("|");
+    const currency = this.mises.coinDefine.fromCoin({
+      amount: amount[0],
+      denom: amount[1],
+    });
+    const coin = this.mises.coinDefine.toCoinMIS(currency);
+    return {
+      amount: coin.amount,
+      denom: coin.denom.toUpperCase(),
+    };
+  }
+
+  parseTxEvents(
+    activeUserAddr: any,
+    tx: { raw: any; height: any; hash: any }
+  ): IndexTx[] {
+    const events = tx.raw;
+    return events.reduce(
+      (result: IndexTx[], event: { type: any; attributes: any[] }) => {
+        let amount = { amount: "", denom: "" };
+        let recipient = { value: "" };
+        let sender = { value: "" };
+        let category = "";
+        let title = "";
+        let transactionGroupType = "misesIn";
+        switch (event.type) {
+          case "transfer": {
+            const amountItem = event.attributes.find(
+              (item: { key: string }) => item.key === "amount"
+            );
+            if (amountItem) {
+              amount = this.parseAmountItem(amountItem);
+            }
+            recipient = event.attributes.find(
+              (item: { key: string }) => item.key === "recipient"
+            );
+            sender = event.attributes.find(
+              (item: { key: string }) => item.key === "sender"
+            );
+            category =
+              recipient && recipient.value === activeUserAddr
+                ? "receive"
+                : "send";
+
+            title =
+              recipient && recipient.value === activeUserAddr
+                ? "Receive"
+                : "Send";
+
+            transactionGroupType =
+              recipient && recipient.value === activeUserAddr
+                ? "misesIn"
+                : "misesOut";
+            break;
+          }
+
+          case "withdraw_rewards": {
+            const amountItem = event.attributes.find(
+              (item: { key: string }) => item.key === "amount"
+            );
+            if (amountItem) {
+              amount = this.parseAmountItem(amountItem);
+            }
+
+            sender = event.attributes.find(
+              (item: { key: string }) => item.key === "validator"
+            );
+            recipient = { value: activeUserAddr };
+
+            category = "interaction";
+            title = "Withdraw Rewards";
+            transactionGroupType = "misesIn";
+            break;
+          }
+          case "delegate": {
+            const amountItem = event.attributes.find(
+              (item: { key: string }) => item.key === "amount"
+            );
+            if (amountItem) {
+              amount = this.parseAmountItem(amountItem);
+            }
+            sender = { value: activeUserAddr };
+            recipient = event.attributes.find(
+              (item: { key: string }) => item.key === "validator"
+            );
+            category = "interaction";
+            title = "Delegate";
+            transactionGroupType = "misesOut";
+            break;
+          }
+          case "redelegate": {
+            const amountItem = event.attributes.find(
+              (item: { key: string }) => item.key === "amount"
+            );
+            if (amountItem) {
+              amount = this.parseAmountItem(amountItem);
+            }
+            sender = { value: activeUserAddr };
+            recipient = event.attributes.find(
+              (item: { key: string }) => item.key === "destination_validator"
+            );
+            category = "interaction";
+            title = "Redelegate";
+            transactionGroupType = "misesOut";
+            break;
+          }
+          case "unbond": {
+            const amountItem = event.attributes.find(
+              (item: { key: string }) => item.key === "amount"
+            );
+            if (amountItem) {
+              amount = this.parseAmountItem(amountItem);
+            }
+            sender = event.attributes.find(
+              (item: { key: string }) => item.key === "validator"
+            );
+            recipient = { value: activeUserAddr };
+            category = "interaction";
+            title = "Undelegate";
+            transactionGroupType = "misesIn";
+            break;
+          }
+          default:
+            return result;
+        }
+
+        return result.concat({
+          category,
+          date:
+            result.length === 0
+              ? `${tx.height}`
+              : `${tx.height}:${result.length}`,
+
+          height: tx.height,
+          initialTransaction: { id: "0x0", hash: tx.hash },
+          primaryCurrency: `${amount.amount} ${amount.denom}`,
+          recipientAddress: recipient.value ?? "",
+          secondaryCurrency: `${amount.amount} ${amount.denom}`,
+          senderAddress: sender.value ?? "",
+          title,
+          transactionGroupType,
+          resultLength: result.length,
+        });
+      },
+      []
+    );
+  }
+
+  async recentTransactions() {
+    try {
+      const activeUser = this.activeUser;
+      let list = await activeUser?.recentTransactions(0);
+      if (Array.isArray(list)) {
+        list = list.reduce(
+          (
+            result: IndexTx[],
+            val: { raw: any; rawLog: string; height: any; hash: any }
+          ) => {
+            val.raw = [];
+            JSON.parse(val.rawLog).forEach((item: { events: any }) => {
+              val.raw = [...val.raw, ...item.events];
+            });
+            return [
+              ...result,
+              ...this.parseTxEvents(activeUser.address(), val),
+            ];
+          },
+          []
+        );
+        const sortList = ([...list] as unknown) as IndexTx[];
+        sortList.sort((a, b) =>
+          a.height === b.height
+            ? a.resultLength - b.resultLength
+            : b.height - a.height
+        );
+        this.userInfo.transtions = sortList;
+        return sortList;
+      }
+      return [];
+    } catch (error) {
+      console.log(error);
+      return Promise.reject(error);
+    }
   }
 }

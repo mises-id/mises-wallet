@@ -14,8 +14,10 @@
 
   "main.stake.message.pending-staking-reward": "Pending Staking Reward",
   "main.stake.message.stake": "Stake",
+  "main.transfer.message.activity": "Activity",
   "main.stake.message.earning": "Earn up to {apr}% per year",
   "main.stake.button.claim-rewards": "Claim",
+  "main.transfer.button.activity": "Activity",
   "main.stake.button.stake": "Stake",
   "main.stake.tooltip.no-asset": "No token in your account. Deposit some tokens to stake.",
 
@@ -214,7 +216,13 @@
   "lock.input.password.error.invalid": "Invalid password",
   "lock.alert.capslock": "CapsLock is on",
   "lock.button.unlock": "Unlock",
-  "lock.text.restore": "Restore",
+  "lock.text.restore": "Reset Wallet",
+  "lock.text.restore.tips": "Wallet won't unlock? You can ERASE your \n current wallet and setup a new one",
+  "lock.modal.text.tips": "Are you sure you want to erase your wallet?",
+  "lock.modal.text.content": "Your current wallet, accounts and assets will be removed permanently. This action cannot be undone.",
+  "lock.modal.text.content_second": "You can ONLY recover this wallet with your Secret Recovery Phrase. Mises does not have your Secret Recovery Phrase.",
+  "lock.modal.button.confirm": "I understand, continue",
+  "lock.modal.button.cancel": "Cancel",
 
   "send.input.recipient": "Recipient",
   "send.input.recipient.error.invalid": "Invalid address",
@@ -322,6 +330,8 @@
 
   "confirm.yes": "Yes",
   "confirm.no": "No",
+
+  "transfer.title": "Activity",
 
   "component.form.coin-input.token.label": "Token",
 

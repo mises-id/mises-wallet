@@ -11,6 +11,8 @@ import {
   AuthAccountsMsg,
   BroadcastTxMsg,
   SimulateMsg,
+  ActiveUserMsg,
+  PortForTxMsg,
 } from "@keplr-wallet/background";
 import { PubKey } from "@keplr-wallet/types";
 import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
@@ -33,13 +35,6 @@ export class MisesStore {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
       new MisesChainMsg(chainId)
-    );
-  }
-
-  async recentTransactions(height: number | undefined) {
-    return await this.requester.sendMessage(
-      BACKGROUND_PORT,
-      new RecentTransactionsMsg(height)
     );
   }
 
@@ -94,6 +89,27 @@ export class MisesStore {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
       new SimulateMsg(messages, memo, signer, sequence)
+    );
+  }
+
+  async recentTransactions() {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new RecentTransactionsMsg()
+    );
+  }
+
+  async activeUser() {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new ActiveUserMsg()
+    );
+  }
+
+  async portForTx(txId: string | Uint8Array) {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new PortForTxMsg(txId)
     );
   }
 }

@@ -309,8 +309,8 @@ export const SendPage: FunctionComponent = observer(() => {
             type="submit"
             color="primary"
             block
-            data-loading={accountInfo.isSendingMsg === "send"}
-            disabled={!accountInfo.isReadyToSendMsgs || !txStateIsValid}
+            data-loading={accountInfo.txTypeInProgress === "send"}
+            disabled={!accountInfo.isReadyToSendTx || !txStateIsValid}
             style={{
               marginTop: "12px",
             }}

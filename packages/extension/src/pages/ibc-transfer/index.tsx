@@ -272,7 +272,7 @@ export const IBCTransferPageAmount: FunctionComponent<{
             color="primary"
             block
             disabled={!isValid}
-            data-loading={accountInfo.isSendingMsg === "ibcTransfer"}
+            data-loading={accountInfo.txTypeInProgress === "ibcTransfer"}
             onClick={(e) => {
               e.preventDefault();
 
