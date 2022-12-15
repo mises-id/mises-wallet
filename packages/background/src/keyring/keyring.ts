@@ -967,6 +967,14 @@ export class KeyRing {
       throw new KeplrError("keyring", 121, "Invalid password");
     }
 
+    // If the index is -1, the mnemonic is exported
+    if (index === -1) {
+      const keyStore = this.multiKeyStore[0];
+      return Buffer.from(
+        await Crypto.decrypt(this.crypto, keyStore, password)
+      ).toString();
+    }
+
     const keyStore = this.multiKeyStore[index];
 
     if (!keyStore) {
@@ -975,15 +983,54 @@ export class KeyRing {
 
     if (keyStore.type === "mnemonic") {
       // If password is invalid, error will be thrown.
-      return Buffer.from(
-        await Crypto.decrypt(this.crypto, keyStore, password)
-      ).toString();
+
+      if (!this.checkPassword(password)) {
+        throw new KeplrError("keyring", 222, "Unmatched mac");
+      }
+
+      const privKey = this.loadMnemonicPrivKey(60, keyStore);
+      const ethWallet = new Wallet(privKey.toBytes());
+
+      return ethWallet.privateKey.replace("0x", "");
     } else {
       // If password is invalid, error will be thrown.
       return Buffer.from(
         await Crypto.decrypt(this.crypto, keyStore, password)
       ).toString();
     }
+  }
+
+  private loadMnemonicPrivKey(
+    coinType: number,
+    keyStore: KeyStore
+  ): PrivKeySecp256k1 {
+    if (this.status !== KeyRingStatus.UNLOCKED || !keyStore) {
+      throw new KeplrError("keyring", 143, "Key ring is not unlocked");
+    }
+
+    const bip44HDPath = KeyRing.getKeyStoreBIP44Path(keyStore);
+
+    const path = `m/44'/${coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
+    const cachedKey = this.cached.get(path);
+    if (cachedKey) {
+      return new PrivKeySecp256k1(cachedKey);
+    }
+
+    if (!this.mnemonicMasterSeed) {
+      throw new KeplrError(
+        "keyring",
+        133,
+        "Key store type is mnemonic and it is unlocked. But, mnemonic is not loaded unexpectedly"
+      );
+    }
+
+    const privKey = Mnemonic.generatePrivateKeyFromMasterSeed(
+      this.mnemonicMasterSeed,
+      path
+    );
+
+    this.cached.set(path, privKey);
+    return new PrivKeySecp256k1(privKey);
   }
 
   public get canSetPath(): boolean {

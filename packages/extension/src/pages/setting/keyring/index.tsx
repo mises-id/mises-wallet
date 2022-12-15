@@ -172,25 +172,17 @@ const KeyRingToolsIcon: FunctionComponent<{
             history.push("");
           }}
         >
-          {keyStore.type === "mnemonic" || keyStore.type === "privateKey" ? (
-            <div
-              style={{ cursor: "pointer" }}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+          <div
+            style={{ cursor: "pointer" }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-                history.push(`/setting/export/${index}?type=${keyStore.type}`);
-              }}
-            >
-              <FormattedMessage
-                id={
-                  keyStore.type === "mnemonic"
-                    ? "setting.export"
-                    : "setting.export.private-key"
-                }
-              />
-            </div>
-          ) : null}
+              history.push(`/setting/export/${index}?type=privateKey`);
+            }}
+          >
+            <FormattedMessage id="setting.export.private-key" />
+          </div>
           <div
             style={{ cursor: "pointer" }}
             onClick={(e) => {

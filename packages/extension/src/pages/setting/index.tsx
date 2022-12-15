@@ -100,20 +100,20 @@ export const SettingPage: FunctionComponent = observer(() => {
             []
           )}
         />
-        {/* <PageButton
+        <PageButton
           title={intl.formatMessage({
-            id: "setting.export-to-mobile",
+            id: "setting.export",
           })}
           onClick={() => {
             history.push({
-              pathname: "/setting/export-to-mobile",
+              pathname: "/setting/export/-1",
             });
           }}
           icons={useMemo(
             () => [<i key="next" className="fas fa-chevron-right" />],
             []
           )}
-        /> */}
+        />
         <PageButton
           title={intl.formatMessage({
             id: "setting.autolock",
