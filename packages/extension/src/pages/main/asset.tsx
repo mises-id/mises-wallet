@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 
-import { Dec, DecUtils } from "@keplr-wallet/unit";
+import { Dec, DecUtils, CoinPretty } from "@keplr-wallet/unit";
 
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
@@ -142,7 +142,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
   const stakablePrice = priceStore.calculatePrice(stakable, fiatCurrency);
   const stakedSumPrice = priceStore.calculatePrice(stakedSum, fiatCurrency);
 
-  const totalPrice = priceStore.calculatePrice(total, fiatCurrency);
+  // const totalPrice = priceStore.calculatePrice(total, fiatCurrency);
 
   // If fiat value is fetched, show the value that is multiplied with amount and fiat value.
   // If not, just show the amount of asset.
@@ -164,6 +164,10 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
       ];
     }
   })();
+  const tatalBalance = new CoinPretty(
+    stakedSum.currency,
+    data[0] * 1000000 + data[1] * 1000000
+  );
 
   return (
     <React.Fragment>
@@ -173,9 +177,10 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
             <FormattedMessage id="main.account.chart.total-balance" />
           </div>
           <div className={styleAsset.small}>
-            {totalPrice
+            {/* {totalPrice
               ? totalPrice.toString()
-              : total.shrink(true).trim(true).maxDecimals(6).toString()}
+              : total.shrink(true).trim(true).maxDecimals(6).toString()} */}
+            {tatalBalance.shrink(true).trim(true).maxDecimals(4).toString()}
           </div>
           <div className={styleAsset.indicatorIcon}>
             <React.Fragment>

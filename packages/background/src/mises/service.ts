@@ -73,7 +73,6 @@ const defaultUserInfo = {
 };
 
 export const fetchConfig = {
-  staleTime: Infinity,
   // To handle sequence mismatch
   retry: 3,
   retryDelay: 1000,

@@ -30,6 +30,7 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
       onBackButton={() => {
         history.goBack();
       }}
+      innerStyle={{ overflowY: "auto" }}
     >
       <div className={style.container}>
         <div className={style.innerTopContainer}>

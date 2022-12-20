@@ -3,43 +3,25 @@ import { HeaderLayout } from "../../layouts";
 import { useHistory } from "react-router";
 import { PageButton } from "./page-button";
 import style from "./style.module.scss";
-import { useLanguage } from "../../languages";
+// import { useLanguage } from "../../languages";
 import { useIntl } from "react-intl";
 import { observer } from "mobx-react-lite";
-import { useStore } from "../../stores";
 
 export const SettingPage: FunctionComponent = observer(() => {
-  const { uiConfigStore } = useStore();
-
-  const language = useLanguage();
+  // const language = useLanguage();
   const history = useHistory();
   const intl = useIntl();
 
-  const paragraphLang = language.automatic
-    ? intl.formatMessage(
-        {
-          id: "setting.language.automatic-with-language",
-        },
-        {
-          language: intl.formatMessage({
-            id: `setting.language.${language.language}`,
-          }),
-        }
-      )
-    : intl.formatMessage({
-        id: `setting.language.${language.language}`,
-      });
-
-  const paragraphFiat = !language.isFiatCurrencyAutomatic
-    ? language.fiatCurrency.toUpperCase()
-    : intl.formatMessage(
-        {
-          id: "setting.fiat.automatic-with-fiat",
-        },
-        {
-          fiat: language.fiatCurrency.toUpperCase(),
-        }
-      );
+  // const paragraphFiat = !language.isFiatCurrencyAutomatic
+  //   ? language.fiatCurrency.toUpperCase()
+  //   : intl.formatMessage(
+  //       {
+  //         id: "setting.fiat.automatic-with-fiat",
+  //       },
+  //       {
+  //         fiat: language.fiatCurrency.toUpperCase(),
+  //       }
+  //     );
 
   return (
     <HeaderLayout
@@ -53,7 +35,7 @@ export const SettingPage: FunctionComponent = observer(() => {
       }}
     >
       <div className={style.container}>
-        <PageButton
+        {/* <PageButton
           title={intl.formatMessage({
             id: "setting.language",
           })}
@@ -67,8 +49,8 @@ export const SettingPage: FunctionComponent = observer(() => {
             () => [<i key="next" className="fas fa-chevron-right" />],
             []
           )}
-        />
-        <PageButton
+        /> */}
+        {/* <PageButton
           title={intl.formatMessage({
             id: "setting.fiat",
           })}
@@ -82,7 +64,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             () => [<i key="next" className="fas fa-chevron-right" />],
             []
           )}
-        />
+        /> */}
         <PageButton
           title={intl.formatMessage({
             id: "setting.connections",
@@ -128,7 +110,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             []
           )}
         />
-        <PageButton
+        {/* <PageButton
           title="Show Advanced IBC Transfers"
           onClick={() => {
             uiConfigStore.setShowAdvancedIBCTransfer(
@@ -153,8 +135,8 @@ export const SettingPage: FunctionComponent = observer(() => {
               <span className="custom-toggle-slider rounded-circle" />
             </label>,
           ]}
-        />
-        <PageButton
+        /> */}
+        {/* <PageButton
           title={intl.formatMessage({
             id: "setting.endpoints",
           })}
@@ -184,7 +166,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             () => [<i key="next" className="fas fa-chevron-right" />],
             []
           )}
-        />
+        /> */}
       </div>
     </HeaderLayout>
   );
