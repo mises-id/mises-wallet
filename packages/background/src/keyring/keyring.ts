@@ -392,6 +392,9 @@ export class KeyRing {
       await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password)
     ).toString();
 
+    this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
+      this.mnemonic
+    );
     if (this.type === "mnemonic") {
       // If password is invalid, error will be thrown.
       this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
@@ -1016,7 +1019,11 @@ export class KeyRing {
       return new PrivKeySecp256k1(cachedKey);
     }
 
-    if (!this.mnemonicMasterSeed) {
+    const mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
+      this.mnemonic
+    );
+
+    if (!mnemonicMasterSeed) {
       throw new KeplrError(
         "keyring",
         133,
@@ -1025,7 +1032,7 @@ export class KeyRing {
     }
 
     const privKey = Mnemonic.generatePrivateKeyFromMasterSeed(
-      this.mnemonicMasterSeed,
+      mnemonicMasterSeed,
       path
     );
 
