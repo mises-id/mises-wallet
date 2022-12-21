@@ -78,7 +78,7 @@ export const Menu: FunctionComponent = observer(() => {
       <div className={styleMenu.footer}>
         <a
           className={styleMenu.inner}
-          href="https://github.com/mises-id"
+          href="https://github.com/mises-id/mises-wallet"
           target="_blank"
           rel="noopener noreferrer"
         >

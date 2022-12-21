@@ -228,7 +228,7 @@ export class ObservableEnsFetcher {
 
       this._address = Buffer.from(addr.replace("0x", ""), "hex");
       this._error = undefined;
-    } catch (e) {
+    } catch (e: any) {
       this._error = e;
     }
 

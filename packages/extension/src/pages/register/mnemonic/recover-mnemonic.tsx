@@ -154,9 +154,6 @@ export const RecoverMnemonicPage: FunctionComponent<{
       case SeedType.WORDS24: {
         return "24 words";
       }
-      case SeedType.PRIVATE_KEY: {
-        return "Private key";
-      }
       default: {
         return "Unknown";
       }
@@ -302,7 +299,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                 >
                   {seedTypeToParagraph(SeedType.WORDS24)}
                 </DropdownItem>
-                <DropdownItem
+                {/* <DropdownItem
                   active={seedType === SeedType.PRIVATE_KEY}
                   onClick={(e) => {
                     e.preventDefault();
@@ -311,7 +308,7 @@ export const RecoverMnemonicPage: FunctionComponent<{
                   }}
                 >
                   {seedTypeToParagraph(SeedType.PRIVATE_KEY)}
-                </DropdownItem>
+                </DropdownItem> */}
               </DropdownMenu>
             </ButtonDropdown>
           </div>
