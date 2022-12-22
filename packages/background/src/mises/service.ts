@@ -142,7 +142,7 @@ export class MisesService {
     browser.storage.local.set({
       setAccount: true,
     });
-    console.log("activateUser");
+    console.log("activateUser", this.activeUser);
   }
 
   async misesUserInfo() {

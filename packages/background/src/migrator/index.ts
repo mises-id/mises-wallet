@@ -10,9 +10,9 @@ export type keyringParmas = {
 export class Migrator {
   // run all pending migrations on meta in place
   async migrateData(): Promise<{ vault: string }> {
-    const { data } = await browser.storage.local.get();
-    if (data) {
-      const keyringStore = data.KeyringController;
+    const { migrated } = await browser.storage.local.get();
+    if (migrated && migrated.data) {
+      const keyringStore = migrated.data.KeyringController;
       return keyringStore;
     }
     return {
@@ -33,6 +33,6 @@ export class Migrator {
 
   clearCache() {
     console.log("clear data");
-    return browser.storage.local.remove("data");
+    return browser.storage.local.remove("migrated");
   }
 }
