@@ -14,6 +14,7 @@ import { CW20Currency, Secret20Currency } from "@keplr-wallet/types";
 import { useInteractionInfo } from "@keplr-wallet/hooks";
 import { useLoadingIndicator } from "../../../../components/loading-indicator";
 import { useNotification } from "../../../../components/notification";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 interface FormData {
   contractAddress: string;
@@ -170,7 +171,7 @@ export const AddTokenPage: FunctionComponent = observer(() => {
                     interactionInfo.interaction &&
                     !interactionInfo.interactionInternal
                   ) {
-                    window.close();
+                    isMobileStatus() ? closePopupTab() : window.close();
                   } else {
                     history.push({
                       pathname: "/",
@@ -217,7 +218,7 @@ export const AddTokenPage: FunctionComponent = observer(() => {
               interactionInfo.interaction &&
               !interactionInfo.interactionInternal
             ) {
-              window.close();
+              isMobileStatus() ? closePopupTab() : window.close();
             } else {
               history.push({
                 pathname: "/",

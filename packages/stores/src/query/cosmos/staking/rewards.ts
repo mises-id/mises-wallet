@@ -248,7 +248,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
       "rewards",
       async () => {
         const res = await this.misesStore.rewards(this.bech32Address);
-        if (res.total[0])
+        if (res && res.total[0])
           res.total[0].amount = Number(res.total[0].amount) / Math.pow(10, 18);
         this.setResponse({
           data: res,

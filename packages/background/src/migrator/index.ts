@@ -33,6 +33,8 @@ export class Migrator {
 
   clearCache() {
     console.log("clear data");
-    return browser.storage.local.remove("migrated");
+    return browser.storage.local.set({
+      migrated: "done",
+    });
   }
 }

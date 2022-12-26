@@ -113,21 +113,37 @@ export class MisesService {
   init() {
     this.mises = new Mises();
 
-    this.mises.queryFetchClient
-      .fetchQuery("makeClient", () => this.mises.makeClient(), fetchConfig)
-      .then((clients) => {
-        const [queryClient, tmClient] = clients;
-
-        this.queryClient = queryClient;
-        this.tmClient = tmClient;
-        console.log("init");
-      });
+    this.initQueryClient();
 
     this.mises.queryFetchClient.fetchQuery(
       "gasPriceAndLimit",
       () => this.gasPriceAndLimit(),
       fetchConfig
     );
+  }
+
+  async initQueryClient() {
+    if (this.queryClient) {
+      console.log("cache query client");
+
+      return this.queryClient;
+    }
+
+    try {
+      const clients = await this.mises.queryFetchClient.fetchQuery(
+        "makeClient",
+        () => this.mises.makeClient(),
+        fetchConfig
+      );
+
+      const [queryClient, tmClient] = clients;
+      this.queryClient = queryClient;
+      this.tmClient = tmClient;
+
+      console.log("init");
+
+      return queryClient;
+    } catch (error) {}
   }
 
   async activateUser(priKey: string): Promise<void> {
@@ -386,20 +402,48 @@ export class MisesService {
     return this.mises.stargateClient.getChainId();
   }
 
-  unbondingDelegations(address: string) {
-    return this.queryClient.staking.delegatorUnbondingDelegations(address);
+  async unbondingDelegations(address: string) {
+    const queryClient = await this.initQueryClient();
+
+    return queryClient?.staking.delegatorUnbondingDelegations(address);
   }
 
-  delegations(address: string) {
-    return this.queryClient.staking.delegatorDelegations(address);
+  async delegations(address: string) {
+    const queryClient = await this.initQueryClient();
+    const delegatorDelegationsResponse = await queryClient?.staking.delegatorDelegations(
+      address
+    );
+    const total =
+      delegatorDelegationsResponse?.pagination?.total.toNumber() || 0;
+
+    if (total > 100 && delegatorDelegationsResponse?.delegationResponses) {
+      const nextRes = await queryClient?.staking.delegatorDelegations(
+        address,
+        delegatorDelegationsResponse?.pagination?.nextKey
+      );
+      if (nextRes?.delegationResponses) {
+        return {
+          delegationResponses: [
+            ...delegatorDelegationsResponse.delegationResponses,
+            ...nextRes?.delegationResponses,
+          ],
+        };
+      }
+    }
+
+    return delegatorDelegationsResponse;
   }
 
-  rewards(address: string) {
-    return this.queryClient.distribution.delegationTotalRewards(address);
+  async rewards(address: string) {
+    const queryClient = await this.initQueryClient();
+
+    return queryClient?.distribution.delegationTotalRewards(address);
   }
 
-  authAccounts(address: string) {
-    return this.queryClient.auth.account(address);
+  async authAccounts(address: string) {
+    const queryClient = await this.initQueryClient();
+
+    return queryClient?.auth.account(address);
   }
 
   public async pollForTx(
@@ -561,18 +605,22 @@ export class MisesService {
   }
 
   async staking(params: any) {
-    console.log(params, "postTx:getParmas======");
-    const activeUser = this.activeUser;
-    const data = await activeUser.postTx(
-      params.msgs,
-      "",
-      params.gasFee,
-      params.gasLimit
-    );
-    if (data.code !== 0) {
-      return Promise.reject(data.rawLog);
+    try {
+      console.log(params, "postTx:getParmas======");
+      const activeUser = this.activeUser;
+      const data = await activeUser.postTx(
+        params.msgs,
+        "",
+        params.gasFee,
+        params.gasLimit
+      );
+      if (data.code !== 0) {
+        return Promise.reject(data.rawLog);
+      }
+      return data;
+    } catch (error: any) {
+      throw new Error(error.message);
     }
-    return data;
   }
 
   parseAmountItem(item: { value: string }) {

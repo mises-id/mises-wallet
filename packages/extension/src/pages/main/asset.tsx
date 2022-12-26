@@ -243,16 +243,12 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
                           .mul(DecUtils.getPrecisionDec(2));
                       }
 
-                      return `${
-                        stakablePrice
-                          ? stakablePrice.toString()
-                          : stakable
-                              .separator("")
-                              .trim(true)
-                              .shrink(true)
-                              .maxDecimals(6)
-                              .toString()
-                      } (${ratio.toString(1)}%)`;
+                      return `${stakable
+                        .separator("")
+                        .trim(true)
+                        .shrink(true)
+                        .maxDecimals(6)
+                        .toString()} (${ratio.toString(1)}%)`;
                     } else if (item.index === 1) {
                       if (!total.toDec().equals(new Dec(0))) {
                         ratio = stakedSum
@@ -261,16 +257,12 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
                           .mul(DecUtils.getPrecisionDec(2));
                       }
 
-                      return `${
-                        stakedSumPrice
-                          ? stakedSumPrice.toString()
-                          : stakedSum
-                              .separator("")
-                              .trim(true)
-                              .shrink(true)
-                              .maxDecimals(6)
-                              .toString()
-                      } (${ratio.toString(1)}%)`;
+                      return `${stakedSum
+                        .separator("")
+                        .trim(true)
+                        .shrink(true)
+                        .maxDecimals(6)
+                        .toString()} (${ratio.toString(1)}%)`;
                     }
 
                     return "Unexpected error";

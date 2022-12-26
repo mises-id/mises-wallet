@@ -95,7 +95,7 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delega
       return [];
     }
 
-    return this.response.data.delegationResponses;
+    return this.response.data?.delegationResponses || [];
   }
 
   readonly getDelegationTo = computedFn(

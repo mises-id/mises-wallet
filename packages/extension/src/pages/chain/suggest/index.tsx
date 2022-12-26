@@ -9,6 +9,7 @@ import { useInteractionInfo } from "@keplr-wallet/hooks";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../../stores";
 import { AlertExperimentalFeature } from "../../../components/alert-experimental-feature";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 export const ChainSuggestedPage: FunctionComponent = observer(() => {
   const { chainSuggestStore, analyticsStore } = useStore();
@@ -70,7 +71,7 @@ export const ChainSuggestedPage: FunctionComponent = observer(() => {
                 interactionInfo.interaction &&
                 !interactionInfo.interactionInternal
               ) {
-                window.close();
+                isMobileStatus() ? closePopupTab() : window.close();
               } else {
                 history.push("/");
               }
@@ -92,7 +93,7 @@ export const ChainSuggestedPage: FunctionComponent = observer(() => {
                 interactionInfo.interaction &&
                 !interactionInfo.interactionInternal
               ) {
-                window.close();
+                isMobileStatus() ? closePopupTab() : window.close();
               } else {
                 history.push("/");
               }

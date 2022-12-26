@@ -26,6 +26,7 @@ import { ADR36SignDocDetailsTab } from "./adr-36";
 import { ChainIdHelper } from "@keplr-wallet/cosmos";
 import { unescapeHTML } from "@keplr-wallet/common";
 import { EthSignType } from "@keplr-wallet/types";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 enum Tab {
   Details,
@@ -337,7 +338,7 @@ export const SignPage: FunctionComponent = observer(() => {
                         interactionInfo.interaction &&
                         !interactionInfo.interactionInternal
                       ) {
-                        window.close();
+                        isMobileStatus() ? closePopupTab() : window.close();
                       }
                     }}
                     outline
@@ -368,7 +369,7 @@ export const SignPage: FunctionComponent = observer(() => {
                         interactionInfo.interaction &&
                         !interactionInfo.interactionInternal
                       ) {
-                        window.close();
+                        isMobileStatus() ? closePopupTab() : window.close();
                       }
                     }}
                   >

@@ -24,6 +24,7 @@ import { useNotification } from "../../components/notification";
 import delay from "delay";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 export const LedgerGrantPage: FunctionComponent = observer(() => {
   useLayoutEffect(() => {
@@ -60,18 +61,20 @@ export const LedgerGrantPage: FunctionComponent = observer(() => {
 
   useEffect(() => {
     if (ledgerInitStore.isSignCompleted) {
-      setTimeout(window.close, 3000);
+      setTimeout(() => {
+        isMobileStatus() ? closePopupTab() : window.close();
+      }, 3000);
     }
 
     if (ledgerInitStore.isGetPubKeySucceeded) {
       // Don't need to delay to close because this event probably occurs only in the register page in tab.
       // So, don't need to consider the window refocusing.
-      window.close();
+      isMobileStatus() ? closePopupTab() : window.close();
     }
 
     if (ledgerInitStore.isInitAborted) {
       // If ledger init is aborted due to the timeout on the background, just close the window.
-      window.close();
+      isMobileStatus() ? closePopupTab() : window.close();
     }
   }, [
     ledgerInitStore.isGetPubKeySucceeded,
@@ -104,7 +107,7 @@ export const LedgerGrantPage: FunctionComponent = observer(() => {
       if (!ledgerInitStore.isWebHID) {
         delay(1000);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
       if (e.errorOn != null) {
         initErrorOn = e.errorOn;

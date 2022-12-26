@@ -9,6 +9,7 @@ import { useStore } from "../../stores";
 import style from "./style.module.scss";
 import { EmptyLayout } from "../../layouts/empty-layout";
 import { FormattedMessage } from "react-intl";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 export const AccessPage: FunctionComponent = observer(() => {
   const { chainStore, permissionStore } = useStore();
@@ -112,7 +113,7 @@ export const AccessPage: FunctionComponent = observer(() => {
                     ineractionInfo.interaction &&
                     !ineractionInfo.interactionInternal
                   ) {
-                    window.close();
+                    isMobileStatus() ? closePopupTab() : window.close();
                   }
                 }
               }
@@ -136,7 +137,7 @@ export const AccessPage: FunctionComponent = observer(() => {
                     ineractionInfo.interaction &&
                     !ineractionInfo.interactionInternal
                   ) {
-                    window.close();
+                    isMobileStatus() ? closePopupTab() : window.close();
                   }
                 }
               }

@@ -89,6 +89,10 @@ export async function openPopupTab(
     openerTabId: _openerTab && _openerTab.id,
   };
   console.log("_openerTab:", _openerTab.id);
+  browser.storage.local.set({
+    _openerTab: _openerTab.id,
+  });
+
   if (lastTabIds[channel] !== undefined) {
     try {
       const tab = await browser.tabs.get(lastTabIds[channel] as number);
@@ -124,21 +128,30 @@ export async function openPopupTab(
   return lastTabIds[channel]!;
 }
 
-export function closePopupTab(channel: string) {
-  (async () => {
-    const windowId = lastTabIds[channel] as number;
-    const activeTab = await browser.tabs.get(windowId);
-    if (windowId) {
-      await browser.tabs.remove(windowId);
+export async function closePopupTab() {
+  const [activeTab] = await browser.tabs.query({
+    active: true,
+    highlighted: true,
+  });
+  console.log(activeTab, "activeTab");
+  if (activeTab.id) {
+    const openerTabId = (await browser.storage.local.get("_openerTab"))
+      ._openerTab;
 
-      if (activeTab.openerTabId) {
-        await browser.tabs.update(activeTab.openerTabId, {
-          active: true,
-          highlighted: true,
-        });
-      }
+    console.log(openerTabId, "openerTabId");
+
+    await browser.tabs.remove(activeTab.id);
+
+    if (openerTabId) {
+      await browser.tabs.update(openerTabId, {
+        active: true,
+        highlighted: true,
+      });
+      browser.storage.local.set({
+        _openerTab: "",
+      });
     }
-  })();
+  }
 }
 
 /**
@@ -186,6 +199,6 @@ export function enableScroll() {
 }
 
 export function isMobileStatus() {
-  return /Mobi|Android|iPhone/i.test(navigator.userAgent);
-  // return true;
+  // return /Mobi|Android|iPhone/i.test(navigator.userAgent);
+  return true;
 }

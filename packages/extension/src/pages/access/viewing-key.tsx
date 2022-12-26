@@ -11,6 +11,7 @@ import { useStore } from "../../stores";
 import style from "./style.module.scss";
 import { EmptyLayout } from "../../layouts/empty-layout";
 import { FormattedMessage } from "react-intl";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 export const Secret20ViewingKeyAccessPage: FunctionComponent = observer(() => {
   const { chainStore, permissionStore } = useStore();
@@ -95,7 +96,7 @@ export const Secret20ViewingKeyAccessPage: FunctionComponent = observer(() => {
                     ineractionInfo.interaction &&
                     !ineractionInfo.interactionInternal
                   ) {
-                    window.close();
+                    isMobileStatus() ? closePopupTab() : window.close();
                   }
                 }
               }
@@ -120,7 +121,7 @@ export const Secret20ViewingKeyAccessPage: FunctionComponent = observer(() => {
                     ineractionInfo.interaction &&
                     !ineractionInfo.interactionInternal
                   ) {
-                    window.close();
+                    isMobileStatus() ? closePopupTab() : window.close();
                   }
                 }
               }

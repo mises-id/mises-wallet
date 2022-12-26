@@ -5,6 +5,7 @@ import { Button } from "reactstrap";
 
 import { useIntl } from "react-intl";
 import { useStore } from "../../stores";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 export const WelcomePage: FunctionComponent = () => {
   const intl = useIntl();
@@ -35,10 +36,10 @@ export const WelcomePage: FunctionComponent = () => {
             if (tab.id) {
               browser.tabs.remove(tab.id);
             } else {
-              window.close();
+              isMobileStatus() ? closePopupTab() : window.close();
             }
           } else {
-            window.close();
+            isMobileStatus() ? closePopupTab() : window.close();
           }
         }}
         block

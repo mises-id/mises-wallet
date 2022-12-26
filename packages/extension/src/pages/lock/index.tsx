@@ -25,6 +25,7 @@ import { InExtensionMessageRequester } from "@keplr-wallet/router-extension";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
 import { ModalBody, Modal } from "reactstrap";
+import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
 
 interface FormData {
   password: string;
@@ -81,15 +82,9 @@ export const LockPage: FunctionComponent = observer(() => {
 
             if (interactionInfo.interaction) {
               if (!interactionInfo.interactionInternal) {
-                // XXX: If the connection doesn't have the permission,
-                //      permission service tries to grant the permission right after unlocking.
-                //      Thus, due to the yet uncertain reason, it requests new interaction for granting permission
-                //      before the `window.close()`. And, it could make the permission page closed right after page changes.
-                //      Unfortunately, I still don't know the exact cause.
-                //      Anyway, for now, to reduce this problem, jsut wait small time, and close the window only if the page is not changed.
                 await delay(100);
                 if (window.location.href.includes("#/unlock")) {
-                  window.close();
+                  isMobileStatus() ? closePopupTab() : window.close();
                 }
               } else {
                 history.replace("/");

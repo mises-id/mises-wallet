@@ -22,7 +22,11 @@ import queryString from "querystring";
 
 import { useGasSimulator, useSendTxConfig } from "@keplr-wallet/hooks";
 import { EthereumEndpoint } from "../../config.ui";
-import { fitPopupWindow } from "@keplr-wallet/popup";
+import {
+  closePopupTab,
+  fitPopupWindow,
+  isMobileStatus,
+} from "@keplr-wallet/popup";
 import { DenomHelper, ExtensionKVStore } from "@keplr-wallet/common";
 
 export const SendPage: FunctionComponent = observer(() => {
@@ -264,7 +268,7 @@ export const SendPage: FunctionComponent = observer(() => {
               // XXX: If the page is in detached state,
               // close the window without waiting for tx to commit. analytics won't work.
               if (isDetachedPage) {
-                window.close();
+                isMobileStatus() ? closePopupTab() : window.close();
               }
             }
           }

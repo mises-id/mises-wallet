@@ -101,7 +101,7 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       return [];
     }
 
-    return this.response.data.unbondingResponses;
+    return this.response.data?.unbondingResponses || [];
   }
 
   @override
