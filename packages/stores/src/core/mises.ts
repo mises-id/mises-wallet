@@ -13,15 +13,20 @@ import {
   SimulateMsg,
   ActiveUserMsg,
   PortForTxMsg,
+  GetAutoLockAccountDurationMsg,
+  StartAutoLockMonitoringMsg,
 } from "@keplr-wallet/background";
 import { PubKey } from "@keplr-wallet/types";
-import { Any } from "@keplr-wallet/proto-types/google/protobuf/any";
 export class MisesStore {
   @observable
   isInitializing: boolean = false;
 
+  @observable
+  autoLockAccountDuration: number = 0;
+
   constructor(protected readonly requester: MessageRequester) {
     makeObservable(this);
+    this.initAutoLockAccountDuration();
   }
 
   async getBalanceUMIS() {
@@ -81,7 +86,7 @@ export class MisesStore {
   }
 
   async simulate(
-    messages: Any[],
+    messages: any[],
     memo: string | undefined,
     signer: PubKey,
     sequence: number
@@ -110,6 +115,26 @@ export class MisesStore {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
       new PortForTxMsg(txId)
+    );
+  }
+
+  async getAutoLockAccountDuration() {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new GetAutoLockAccountDurationMsg()
+    );
+  }
+
+  initAutoLockAccountDuration() {
+    this.getAutoLockAccountDuration().then(
+      (res) => (this.autoLockAccountDuration = res)
+    );
+  }
+
+  setLastActiveTime() {
+    this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new StartAutoLockMonitoringMsg()
     );
   }
 }

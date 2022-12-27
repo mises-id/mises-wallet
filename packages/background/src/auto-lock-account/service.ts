@@ -47,21 +47,25 @@ export class AutoLockAccountService {
   }
 
   startAppStateCheckTimer() {
-    this.stopAppStateCheckTimer();
     if (this.autoLockDuration > 0 && this.keyRingIsUnlocked) {
-      this.appStateCheckTimer = setTimeout(() => {
-        const isAppActive = this.checkAppIsActive();
-        if (isAppActive) {
-          this.stopAutoLockTimer();
-          this.startAppStateCheckTimer();
-        } else {
-          if (this.keyRingIsUnlocked) {
-            this.startAutoLockTimer();
-          }
-          this.stopAppStateCheckTimer();
-        }
-      }, this.opts.monitoringInterval);
+      this.stopAutoLockTimer();
+      this.startAutoLockTimer();
     }
+    // this.stopAppStateCheckTimer();
+    // if (this.autoLockDuration > 0 && this.keyRingIsUnlocked) {
+    //   this.appStateCheckTimer = setTimeout(() => {
+    //     const isAppActive = this.checkAppIsActive();
+    //     if (isAppActive) {
+    //       this.stopAutoLockTimer();
+    //       this.startAppStateCheckTimer();
+    //     } else {
+    //       if (this.keyRingIsUnlocked) {
+    //         this.startAutoLockTimer();
+    //       }
+    //       this.stopAppStateCheckTimer();
+    //     }
+    //   }, this.opts.monitoringInterval);
+    // }
   }
 
   private stopAppStateCheckTimer() {
@@ -113,14 +117,13 @@ export class AutoLockAccountService {
   private lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
-
       const background = browser.extension.getBackgroundPage();
       const views = browser.extension.getViews();
       for (const view of views) {
         // Possibly, keyring can be locked with UI opened. Ex) when device sleep.
         // In this case, to simplify the UI logic, just close all UI.
         if (!background || background.location.href !== view.location.href) {
-          view.close();
+          view.location.reload();
         }
       }
     }
