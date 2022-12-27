@@ -66,6 +66,8 @@ import { SettingAutoLockPage } from "./pages/setting/autolock";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 import { TransferPage } from "./pages/transfer";
 
+import IdleTimer from "react-idle-timer";
+
 window.misesWallet = new Keplr(
   manifest.version,
   "core",
@@ -132,7 +134,7 @@ const StateRenderer: FunctionComponent = observer(() => {
         <Banner
           icon={require("./public/assets/logo-256.png")}
           logo={require("./public/assets/brand-text.png")}
-          subtitle="Wallet for the Interchain"
+          // subtitle="Wallet for the Interchain"
         />
       </div>
     );
@@ -140,6 +142,80 @@ const StateRenderer: FunctionComponent = observer(() => {
     return <div>Unknown status</div>;
   }
 });
+
+const RenderRoutes = () => {
+  const routes = (
+    <LogPageViewWrapper>
+      <Route exact path="/" component={StateRenderer} />
+      <Route exact path="/unlock" component={LockPage} />
+      <Route exact path="/access" component={AccessPage} />
+      <Route
+        exact
+        path="/access/viewing-key"
+        component={Secret20ViewingKeyAccessPage}
+      />
+      <Route exact path="/register" component={RegisterPage} />
+      <Route exact path="/send" component={SendPage} />
+      <Route exact path="/ibc-transfer" component={IBCTransferPage} />
+      <Route exact path="/setting" component={SettingPage} />
+      <Route exact path="/ledger-grant" component={LedgerGrantPage} />
+      <Route exact path="/setting/language" component={SettingLanguagePage} />
+      <Route exact path="/setting/fiat" component={SettingFiatPage} />
+      <Route
+        exact
+        path="/setting/connections"
+        component={SettingConnectionsPage}
+      />
+      <Route
+        exact
+        path="/setting/connections/viewing-key/:contractAddress"
+        component={SettingSecret20ViewingKeyConnectionsPage}
+      />
+      <Route exact path="/setting/address-book" component={AddressBookPage} />
+      <Route
+        exact
+        path="/setting/export-to-mobile"
+        component={ExportToMobilePage}
+      />
+      <Route exact path="/setting/credit" component={CreditPage} />
+      <Route exact path="/setting/set-keyring" component={SetKeyRingPage} />
+      <Route exact path="/setting/export/:index" component={ExportPage} />
+      <Route exact path="/setting/clear/:index" component={ClearPage} />
+      <Route
+        exact
+        path="/setting/keyring/change/name/:index"
+        component={ChangeNamePage}
+      />
+      <Route
+        exact
+        path="/setting/keyring/CreateNamePage"
+        component={CreateNamePage}
+      />
+      <Route
+        exact
+        path="/setting/keyring/importAccount"
+        component={ImportAccountPage}
+      />
+      <Route exact path="/setting/token/add" component={AddTokenPage} />
+      <Route exact path="/setting/token/manage" component={ManageTokenPage} />
+      <Route exact path="/setting/endpoints" component={SettingEndpointsPage} />
+      <Route exact path="/setting/autolock" component={SettingAutoLockPage} />
+      <Route path="/sign" component={SignPage} />
+      <Route path="/suggest-chain" component={ChainSuggestedPage} />
+      <Route path="/transfer" component={TransferPage} />
+    </LogPageViewWrapper>
+  );
+  const { misesStore } = useStore();
+
+  return (
+    <IdleTimer
+      onAction={misesStore.setLastActiveTime.bind(misesStore)}
+      throttle={1000}
+    >
+      {routes}
+    </IdleTimer>
+  );
+};
 
 ReactDOM.render(
   <StoreProvider>
@@ -152,113 +228,7 @@ ReactDOM.render(
           <NotificationProvider>
             <ConfirmProvider>
               <HashRouter>
-                <LogPageViewWrapper>
-                  <Route exact path="/" component={StateRenderer} />
-                  <Route exact path="/unlock" component={LockPage} />
-                  <Route exact path="/access" component={AccessPage} />
-                  <Route
-                    exact
-                    path="/access/viewing-key"
-                    component={Secret20ViewingKeyAccessPage}
-                  />
-                  <Route exact path="/register" component={RegisterPage} />
-                  <Route exact path="/send" component={SendPage} />
-                  <Route
-                    exact
-                    path="/ibc-transfer"
-                    component={IBCTransferPage}
-                  />
-                  <Route exact path="/setting" component={SettingPage} />
-                  <Route
-                    exact
-                    path="/ledger-grant"
-                    component={LedgerGrantPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/language"
-                    component={SettingLanguagePage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/fiat"
-                    component={SettingFiatPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/connections"
-                    component={SettingConnectionsPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/connections/viewing-key/:contractAddress"
-                    component={SettingSecret20ViewingKeyConnectionsPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/address-book"
-                    component={AddressBookPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/export-to-mobile"
-                    component={ExportToMobilePage}
-                  />
-                  <Route exact path="/setting/credit" component={CreditPage} />
-                  <Route
-                    exact
-                    path="/setting/set-keyring"
-                    component={SetKeyRingPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/export/:index"
-                    component={ExportPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/clear/:index"
-                    component={ClearPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/keyring/change/name/:index"
-                    component={ChangeNamePage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/keyring/CreateNamePage"
-                    component={CreateNamePage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/keyring/importAccount"
-                    component={ImportAccountPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/token/add"
-                    component={AddTokenPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/token/manage"
-                    component={ManageTokenPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/endpoints"
-                    component={SettingEndpointsPage}
-                  />
-                  <Route
-                    exact
-                    path="/setting/autolock"
-                    component={SettingAutoLockPage}
-                  />
-                  <Route path="/sign" component={SignPage} />
-                  <Route path="/suggest-chain" component={ChainSuggestedPage} />
-                  <Route path="/transfer" component={TransferPage} />
-                </LogPageViewWrapper>
+                <RenderRoutes />
               </HashRouter>
             </ConfirmProvider>
           </NotificationProvider>

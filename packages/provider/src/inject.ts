@@ -56,8 +56,57 @@ function defineUnwritablePropertyIfPossible(o: any, p: string, value: any) {
   }
 }
 
+const __getLargeImg = () => {
+  let img;
+  const nodeList = document.getElementsByTagName("img");
+  for (let i = 0; i < nodeList.length; i++) {
+    const node = nodeList[i];
+    let h = node.naturalHeight;
+    let w = node.naturalWidth;
+    if (h === 0 || w === 0) {
+      h = node.height;
+      w = node.width;
+    }
+    if (h >= 200 && w >= 300) {
+      img = nodeList[i];
+      if (img && img.src && img.src.toLowerCase().startsWith("http")) {
+        break;
+      }
+    }
+  }
+  return img && img.src;
+};
+
+const __getFavicon = () => {
+  let favicon;
+  const nodeList = document.getElementsByTagName("link");
+  for (let i = 0; i < nodeList.length; i++) {
+    const rel = nodeList[i].getAttribute("rel");
+    if (
+      rel === "icon" ||
+      rel === "shortcut icon" ||
+      rel === "icon shortcut" ||
+      rel === "apple-touch-icon"
+    ) {
+      favicon = nodeList[i];
+    }
+  }
+  return favicon && favicon.href;
+};
+
 export function injectKeplrToWindow(keplr: IKeplr): void {
   defineUnwritablePropertyIfPossible(window, "misesWallet", keplr);
+  defineUnwritablePropertyIfPossible(window, "misesModule", {
+    getWindowInformation() {
+      // const config = window.$misesShare;
+      const url = window.location.href;
+      const icon = __getLargeImg() || __getFavicon();
+      const { title } = window.document;
+
+      console.log({ url, icon, title });
+      return { url, icon, title };
+    },
+  });
   defineUnwritablePropertyIfPossible(
     window,
     "getOfflineSigner",

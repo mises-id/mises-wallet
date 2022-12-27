@@ -4,6 +4,10 @@ import { SecretUtils } from "secretjs/types/enigmautils";
 
 export interface Window {
   misesWallet?: Keplr;
+  misesModule: {
+    getWindowInformation: () => void;
+  };
+  $misesShare?: any;
   getOfflineSigner?: (
     chainId: string
   ) => OfflineAminoSigner & OfflineDirectSigner;
