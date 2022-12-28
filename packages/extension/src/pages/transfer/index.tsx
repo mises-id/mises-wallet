@@ -56,8 +56,17 @@ export const TransferPage: FunctionComponent = observer(() => {
   }, []);
 
   const Transtion = (props: IndexTx) => {
+    const misesIn = props.transactionGroupType === "misesIn";
     return (
-      <div className={style.transtionItem}>
+      <div
+        className={style.transtionItem}
+        onClick={() => {
+          window.open(
+            `https://gw.mises.site/tx/${props.initialTransaction.hash}`,
+            "_blank"
+          );
+        }}
+      >
         <div>
           <TransactionIcon category={props.category as categoryTypes} />
         </div>
@@ -65,7 +74,18 @@ export const TransferPage: FunctionComponent = observer(() => {
           <p className={style.category}>{props.title || props.category}</p>
           <p className={style.itemDesc}>
             <span className={style.height}>{props.date}</span>
-            <span>Form: {shortenAddress(props.senderAddress)}</span>
+            <span>
+              {intl.formatMessage(
+                {
+                  id: `transfer.${misesIn ? "fromAddress" : "toAddress"}`,
+                },
+                {
+                  address: shortenAddress(
+                    misesIn ? props.senderAddress : props.recipientAddress
+                  ),
+                }
+              )}
+            </span>
           </p>
         </div>
         <div className={style.primaryCurrency}>{props.primaryCurrency}</div>
@@ -92,6 +112,9 @@ export const TransferPage: FunctionComponent = observer(() => {
     );
   };
 
+  const { accountStore, chainStore } = useStore();
+  const accountInfo = accountStore.getAccount(chainStore.current.chainId);
+
   return (
     <HeaderLayout
       showChainName={false}
@@ -109,6 +132,19 @@ export const TransferPage: FunctionComponent = observer(() => {
       {transtions.map((val, index) => (
         <Transtion {...val} key={index} />
       ))}
+
+      {loadingStatus === "default" && (
+        <a
+          className={style.viewAll}
+          target="_blank"
+          rel="noreferrer"
+          href={`https://gw.mises.site/holders/${accountInfo.bech32Address}`}
+        >
+          {intl.formatMessage({
+            id: "transfer.viewAll",
+          })}
+        </a>
+      )}
     </HeaderLayout>
   );
 });

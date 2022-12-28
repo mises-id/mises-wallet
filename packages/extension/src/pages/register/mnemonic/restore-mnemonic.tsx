@@ -283,16 +283,6 @@ export const RestoreMnemonicPage: FunctionComponent<{
                 >
                   {seedTypeToParagraph(SeedType.WORDS24)}
                 </DropdownItem>
-                <DropdownItem
-                  active={seedType === SeedType.PRIVATE_KEY}
-                  onClick={(e) => {
-                    e.preventDefault();
-
-                    setSeedType(SeedType.PRIVATE_KEY);
-                  }}
-                >
-                  {seedTypeToParagraph(SeedType.PRIVATE_KEY)}
-                </DropdownItem>
               </DropdownMenu>
             </ButtonDropdown>
           </div>

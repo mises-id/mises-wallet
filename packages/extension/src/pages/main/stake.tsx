@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite";
 
 import styleStake from "./stake.module.scss";
 import classnames from "classnames";
-import { Dec } from "@keplr-wallet/unit";
+// import { Dec } from "@keplr-wallet/unit";
 
 import { FormattedMessage } from "react-intl";
 import { useHistory } from "react-router";
@@ -18,7 +18,7 @@ export const StakeView: FunctionComponent = observer(() => {
   const accountInfo = accountStore.getAccount(chainStore.current.chainId);
   const queries = queriesStore.get(chainStore.current.chainId);
 
-  const inflation = queries.cosmos.queryInflation;
+  // const inflation = queries.cosmos.queryInflation;
   const rewards = queries.cosmos.queryRewards.getQueryBech32Address(
     accountInfo.bech32Address
   );
@@ -30,122 +30,76 @@ export const StakeView: FunctionComponent = observer(() => {
 
   return (
     <div>
-      {isRewardExist ? (
-        <React.Fragment>
-          <div
-            className={classnames(styleStake.containerInner, styleStake.reward)}
-          >
-            <div className={styleStake.vertical}>
-              <p
-                className={classnames(
-                  "h4",
-                  "my-0",
-                  "font-weight-normal",
-                  styleStake.paragraphSub
-                )}
-              >
-                <FormattedMessage id="main.stake.message.pending-staking-reward" />
-              </p>
-              <p
-                className={classnames(
-                  "h2",
-                  "my-0",
-                  "font-weight-normal",
-                  styleStake.paragraphMain
-                )}
-              >
-                {stakableReward.shrink(true).maxDecimals(6).toString()}
-                {rewards.isFetching ? (
-                  <span>
-                    <i className="fas fa-spinner fa-spin" />
-                  </span>
-                ) : null}
-              </p>
-            </div>
-            <div style={{ flex: 1 }} />
-            {
-              // <Button
-              //   className={styleStake.button}
-              //   color="primary"
-              //   size="sm"
-              //   disabled={!accountInfo.isReadyToSendMsgs}
-              //   onClick={withdrawAllRewards}
-              //   data-loading={
-              //     accountInfo.txTypeInProgress === "withdrawRewards" ||
-              //     isWithdrawingRewards
-              //   }
-              // >
-              //   <FormattedMessage id="main.stake.button.claim-rewards" />
-              // </Button>
-            }
-          </div>
-          <hr className={styleStake.hr} />
-        </React.Fragment>
-      ) : null}
-
-      <div className={classnames(styleStake.containerInner, styleStake.stake)}>
-        <div className={styleStake.vertical}>
-          <p
-            className={classnames(
-              "h2",
-              "my-0",
-              "font-weight-normal",
-              styleStake.paragraphMain
-            )}
-          >
-            <FormattedMessage id="main.stake.message.stake" />
-          </p>
-          {inflation.inflation.toDec().equals(new Dec(0)) ? null : (
+      <React.Fragment>
+        <div
+          className={classnames(styleStake.containerInner, styleStake.reward)}
+        >
+          <div className={styleStake.vertical}>
             <p
               className={classnames(
-                "h4",
+                "h2",
                 "my-0",
                 "font-weight-normal",
-                styleStake.paragraphSub
+                styleStake.paragraphMain
               )}
             >
-              <FormattedMessage
-                id="main.stake.message.earning"
-                values={{
-                  apr: (
-                    <React.Fragment>
-                      {inflation.inflation.trim(true).maxDecimals(2).toString()}
-                      {inflation.isFetching ? (
-                        <span>
-                          <i className="fas fa-spinner fa-spin" />
-                        </span>
-                      ) : null}
-                    </React.Fragment>
-                  ),
-                }}
-              />
+              <FormattedMessage id="main.stake.message.stake" />
             </p>
-          )}
-        </div>
-        <div style={{ flex: 1 }} />
-        <a
-          href={chainStore.current.walletUrlForStaking}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => {
-            analyticsStore.logEvent("Stake button clicked", {
-              chainId: chainStore.current.chainId,
-              chainName: chainStore.current.chainName,
-            });
-          }}
-        >
-          <Button
-            className={styleStake.button}
-            color="primary"
-            size="sm"
-            outline={isRewardExist}
+            {isRewardExist ? (
+              <div className={styleStake.reward}>
+                <p
+                  className={classnames(
+                    "h4",
+                    "my-0",
+                    "font-weight-normal",
+                    styleStake.paragraphSub
+                  )}
+                >
+                  <FormattedMessage id="main.stake.message.pending-staking-reward" />
+                </p>
+                <p
+                  className={classnames(
+                    "h4",
+                    "my-0",
+                    "font-weight-normal",
+                    styleStake.paragraphSub
+                  )}
+                >
+                  : {stakableReward.shrink(true).maxDecimals(6).toString()}
+                  {rewards.isFetching ? (
+                    <span>
+                      <i className="fas fa-spinner fa-spin" />
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+            ) : null}
+          </div>
+          <div style={{ flex: 1 }} />
+          <a
+            href={chainStore.current.walletUrlForStaking}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              analyticsStore.logEvent("Stake button clicked", {
+                chainId: chainStore.current.chainId,
+                chainName: chainStore.current.chainName,
+              });
+            }}
           >
-            <FormattedMessage id="main.stake.button.stake" />
-          </Button>
-        </a>
-      </div>
-      <React.Fragment>
+            <Button
+              className={styleStake.button}
+              color="primary"
+              size="sm"
+              outline={isRewardExist}
+            >
+              <FormattedMessage id="main.stake.button.stake" />
+            </Button>
+          </a>
+        </div>
         <hr className={styleStake.hr} />
+      </React.Fragment>
+      <React.Fragment>
         <div
           className={classnames(styleStake.containerInner, styleStake.reward)}
         >

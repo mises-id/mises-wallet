@@ -6,7 +6,7 @@ import style from "./style.module.scss";
 interface Props {
   icon: string;
   logo: string;
-  subtitle: string;
+  subtitle?: string;
 }
 
 export const Banner: FunctionComponent<Props> = ({ icon, logo, subtitle }) => {

@@ -56,7 +56,7 @@ export class Crypto {
     const scryptParams: ScryptParams = {
       salt,
       dklen: 32,
-      n: 65536,
+      n: 32768,
       r: 8,
       p: 1,
     };

@@ -111,12 +111,14 @@ export class ExtensionEnv {
       await (async () => {
         const tab = await browser.tabs.get(tabId);
         if (tab.status === "complete") {
+          console.log("openAndSendMsg-complete");
           return;
         }
 
         return new Promise<void>((resolve) => {
           browser.tabs.onUpdated.addListener((_tabId, changeInfo) => {
             if (tabId === _tabId && changeInfo.status === "complete") {
+              console.log("openAndSendMsg");
               resolve();
             }
           });

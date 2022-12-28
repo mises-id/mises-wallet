@@ -98,7 +98,7 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
 
     return StoreUtils.getBalanceFromCurrency(
       chainInfo.stakeCurrency,
-      this.response?.data.total ?? []
+      this.response?.data?.total ?? []
     );
   }
 

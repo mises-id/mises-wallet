@@ -58,10 +58,11 @@ export class InteractionService {
       env.isInternalMsg,
       data
     );
-
     const msg = new PushInteractionDataMsg(interactionWaitingData);
+    console.log("interactionWaitingData", msg.data.id);
 
     return await this.wait(msg.data.id, () => {
+      console.log(url, msg, options);
       env.requestInteraction(url, msg, options);
     });
   }

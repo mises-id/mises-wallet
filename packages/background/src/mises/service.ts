@@ -24,6 +24,7 @@ import {
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import { PubKey } from "@keplr-wallet/types";
 import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
+import Long from "long";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -218,7 +219,7 @@ export class MisesService {
 
     this.activeUser = undefined as any;
 
-    this.setToMisesPrivate(defaultUserInfo);
+    // this.setToMisesPrivate(defaultUserInfo);
   }
 
   async generateAuth(nonce: string): Promise<generateAuthParams> {
@@ -395,7 +396,7 @@ export class MisesService {
 
   async getBalanceUMIS() {
     const balance = await this.activeUser?.getBalanceUMIS();
-    return this.mises.coinDefine.toCoinUMIS(balance);
+    return this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
   }
 
   getChainId() {
@@ -414,7 +415,7 @@ export class MisesService {
       address
     );
     const total =
-      delegatorDelegationsResponse?.pagination?.total.toNumber() || 0;
+      delegatorDelegationsResponse?.pagination?.total?.toNumber() || 0;
 
     if (total > 100 && delegatorDelegationsResponse?.delegationResponses) {
       const nextRes = await queryClient?.staking.delegatorDelegations(
@@ -624,16 +625,23 @@ export class MisesService {
   }
 
   parseAmountItem(item: { value: string }) {
-    const amount = item.value?.replace("umis", "|umis").split("|");
-    const currency = this.mises.coinDefine.fromCoin({
-      amount: amount[0],
-      denom: amount[1],
-    });
-    const coin = this.mises.coinDefine.toCoinMIS(currency);
-    return {
-      amount: coin.amount,
-      denom: coin.denom.toUpperCase(),
-    };
+    if (item.value) {
+      const amount = item.value?.replace("umis", "|umis").split("|");
+      const currency = this.mises.coinDefine.fromCoin({
+        amount: amount[0],
+        denom: amount[1],
+      });
+      const coin = this.mises.coinDefine.toCoinMIS(currency);
+      return {
+        amount: coin.amount,
+        denom: coin.denom.toUpperCase(),
+      };
+    } else {
+      return {
+        amount: "0",
+        denom: "MIS",
+      };
+    }
   }
 
   parseTxEvents(

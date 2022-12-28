@@ -39,7 +39,7 @@ export const WelcomePage: FunctionComponent = () => {
               isMobileStatus() ? closePopupTab() : window.close();
             }
           } else {
-            isMobileStatus() ? closePopupTab() : window.close();
+            window.close();
           }
         }}
         block

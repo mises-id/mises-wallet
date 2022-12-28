@@ -140,8 +140,6 @@ export async function closePopupTab() {
 
     console.log(openerTabId, "openerTabId");
 
-    await browser.tabs.remove(activeTab.id);
-
     if (openerTabId) {
       await browser.tabs.update(openerTabId, {
         active: true,
@@ -151,6 +149,8 @@ export async function closePopupTab() {
         _openerTab: "",
       });
     }
+
+    await browser.tabs.remove(activeTab.id);
   }
 }
 

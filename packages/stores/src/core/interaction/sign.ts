@@ -101,15 +101,21 @@ export class SignInteractionStore {
 
   protected waitEnd(): Promise<void> {
     if (this.isEnded()) {
+      console.log("isEnded");
       return Promise.resolve();
     }
 
     return new Promise((resolve) => {
       const disposer = autorun(() => {
         if (this.isEnded()) {
+          console.log("disposer-isEnded");
           resolve();
           this.clearEnded();
           disposer();
+        } else {
+          console.log(
+            this.interactionStore.getEvents<void>("request-sign-end")
+          );
         }
       });
     });
@@ -120,7 +126,7 @@ export class SignInteractionStore {
     if (this.waitingDatas.length === 0) {
       return;
     }
-
+    console.log(this.waitingDatas);
     this._isLoading = true;
     const id = this.waitingDatas[0].id;
     try {
@@ -130,11 +136,13 @@ export class SignInteractionStore {
           : newSignDocWrapper.protoSignDoc.toBytes();
 
       yield this.interactionStore.approveWithoutRemovingData(id, newSignDoc);
+      console.log("newSignDoc");
     } finally {
       yield this.waitEnd();
       this.interactionStore.removeData("request-sign", id);
 
       this._isLoading = false;
+      console.log("waitEnd");
     }
   }
 

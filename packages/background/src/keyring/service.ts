@@ -328,7 +328,7 @@ export class KeyRingService {
         ethSignType: signOptions.ethSignType,
       }
     )) as StdSignDoc;
-
+    console.log(newSignDoc, "requestSignAmino-newSignDoc");
     newSignDoc = {
       ...newSignDoc,
       memo: escapeHTML(newSignDoc.memo),

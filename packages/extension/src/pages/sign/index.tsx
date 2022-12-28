@@ -221,6 +221,14 @@ export const SignPage: FunctionComponent = observer(() => {
     return memoConfig.error != null || feeConfig.error != null;
   })();
 
+  useEffect(() => {
+    setTimeout(() => {
+      if (!signDocHelper.signDocWrapper) {
+        isMobileStatus() ? closePopupTab() : window.close();
+      }
+    }, 200);
+  }, []);
+
   return (
     <HeaderLayout
       showChainName={alternativeTitle == null}
@@ -363,6 +371,7 @@ export const SignPage: FunctionComponent = observer(() => {
                         await signInteractionStore.approveAndWaitEnd(
                           signDocHelper.signDocWrapper
                         );
+                        console.log("signDocHelper.signDocWrapper");
                       }
 
                       if (

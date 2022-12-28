@@ -13,12 +13,12 @@
   "main.modal.select-account.label.sequence": "Previous Txs",
 
   "main.stake.message.pending-staking-reward": "Pending Staking Reward",
-  "main.stake.message.stake": "Stake",
-  "main.transfer.message.activity": "Activity",
+  "main.stake.message.stake": "Staking",
+  "main.transfer.message.activity": "Transaction",
   "main.stake.message.earning": "Earn up to {apr}% per year",
   "main.stake.button.claim-rewards": "Claim",
-  "main.transfer.button.activity": "Activity",
-  "main.stake.button.stake": "Stake",
+  "main.transfer.button.activity": "View Activities",
+  "main.stake.button.stake": "View Portal",
   "main.stake.tooltip.no-asset": "No token in your account. Deposit some tokens to stake.",
 
   "main.ibc.transfer.title": "IBC Transfer",
@@ -331,7 +331,10 @@
   "confirm.yes": "Yes",
   "confirm.no": "No",
 
-  "transfer.title": "Activity",
+  "transfer.title": "Transaction",
+  "transfer.toAddress": "To: {address}",
+  "transfer.fromAddress": "From: {address}",
+  "transfer.viewAll": "View All",
 
   "component.form.coin-input.token.label": "Token",
 
