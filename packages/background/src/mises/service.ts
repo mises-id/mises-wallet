@@ -159,6 +159,7 @@ export class MisesService {
     browser.storage.local.set({
       setAccount: true,
     });
+
     console.log("activateUser", this.activeUser);
   }
 
@@ -383,15 +384,18 @@ export class MisesService {
   resetUserInfo() {
     this.userInfo = defaultUserInfo;
 
-    this.kvStore.set<userInfo>(this.activeUser.address(), this.userInfo);
+    this.save();
   }
 
   storeUserInfo(userInfo: userInfo) {
     this.userInfo = userInfo;
 
-    this.kvStore.set<userInfo>(this.activeUser.address(), userInfo);
-
+    this.save();
     userInfo.token && this.setToMisesPrivate(userInfo);
+  }
+
+  save() {
+    return this.kvStore.set<userInfo>(this.activeUser.address(), this.userInfo);
   }
 
   async getBalanceUMIS() {
@@ -783,10 +787,10 @@ export class MisesService {
   async recentTransactions() {
     try {
       const activeUser = this.activeUser;
-      let list = await activeUser?.recentTransactions({
-        page: 1,
-        per_page: 50,
-      });
+      const height = this.userInfo.transtions[0]
+        ? this.userInfo.transtions[0].height + 1
+        : 0;
+      let list = await activeUser?.recentTransactions(height);
       if (Array.isArray(list)) {
         list = list.reduce(
           (
@@ -810,7 +814,11 @@ export class MisesService {
             ? a.resultLength - b.resultLength
             : b.height - a.height
         );
-        this.userInfo.transtions = sortList;
+        this.userInfo.transtions = [
+          ...sortList,
+          ...this.userInfo.transtions,
+        ].slice(0, 300);
+        this.save();
         return sortList;
       }
       return [];
