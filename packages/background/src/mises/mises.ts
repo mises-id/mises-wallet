@@ -1,11 +1,11 @@
-import MisesSdk from "mises-js-sdk";
-import { MAppMgr } from "mises-js-sdk/dist/types/mapp";
+import { MSdk as MisesSdk } from "mises-js-sdk";
 import {
+  MAppMgr,
+  MUserMgr,
   MisesCoin,
   MisesConfig,
   MsgReader,
-} from "mises-js-sdk/dist/types/mises";
-import { MUserMgr } from "mises-js-sdk/dist/types/muser";
+} from "mises-js-sdk";
 import { MISES_POINT } from "./mises-network.util";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import {

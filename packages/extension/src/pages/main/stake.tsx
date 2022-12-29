@@ -49,7 +49,7 @@ export const StakeView: FunctionComponent = observer(() => {
               <div className={styleStake.reward}>
                 <p
                   className={classnames(
-                    "h4",
+                    "h5",
                     "my-0",
                     "font-weight-normal",
                     styleStake.paragraphSub
@@ -59,7 +59,7 @@ export const StakeView: FunctionComponent = observer(() => {
                 </p>
                 <p
                   className={classnames(
-                    "h4",
+                    "h5",
                     "my-0",
                     "font-weight-normal",
                     styleStake.paragraphSub

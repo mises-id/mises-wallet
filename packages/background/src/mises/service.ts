@@ -7,7 +7,7 @@
  */
 import { Mises } from "./mises";
 import { KVStore } from "@keplr-wallet/common";
-import { MUser, MUserInfo } from "mises-js-sdk/dist/types/muser";
+import { MUser, MUserInfo } from "mises-js-sdk";
 import {
   misesRequest,
   MISES_TRUNCATED_ADDRESS_START_CHARS,
@@ -23,8 +23,8 @@ import {
 } from "@cosmjs/stargate";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import { PubKey } from "@keplr-wallet/types";
-import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
 import Long from "long";
+import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -783,7 +783,10 @@ export class MisesService {
   async recentTransactions() {
     try {
       const activeUser = this.activeUser;
-      let list = await activeUser?.recentTransactions(0);
+      let list = await activeUser?.recentTransactions({
+        page: 1,
+        per_page: 50,
+      });
       if (Array.isArray(list)) {
         list = list.reduce(
           (

@@ -226,7 +226,7 @@ export const SignPage: FunctionComponent = observer(() => {
       if (!signDocHelper.signDocWrapper) {
         isMobileStatus() ? closePopupTab() : window.close();
       }
-    }, 200);
+    }, 400);
   }, []);
 
   return (

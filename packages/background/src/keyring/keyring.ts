@@ -839,7 +839,7 @@ export class KeyRing {
       if (!this.isKeyStoreCoinTypeSet(chainId)) {
         await this.setKeyStoreCoinType(chainId, coinType);
       }
-
+      console.log("sign");
       return signature;
     }
   }
