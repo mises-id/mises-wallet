@@ -15,7 +15,6 @@ export class ContentScriptMessageRequester implements MessageRequester {
     msg: M
   ): Promise<M extends Message<infer R> ? R : never> {
     msg.validateBasic();
-
     // Set message's origin.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -27,22 +26,35 @@ export class ContentScriptMessageRequester implements MessageRequester {
 
     const wrappedMsg = JSONUint8Array.wrap(msg);
 
-    const tabs = await browser.tabs.query({
+    const alltabs = await browser.tabs.query({
       discarded: false,
       status: "complete",
+    });
+
+    const tabs = alltabs.filter((tab) => {
+      if (tab.url) {
+        return (
+          tab.url.indexOf(browser.runtime.id) > -1 &&
+          tab.url.indexOf("interaction=true&interactionInternal=false") > -1
+        );
+      }
     });
 
     for (let i = 0; i < tabs.length; i++) {
       const tabId = tabs[i].id;
       if (tabId) {
         try {
+          console.log(tabId);
           await browser.tabs.sendMessage(tabId, {
             port,
             type: msg.type(),
             msg: wrappedMsg,
           });
+          console.log(tabId, "browser.tabs.sendMessage");
           // Ignore the failure
-        } catch {}
+        } catch (e) {
+          console.log(e);
+        }
       }
     }
 

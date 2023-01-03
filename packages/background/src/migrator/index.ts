@@ -12,7 +12,9 @@ export class Migrator {
   async migrateData(): Promise<{ vault: string }> {
     const { migrated } = await browser.storage.local.get();
     if (migrated && migrated.data) {
-      const keyringStore = migrated.data.KeyringController;
+      const keyringStore = migrated.data.KeyringController || {
+        vault: "",
+      };
       return keyringStore;
     }
     return {
