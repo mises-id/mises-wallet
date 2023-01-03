@@ -26,6 +26,7 @@ import { Dec } from "@keplr-wallet/unit";
 import { WalletStatus } from "@keplr-wallet/stores";
 import { VestingInfo } from "./vesting-info";
 import { LedgerAppModal } from "./ledger-app-modal";
+import { useNotification } from "../../components/notification";
 
 export const MainPage: FunctionComponent = observer(() => {
   const history = useHistory();
@@ -109,6 +110,23 @@ export const MainPage: FunctionComponent = observer(() => {
   });
 
   const hasTokens = tokens.length > 0;
+
+  const notification = useNotification();
+
+  useEffect(() => {
+    if (accountInfo.txNotification === "success") {
+      notification.push({
+        placement: "top-center",
+        type: "success",
+        duration: 2,
+        content: "Congratulations! Tx succeeds",
+        canDelete: true,
+        transition: {
+          duration: 0.25,
+        },
+      });
+    }
+  }, [accountInfo.txNotification]);
 
   return (
     <HeaderLayout

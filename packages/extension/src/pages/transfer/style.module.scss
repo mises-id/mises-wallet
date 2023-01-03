@@ -1,45 +1,43 @@
-.transtionItem{
+.transtionItem {
   padding: 15px 0;
   display: flex;
   align-items: center;
-  &:not(last-child){
+  &:not(last-child) {
     border-bottom: 1px solid #e9ecef;
   }
 }
-.transtionContent{
+.transtionContent {
   flex: 1;
   margin-left: 16px;
 }
-.category{
+.category {
   color: #24272a;
   font-size: 18px;
   margin-bottom: 4px;
   line-height: 1;
 }
-.itemDesc{
+.itemDesc {
   margin-bottom: 0;
   color: #bbc0c5;
 }
-.height{
+.height {
   color: #28a745;
   font-size: 12px;
   display: inline-block;
-  &::after{
+  &::after {
     content: "·";
     margin: 0 4px;
   }
 }
-.primaryCurrency{
+.primaryCurrency {
   color: #24272a;
   font-size: 14px;
-  
 }
-.loadingStatus{
+.loadingStatus {
   text-align: center;
   padding: 0 20px;
-  
 }
-.viewAll{
+.viewAll {
   text-align: center;
   color: #5e72e4;
   padding: 10px 0;

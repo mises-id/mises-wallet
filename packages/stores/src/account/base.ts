@@ -54,6 +54,9 @@ export class AccountSetBase {
   @observable
   protected _txTypeInProgress: string = "";
 
+  @observable
+  protected _txNotification: string = "";
+
   protected _pubKey: Uint8Array;
 
   protected hasInited = false;
@@ -342,6 +345,10 @@ export class AccountSetBase {
     return this._txTypeInProgress;
   }
 
+  get txNotification(): string {
+    return this._txNotification;
+  }
+
   /**
    * @deprecated Use `txTypeInProgress`
    */
@@ -380,5 +387,10 @@ export class AccountSetBaseSuper extends AccountSetBase {
   @action
   setTxTypeInProgress(type: string): void {
     this._txTypeInProgress = type;
+  }
+
+  @action
+  setTxNotification(type: string): void {
+    this._txNotification = type;
   }
 }

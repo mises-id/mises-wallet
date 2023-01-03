@@ -379,7 +379,6 @@ export class KeyRingService {
           },
         };
       } finally {
-        console.log("set request-sign-end");
         this.interactionService.dispatchEvent(APP_PORT, "request-sign-end", {});
       }
     }
@@ -398,6 +397,7 @@ export class KeyRingService {
         signature: encodeSecp256k1Signature(key.pubKey, signature),
       };
     } finally {
+      console.log("set request-sign-end");
       this.interactionService.dispatchEvent(APP_PORT, "request-sign-end", {});
     }
   }

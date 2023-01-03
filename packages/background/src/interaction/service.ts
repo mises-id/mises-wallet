@@ -35,10 +35,15 @@ export class InteractionService {
       type,
       data,
     });
-
-    this.eventMsgRequester.sendMessage(port, msg).catch((e) => {
-      console.log(`Failed to send the event to ${port}: ${e.message}`);
-    });
+    console.log("sendMessage");
+    this.eventMsgRequester
+      .sendMessage(port, msg)
+      .then(() => {
+        console.log(port, msg, "success sendMessage");
+      })
+      .catch((e) => {
+        console.log(`Failed to send the event to ${port}: ${e.message}`);
+      });
   }
 
   async waitApprove(

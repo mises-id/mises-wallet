@@ -354,6 +354,7 @@ export class CosmosAccountImpl {
           onFulfill?: (tx: any) => void;
         }
   ) {
+    this.base.setTxNotification("");
     this.base.setTxTypeInProgress(type);
 
     let txHash: Uint8Array;
@@ -413,6 +414,7 @@ export class CosmosAccountImpl {
       .portForTx(txHash)
       .then((tx) => {
         this.base.setTxTypeInProgress("");
+        this.base.setTxNotification("success");
 
         // After sending tx, the balances is probably changed due to the fee.
         for (const feeAmount of signDoc.fee.amount) {
