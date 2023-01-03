@@ -65,6 +65,8 @@ import { SettingEndpointsPage } from "./pages/setting/endpoints";
 import { SettingAutoLockPage } from "./pages/setting/autolock";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 import { TransferPage } from "./pages/transfer";
+import * as Sentry from "@sentry/react";
+import { BrowserTracing } from "@sentry/tracing";
 
 import IdleTimer from "react-idle-timer";
 
@@ -216,6 +218,17 @@ const RenderRoutes = () => {
     </IdleTimer>
   );
 };
+
+Sentry.init({
+  dsn:
+    "https://66dc9e60f6764bf4a127e9f11f702b9f@o1162849.ingest.sentry.io/4504417442791424",
+  integrations: [new BrowserTracing()],
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
 
 ReactDOM.render(
   <StoreProvider>
