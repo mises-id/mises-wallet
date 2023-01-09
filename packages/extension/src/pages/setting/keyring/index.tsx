@@ -159,6 +159,15 @@ const KeyRingToolsIcon: FunctionComponent<{
 
   return (
     <React.Fragment>
+      {isOpen && (
+        <div
+          className={style.popmask}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(false);
+          }}
+        />
+      )}
       <Popover
         target={tooltipId}
         isOpen={isOpen}
@@ -174,7 +183,12 @@ const KeyRingToolsIcon: FunctionComponent<{
           }}
         >
           <div
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              lineHeight: "35px",
+              fontSize: 12,
+              borderBottom: "1px soild #eee",
+            }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -185,7 +199,12 @@ const KeyRingToolsIcon: FunctionComponent<{
             <FormattedMessage id="setting.export.private-key" />
           </div>
           <div
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              lineHeight: "35px",
+              fontSize: 12,
+              borderBottom: "1px soild #eee",
+            }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -208,7 +227,7 @@ const KeyRingToolsIcon: FunctionComponent<{
           </div> */}
           {keyStore.type === "privateKey" ? (
             <div
-              style={{ cursor: "pointer" }}
+              style={{ cursor: "pointer", lineHeight: "35px", fontSize: 12 }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
