@@ -272,6 +272,7 @@ export class KeyRing {
 
     const privKey = this.loadPrivKey(60);
     const ethWallet = new Wallet(privKey.toBytes());
+    await this.misesService.initQueryClient();
     this.misesService.activateUser(ethWallet.privateKey);
 
     await this.save();
@@ -442,6 +443,7 @@ export class KeyRing {
 
     const privKey = this.loadPrivKey(60);
     const ethWallet = new Wallet(privKey.toBytes());
+    await this.misesService.initQueryClient();
     this.misesService.activateUser(ethWallet.privateKey);
   }
 
@@ -1076,6 +1078,23 @@ export class KeyRing {
     };
   }
 
+  private async _checkPrivateKey(
+    privatekeyStore: KeyStore[],
+    currentKey: string
+  ): Promise<boolean> {
+    if (Array.isArray(privatekeyStore) && privatekeyStore.length > 0) {
+      const privatePromiseKeyStore = privatekeyStore.map(async (keyStore) => {
+        return Buffer.from(
+          await Crypto.decrypt(this.crypto, keyStore, this.password)
+        ).toString();
+      });
+      const privateKeyStoreList = await Promise.all(privatePromiseKeyStore);
+      return privateKeyStoreList.some(
+        (privateKey) => privateKey === currentKey
+      );
+    }
+    return true;
+  }
   public async addPrivateKey(
     kdf: "scrypt" | "sha256" | "pbkdf2",
     privateKey: Uint8Array,
@@ -1088,6 +1107,23 @@ export class KeyRing {
         "keyring",
         141,
         "Key ring is locked or not initialized"
+      );
+    }
+
+    const privatekeyStore = this.multiKeyStore.filter(
+      (val) => val.type === "privateKey"
+    );
+
+    const isChecked = await this._checkPrivateKey(
+      privatekeyStore,
+      Buffer.from(privateKey).toString("hex")
+    );
+
+    if (isChecked) {
+      throw new KeplrError(
+        "keyring",
+        141,
+        "Don't repeat the import privateKey"
       );
     }
 

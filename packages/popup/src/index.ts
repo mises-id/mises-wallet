@@ -123,34 +123,35 @@ export async function openPopupTab(
       console.log(`Failed to update window focus: ${e.message}`);
     }
   }
+  browser.storage.local.set({
+    lastTabId: lastTabIds[channel],
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return lastTabIds[channel]!;
 }
 
 export async function closePopupTab() {
-  const [activeTab] = await browser.tabs.query({
-    active: true,
-    highlighted: true,
-  });
-  console.log(activeTab, "activeTab");
-  if (activeTab.id) {
-    const openerTabId = (await browser.storage.local.get("_openerTab"))
-      ._openerTab;
+  const openerTabId = (await browser.storage.local.get("_openerTab"))
+    ._openerTab;
+  const lastTabId = (await browser.storage.local.get("lastTabId")).lastTabId;
 
-    console.log(openerTabId, "openerTabId");
+  console.log(openerTabId, "openerTabId");
 
-    if (openerTabId) {
-      await browser.tabs.update(openerTabId, {
-        active: true,
-        highlighted: true,
-      });
-      browser.storage.local.set({
-        _openerTab: "",
-      });
-    }
+  if (openerTabId) {
+    await browser.tabs.update(openerTabId, {
+      active: true,
+      highlighted: true,
+    });
 
-    await browser.tabs.remove(activeTab.id);
+    browser.storage.local.set({
+      _openerTab: "",
+      lastTabId: "",
+    });
+  }
+
+  if (lastTabId) {
+    browser.tabs.remove(lastTabId);
   }
 }
 

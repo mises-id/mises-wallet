@@ -113,14 +113,6 @@ export class MisesService {
 
   init() {
     this.mises = new Mises();
-
-    this.initQueryClient();
-
-    this.mises.queryFetchClient.fetchQuery(
-      "gasPriceAndLimit",
-      () => this.gasPriceAndLimit(),
-      fetchConfig
-    );
   }
 
   async initQueryClient() {
@@ -129,6 +121,12 @@ export class MisesService {
 
       return this.queryClient;
     }
+
+    this.mises.queryFetchClient.fetchQuery(
+      "gasPriceAndLimit",
+      () => this.gasPriceAndLimit(),
+      fetchConfig
+    );
 
     try {
       const clients = await this.mises.queryFetchClient.fetchQuery(

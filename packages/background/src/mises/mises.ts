@@ -58,17 +58,14 @@ export class Mises {
     this.misesAppMgr = this.misesSdk.appMgr();
 
     this.queryFetchClient = new QueryFetchClient();
+  }
 
-    this.queryFetchClient
-      .fetchQuery(
-        "StargateClient",
-        () => StargateClient.connect(MISES_POINT),
-        fetchConfig
-      )
-      .then((res) => {
-        console.log("stargateClient");
-        this.stargateClient = res;
-      });
+  async queryFetchClientInit() {
+    this.stargateClient = await this.queryFetchClient.fetchQuery(
+      "StargateClient",
+      () => StargateClient.connect(MISES_POINT),
+      fetchConfig
+    );
   }
 
   async makeClient(): Promise<
