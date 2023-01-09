@@ -25,8 +25,8 @@
   &.alt-hex {
     word-break: break-all;
 
-    &::before {
-      content: "0x";
-    }
+    // &::before {
+    //   content: "0x";
+    // }
   }
 }
