@@ -415,7 +415,9 @@ export class CosmosAccountImpl {
       .then((tx) => {
         this.base.setTxTypeInProgress("");
         this.base.setTxNotification("success");
-
+        setTimeout(() => {
+          this.base.setTxNotification("");
+        }, 2000);
         // After sending tx, the balances is probably changed due to the fee.
         for (const feeAmount of signDoc.fee.amount) {
           const bal = this.queries.queryBalances
