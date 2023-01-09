@@ -223,12 +223,12 @@ export const SignPage: FunctionComponent = observer(() => {
 
   useEffect(() => {
     setTimeout(() => {
-      if (!signDocHelper.signDocWrapper) {
-        isMobileStatus() ? closePopupTab() : window.close();
-      }
+      // if (!signDocHelper.signDocWrapper) {
+      //   isMobileStatus() ? closePopupTab() : window.close();
+      // }'
+      console.log(isLoaded);
     }, 400);
   }, []);
-
   return (
     <HeaderLayout
       showChainName={alternativeTitle == null}

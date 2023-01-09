@@ -112,6 +112,7 @@ export class ChainsService {
 
   async getChainInfo(chainId: string): Promise<ChainInfoWithEmbed> {
     const chainInfo = (await this.getChainInfos()).find((chainInfo) => {
+      console.log(chainInfo, "this.getChainInfos");
       return (
         ChainIdHelper.parse(chainInfo.chainId).identifier ===
         ChainIdHelper.parse(chainId).identifier
@@ -129,17 +130,18 @@ export class ChainsService {
   }
 
   async getChainCoinType(chainId: string): Promise<number> {
-    const chainInfo = await this.getChainInfo(chainId);
+    // const chainInfo = await this.getChainInfo(chainId);
 
-    if (!chainInfo) {
-      throw new KeplrError(
-        "chains",
-        411,
-        `There is no chain info for ${chainId}`
-      );
-    }
-
-    return chainInfo.bip44.coinType;
+    // if (!chainInfo) {
+    //   // throw new KeplrError(
+    //   //   "chains",
+    //   //   411,
+    //   //   `There is no chain info for ${chainId}`
+    //   // );
+    // }
+    console.log(chainId);
+    // return chainInfo.bip44.coinType;
+    return 60;
   }
 
   async hasChainInfo(chainId: string): Promise<boolean> {

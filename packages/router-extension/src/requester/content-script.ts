@@ -34,8 +34,11 @@ export class ContentScriptMessageRequester implements MessageRequester {
     const tabs = alltabs.filter((tab) => {
       if (tab.url) {
         return (
-          tab.url.indexOf(browser.runtime.id) > -1 &&
-          tab.url.indexOf("interaction=true&interactionInternal=false") > -1
+          (tab.url.indexOf(browser.runtime.id) > -1 &&
+            tab.url.indexOf("interaction=true&interactionInternal=false") >
+              -1) ||
+          tab.url.indexOf("mises.site") > -1 ||
+          tab.url.indexOf("localhost") > -1
         );
       }
     });
