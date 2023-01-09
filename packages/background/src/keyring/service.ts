@@ -98,7 +98,6 @@ export class KeyRingService {
         {}
       );
       return this.keyRing.status;
-      // throw new KeplrError("keyring", 261, "key doesn't exist");
     }
 
     if (this.keyRing.status === KeyRingStatus.NOTLOADED) {

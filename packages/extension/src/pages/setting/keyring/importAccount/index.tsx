@@ -245,7 +245,8 @@ export const ImportAccountPage: FunctionComponent = observer(() => {
               history.push("/");
             } catch (e: any) {
               setIsLoading(false);
-              alert(e.message ? e.message : e.toString());
+              setSeedWordsError(e.message ? e.message : e.toString());
+              // alert(e.message ? e.message : e.toString());
               // registerConfig.clear();
             }
           })(e);
