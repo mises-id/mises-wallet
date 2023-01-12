@@ -8,7 +8,7 @@ export class AutoLockAccountService {
   };
 
   // Unit: ms
-  protected autoLockDuration: number = 0;
+  protected autoLockDuration: number = 15 * 60 * 1000;
 
   protected appStateCheckTimer: NodeJS.Timeout | null = null;
 
@@ -156,7 +156,7 @@ export class AutoLockAccountService {
     const duration = await this.kvStore.get<number>("autoLockDuration");
 
     if (duration == null) {
-      this.autoLockDuration = 0;
+      this.autoLockDuration = 15 * 60 * 1000;
     } else {
       this.autoLockDuration = duration;
     }
