@@ -331,8 +331,10 @@ export const SignPage: FunctionComponent = observer(() => {
                   <Button
                     className={style.button}
                     color="danger"
-                    disabled={signDocHelper.signDocWrapper == null}
-                    data-loading={signInteractionStore.isLoading}
+                    disabled={
+                      signDocHelper.signDocWrapper == null ||
+                      signInteractionStore.isLoading
+                    }
                     onClick={async (e) => {
                       e.preventDefault();
 

@@ -22,6 +22,11 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
 
   const loadingIndicator = useLoadingIndicator();
 
+  const lock = () => {
+    history.goBack();
+    keyRingStore.lock();
+  };
+
   return (
     <HeaderLayout
       showChainName={false}
@@ -30,6 +35,11 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
       onBackButton={() => {
         history.goBack();
       }}
+      rightRenderer={
+        <div className={style.lock} onClick={lock}>
+          <span className={style.lockBtn}>Lock</span>
+        </div>
+      }
       innerStyle={{ overflowY: "auto" }}
     >
       <div className={style.container}>
