@@ -26,14 +26,14 @@ import Long from "long";
 import { MisesWeb3Client } from "./mises";
 
 export interface ProxyRequest {
-  type: "proxy-request";
+  type: "mises-proxy-request";
   id: string;
   method: keyof Keplr;
   args: any[];
 }
 
 export interface ProxyRequestResponse {
-  type: "proxy-request-response";
+  type: "mises-proxy-request-response";
   id: string;
   result: Result | undefined;
 }
@@ -158,7 +158,7 @@ export class InjectedKeplr implements IKeplr {
       const message: ProxyRequest = parseMessage
         ? parseMessage(e.data)
         : e.data;
-      if (!message || message.type !== "proxy-request") {
+      if (!message || message.type !== "mises-proxy-request") {
         return;
       }
 
@@ -245,7 +245,7 @@ export class InjectedKeplr implements IKeplr {
               );
 
         const proxyResponse: ProxyRequestResponse = {
-          type: "proxy-request-response",
+          type: "mises-proxy-request-response",
           id: message.id,
           result: {
             return: JSONUint8Array.wrap(result),
@@ -255,7 +255,7 @@ export class InjectedKeplr implements IKeplr {
         eventListener.postMessage(proxyResponse);
       } catch (e: any) {
         const proxyResponse: ProxyRequestResponse = {
-          type: "proxy-request-response",
+          type: "mises-proxy-request-response",
           id: message.id,
           result: {
             error: e.message || e.toString(),
@@ -279,7 +279,7 @@ export class InjectedKeplr implements IKeplr {
       .join("");
 
     const proxyMessage: ProxyRequest = {
-      type: "proxy-request",
+      type: "mises-proxy-request",
       id,
       method,
       args: JSONUint8Array.wrap(args),
@@ -291,7 +291,10 @@ export class InjectedKeplr implements IKeplr {
           ? this.parseMessage(e.data)
           : e.data;
 
-        if (!proxyResponse || proxyResponse.type !== "proxy-request-response") {
+        if (
+          !proxyResponse ||
+          proxyResponse.type !== "mises-proxy-request-response"
+        ) {
           return;
         }
 
