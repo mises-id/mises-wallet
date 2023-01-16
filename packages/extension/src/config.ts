@@ -41,4 +41,4 @@ export const EmbedChainInfos: ChainInfo[] = [
 ];
 
 // The origins that are able to pass any permission that external webpages can have.
-export const PrivilegedOrigins: string[] = ["https://portal.mises.site"];
+export const PrivilegedOrigins: string[] = [];
