@@ -108,7 +108,7 @@ export const RegisterPage: FunctionComponent = observer(() => {
             alt="logo"
           /> */}
         </div>
-        {registerConfig.isIntro ? (
+        {/* {registerConfig.isIntro ? (
           <div className={style.introBrandSubTextContainer}>
             <img
               className={style.introBrandSubText}
@@ -116,7 +116,7 @@ export const RegisterPage: FunctionComponent = observer(() => {
               alt="The Interchain Wallet"
             />
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       {registerConfig.render()}
       {registerConfig.isFinalized ? <WelcomePage /> : null}

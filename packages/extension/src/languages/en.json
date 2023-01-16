@@ -185,7 +185,7 @@
   "register.verify.button.register": "Register",
 
   "register.welcome.title": "You’re all set!",
-  "register.welcome.content": "Open the extension and sign in to begin your interchain journey.",
+  "register.welcome.content": "Open the extension and sign in to begin.",
   "register.welcome.button.done": "Done",
 
   "chain.suggested.title": "Chain Add Request",
