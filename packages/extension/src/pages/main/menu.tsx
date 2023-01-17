@@ -8,7 +8,7 @@ import { FormattedMessage } from "react-intl";
 import { useHistory } from "react-router";
 
 export const Menu: FunctionComponent = observer(() => {
-  const { chainStore, keyRingStore } = useStore();
+  const { chainStore, misesStore } = useStore();
 
   const history = useHistory();
 
@@ -67,7 +67,8 @@ export const Menu: FunctionComponent = observer(() => {
       <div
         className={styleMenu.item}
         onClick={() => {
-          keyRingStore.lock();
+          // keyRingStore.lock();
+          misesStore.setLock();
         }}
       >
         <FormattedMessage id="main.menu.sign-out" />

@@ -15,6 +15,9 @@ import {
   PortForTxMsg,
   GetAutoLockAccountDurationMsg,
   StartAutoLockMonitoringMsg,
+  LockMsg,
+  SaveTranstionsMsg,
+  IndexTx,
 } from "@keplr-wallet/background";
 import { PubKey } from "@keplr-wallet/types";
 export class MisesStore {
@@ -135,6 +138,17 @@ export class MisesStore {
     this.requester.sendMessage(
       BACKGROUND_PORT,
       new StartAutoLockMonitoringMsg()
+    );
+  }
+
+  setLock() {
+    this.requester.sendMessage(BACKGROUND_PORT, new LockMsg());
+  }
+
+  saveTranstions(transactions: IndexTx[]) {
+    this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new SaveTranstionsMsg(transactions)
     );
   }
 }

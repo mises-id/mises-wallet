@@ -17,14 +17,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 export const SetKeyRingPage: FunctionComponent = observer(() => {
   const intl = useIntl();
 
-  const { keyRingStore, analyticsStore } = useStore();
+  const { keyRingStore, analyticsStore, misesStore } = useStore();
   const history = useHistory();
 
   const loadingIndicator = useLoadingIndicator();
 
   const lock = () => {
-    history.goBack();
-    keyRingStore.lock();
+    misesStore.setLock();
   };
 
   return (

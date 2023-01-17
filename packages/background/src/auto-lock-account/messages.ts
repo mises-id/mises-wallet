@@ -72,3 +72,25 @@ export class StartAutoLockMonitoringMsg extends Message<void> {
     return StartAutoLockMonitoringMsg.type();
   }
 }
+
+export class LockMsg extends Message<void> {
+  public static type() {
+    return "lock-msg";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return LockMsg.type();
+  }
+}

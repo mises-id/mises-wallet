@@ -51,21 +51,6 @@ export class AutoLockAccountService {
       this.stopAutoLockTimer();
       this.startAutoLockTimer();
     }
-    // this.stopAppStateCheckTimer();
-    // if (this.autoLockDuration > 0 && this.keyRingIsUnlocked) {
-    //   this.appStateCheckTimer = setTimeout(() => {
-    //     const isAppActive = this.checkAppIsActive();
-    //     if (isAppActive) {
-    //       this.stopAutoLockTimer();
-    //       this.startAppStateCheckTimer();
-    //     } else {
-    //       if (this.keyRingIsUnlocked) {
-    //         this.startAutoLockTimer();
-    //       }
-    //       this.stopAppStateCheckTimer();
-    //     }
-    //   }, this.opts.monitoringInterval);
-    // }
   }
 
   private stopAppStateCheckTimer() {
@@ -114,7 +99,7 @@ export class AutoLockAccountService {
     }
   }
 
-  private lock() {
+  public lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
       const background = browser.extension.getBackgroundPage();
