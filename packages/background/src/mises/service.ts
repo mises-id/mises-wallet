@@ -818,6 +818,7 @@ export class MisesService {
       return Promise.reject(error);
     }
   }
+
   saveTranstions(list: IndexTx[]) {
     this.userInfo.transtions = list;
     this.save();

@@ -4,6 +4,7 @@ import {
   GetOriginPermittedChainsMsg,
   GetPermissionOriginsMsg,
   RemovePermissionOrigin,
+  RemovePermissionsOrigin,
 } from "./messages";
 import {
   Env,
@@ -40,6 +41,11 @@ export const getHandler: (service: PermissionService) => Handler = (
         return handleRemovePermissionOrigin(service)(
           env,
           msg as RemovePermissionOrigin
+        );
+      case RemovePermissionsOrigin:
+        return handleremoveAllPermissionsOrigin(service)(
+          env,
+          msg as RemovePermissionsOrigin
         );
       default:
         throw new KeplrError("permission", 120, "Unknown msg type");
@@ -95,5 +101,13 @@ const handleRemovePermissionOrigin: (
     await service.removePermission(msg.chainId, msg.permissionType, [
       msg.permissionOrigin,
     ]);
+  };
+};
+
+const handleremoveAllPermissionsOrigin: (
+  service: PermissionService
+) => InternalHandler<RemovePermissionsOrigin> = (service) => {
+  return async (_, msg) => {
+    await service.removeAllPermissions(msg.chainId);
   };
 };

@@ -295,7 +295,6 @@ export const VerifyMnemonicModePage: FunctionComponent<{
       </div>
       <Button
         color="primary"
-        type="submit"
         disabled={suggestedWords.join(" ") !== wordsSlice.join(" ")}
         block
         size="lg"

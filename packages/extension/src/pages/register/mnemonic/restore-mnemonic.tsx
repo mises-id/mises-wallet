@@ -22,6 +22,12 @@ import { useBIP44Option } from "../advanced-bip44";
 import { Buffer } from "buffer/";
 import { useStore } from "../../../stores";
 import classnames from "classnames";
+import {
+  RemovePermissionsOrigin,
+  UpdateAutoLockAccountDurationMsg,
+} from "@keplr-wallet/background";
+import { InExtensionMessageRequester } from "@keplr-wallet/router-extension";
+import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bip39 = require("bip39");
@@ -82,7 +88,7 @@ export const RestoreMnemonicPage: FunctionComponent<{
 
   const bip44Option = useBIP44Option();
 
-  const { analyticsStore } = useStore();
+  const { analyticsStore, chainStore } = useStore();
 
   const { register, handleSubmit, getValues, errors } = useForm<FormData>({
     defaultValues: {
@@ -241,6 +247,16 @@ export const RestoreMnemonicPage: FunctionComponent<{
     }
   };
 
+  const restoreAutoLockDuration = () => {
+    const msg = new UpdateAutoLockAccountDurationMsg(15 * 60000);
+    return new InExtensionMessageRequester().sendMessage(BACKGROUND_PORT, msg);
+  };
+
+  const removeAllPermissions = () => {
+    const msg = new RemovePermissionsOrigin(chainStore.current.chainId);
+    return new InExtensionMessageRequester().sendMessage(BACKGROUND_PORT, msg);
+  };
+
   return (
     <React.Fragment>
       <div className={styleRecoverMnemonic.container}>
@@ -303,7 +319,6 @@ export const RestoreMnemonicPage: FunctionComponent<{
             handleSubmit(async (data: FormData) => {
               try {
                 await registerConfig.restoreKeyStore();
-
                 await registerConfig.restoreMnemonic(
                   data.name,
                   // In logic, not 12/24 words can be handled.
@@ -314,6 +329,8 @@ export const RestoreMnemonicPage: FunctionComponent<{
                   data.password,
                   bip44Option.bip44HDPath
                 );
+                await restoreAutoLockDuration();
+                await removeAllPermissions();
                 analyticsStore.setUserProperties({
                   registerType: "seed",
                   accountType: "mnemonic",

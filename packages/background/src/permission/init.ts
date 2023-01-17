@@ -6,6 +6,7 @@ import {
   GetOriginPermittedChainsMsg,
   GetPermissionOriginsMsg,
   RemovePermissionOrigin,
+  RemovePermissionsOrigin,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -16,6 +17,6 @@ export function init(router: Router, service: PermissionService): void {
   router.registerMessage(GetOriginPermittedChainsMsg);
   router.registerMessage(AddPermissionOrigin);
   router.registerMessage(RemovePermissionOrigin);
-
+  router.registerMessage(RemovePermissionsOrigin);
   router.addHandler(ROUTE, getHandler(service));
 }

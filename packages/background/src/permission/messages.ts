@@ -162,3 +162,27 @@ export class RemovePermissionOrigin extends Message<void> {
     return RemovePermissionOrigin.type();
   }
 }
+
+export class RemovePermissionsOrigin extends Message<void> {
+  public static type() {
+    return "remove-permissions-origin";
+  }
+
+  constructor(public readonly chainId: string) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.chainId) {
+      throw new KeplrError("permission", 100, "chain id not set");
+    }
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return RemovePermissionsOrigin.type();
+  }
+}
