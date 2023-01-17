@@ -20,6 +20,7 @@ import {
   StakingMsg,
   ActiveUserMsg,
   PortForTxMsg,
+  SaveTranstionsMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -46,6 +47,7 @@ export function init(router: Router, service: MisesService) {
   router.registerMessage(StakingMsg);
   router.registerMessage(ActiveUserMsg);
   router.registerMessage(PortForTxMsg);
+  router.registerMessage(SaveTranstionsMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

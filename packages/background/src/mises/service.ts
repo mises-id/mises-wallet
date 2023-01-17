@@ -117,8 +117,6 @@ export class MisesService {
 
   async initQueryClient() {
     if (this.queryClient) {
-      console.log("cache query client");
-
       return this.queryClient;
     }
 
@@ -812,11 +810,6 @@ export class MisesService {
             ? a.resultLength - b.resultLength
             : b.height - a.height
         );
-        this.userInfo.transtions = [
-          ...sortList,
-          ...this.userInfo.transtions,
-        ].slice(0, 300);
-        this.save();
         return sortList;
       }
       return [];
@@ -824,5 +817,9 @@ export class MisesService {
       console.log(error);
       return Promise.reject(error);
     }
+  }
+  saveTranstions(list: IndexTx[]) {
+    this.userInfo.transtions = list;
+    this.save();
   }
 }

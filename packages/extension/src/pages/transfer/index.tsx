@@ -41,10 +41,12 @@ export const TransferPage: FunctionComponent = observer(() => {
         () => misesStore.recentTransactions(),
         fetchConfig
       )
-      .then(async () => {
+      .then(async (list) => {
         const userinfo = await misesStore.activeUser();
-        settranstions([...userinfo.transtions]);
+        settranstions([...list, ...userinfo.transtions]);
         setloadingStatus("success");
+
+        misesStore.saveTranstions([...list, ...userinfo.transtions]);
       })
       .catch(() => {
         setloadingStatus("error");

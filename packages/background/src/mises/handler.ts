@@ -21,6 +21,7 @@ import {
   StakingMsg,
   ActiveUserMsg,
   PortForTxMsg,
+  SaveTranstionsMsg,
 } from "./messages";
 import { MisesService } from "./service";
 
@@ -76,6 +77,8 @@ export const getHandler: (service: MisesService) => Handler = (service) => {
         return handlerActiveUser(service)(env, msg as ActiveUserMsg);
       case PortForTxMsg:
         return handlerPortForTx(service)(env, msg as PortForTxMsg);
+      case SaveTranstionsMsg:
+        return handlerSaveTranstions(service)(env, msg as SaveTranstionsMsg);
       default:
         throw new Error("Unknown msg type");
     }
@@ -242,4 +245,13 @@ const handlerPortForTx: (
   service: MisesService
 ) => InternalHandler<PortForTxMsg> = (service: MisesService) => (_, msg) => {
   return service.pollForTx(msg.txId);
+};
+
+const handlerSaveTranstions: (
+  service: MisesService
+) => InternalHandler<SaveTranstionsMsg> = (service: MisesService) => (
+  _,
+  msg
+) => {
+  return service.saveTranstions(msg.transtions);
 };

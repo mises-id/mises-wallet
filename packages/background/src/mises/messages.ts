@@ -539,3 +539,24 @@ export class PortForTxMsg extends Message<DeliverTxResponseMises> {
     return PortForTxMsg.type();
   }
 }
+export class SaveTranstionsMsg extends Message<void> {
+  public static type() {
+    return "save-transtions";
+  }
+  constructor(public readonly transtions: IndexTx[]) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.transtions) {
+      throw new KeplrError("transtions", 101, "transtions is empty");
+    }
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return SaveTranstionsMsg.type();
+  }
+}
