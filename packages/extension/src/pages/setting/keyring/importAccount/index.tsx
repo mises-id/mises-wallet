@@ -331,7 +331,7 @@ export const ImportAccountPage: FunctionComponent = observer(() => {
             {(() => {
               if (seedWordsError === "__required__") {
                 return intl.formatMessage({
-                  id: "setting.keyring.import.input.name.error.invalid",
+                  id: "setting.keyring.import.input.name.error.required",
                 });
               }
 

@@ -1093,7 +1093,7 @@ export class KeyRing {
         (privateKey) => privateKey === currentKey
       );
     }
-    return true;
+    return false;
   }
   public async addPrivateKey(
     kdf: "scrypt" | "sha256" | "pbkdf2",
@@ -1114,17 +1114,19 @@ export class KeyRing {
       (val) => val.type === "privateKey"
     );
 
-    const isChecked = await this._checkPrivateKey(
-      privatekeyStore,
-      Buffer.from(privateKey).toString("hex")
-    );
-
-    if (isChecked) {
-      throw new KeplrError(
-        "keyring",
-        141,
-        "Don't repeat the import privateKey"
+    if (privatekeyStore.length > 0) {
+      const isChecked = await this._checkPrivateKey(
+        privatekeyStore,
+        Buffer.from(privateKey).toString("hex")
       );
+
+      if (isChecked) {
+        throw new KeplrError(
+          "keyring",
+          141,
+          "Don't repeat the import privateKey"
+        );
+      }
     }
 
     const keyStore = await KeyRing.CreatePrivateKeyStore(
