@@ -30,7 +30,7 @@ import Long from "long";
 import { SignDoc } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
 
 export class MockKeplr implements Keplr {
-  readonly version: string = "0.1.12";
+  readonly version: string = "0.1.15";
   readonly mode: KeplrMode = "extension";
 
   public defaultOptions: KeplrIntereactionOptions = {};

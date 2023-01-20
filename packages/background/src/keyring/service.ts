@@ -104,7 +104,11 @@ export class KeyRingService {
       await this.keyRing.restore();
     }
 
-    if (this.keyRing.status === KeyRingStatus.LOCKED) {
+    if (
+      [KeyRingStatus.LOCKED, KeyRingStatus.MIGRATOR].includes(
+        this.keyRing.status
+      )
+    ) {
       await this.interactionService.waitApprove(env, "/unlock", "unlock", {});
       return this.keyRing.status;
     }

@@ -68,11 +68,12 @@ export class ExtensionRouter extends Router {
     sender: MessageSender
   ): Promise<Result> {
     try {
+      console.log("onMessageHandler");
       const result = await this.handleMessage(message, sender);
       return {
         return: result,
       };
-    } catch (e) {
+    } catch (e: any) {
       console.log(
         `Failed to process msg ${message.type}: ${e?.message || e?.toString()}`
       );

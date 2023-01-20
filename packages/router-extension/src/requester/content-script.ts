@@ -48,11 +48,17 @@ export class ContentScriptMessageRequester implements MessageRequester {
       if (tabId) {
         try {
           console.log(tabId);
-          await browser.tabs.sendMessage(tabId, {
-            port,
-            type: msg.type(),
-            msg: wrappedMsg,
-          });
+          chrome.tabs.sendMessage(
+            tabId,
+            {
+              port,
+              type: msg.type(),
+              msg: wrappedMsg,
+            },
+            (result) => {
+              console.log(result, "browser.tabs.sendMessage: success");
+            }
+          );
           console.log(tabId, "browser.tabs.sendMessage");
           // Ignore the failure
         } catch (e) {
