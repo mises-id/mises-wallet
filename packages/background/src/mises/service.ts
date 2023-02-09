@@ -127,6 +127,7 @@ export class MisesService {
     );
 
     try {
+      console.log("init start");
       const clients = await this.mises.queryFetchClient.fetchQuery(
         "makeClient",
         () => this.mises.makeClient(),
@@ -137,16 +138,19 @@ export class MisesService {
       this.queryClient = queryClient;
       this.tmClient = tmClient;
 
-      console.log("init");
-
+      console.log("init sucess");
       return queryClient;
-    } catch (error) {}
+    } catch (error) {
+      console.log(error, "initQueryClient failed");
+    }
   }
 
   async activateUser(priKey: string): Promise<void> {
     this.activeUser = await this.mises.misesUser.activateUser(
       priKey.replace("0x", "")
     );
+
+    console.log("activateUser", this.activeUser);
 
     const userInfo = await this.misesUserInfo();
 
@@ -155,14 +159,12 @@ export class MisesService {
     browser.storage.local.set({
       setAccount: true,
     });
-
-    console.log("activateUser", this.activeUser);
   }
 
   async misesUserInfo() {
+    const misesId = this.activeUser && this.activeUser.address();
     const userInfo =
-      (await this.kvStore.get<userInfo>(this.activeUser.address())) ||
-      defaultUserInfo; // init userInfo
+      (await this.kvStore.get<userInfo>(misesId)) || defaultUserInfo; // init userInfo
 
     const nowTimeStamp = new Date().getTime();
     const expireTokenFlag =
@@ -198,8 +200,6 @@ export class MisesService {
       userInfo.avatar = misesInfo?.avatarUrl;
       userInfo.nickname = misesInfo?.name || "";
     }
-
-    const misesId = this.activeUser.address();
 
     userInfo.nickname =
       userInfo.nickname ||
