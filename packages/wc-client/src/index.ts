@@ -513,6 +513,9 @@ export class KeplrWalletConnectV1 implements Keplr {
   async hasWalletAccount(): Promise<boolean> {
     return true;
   }
+  async openWallet(): Promise<void> {
+    // noop
+  }
 
   async disconnect(_params: {
     userid: string;

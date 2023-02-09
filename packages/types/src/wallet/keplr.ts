@@ -165,6 +165,7 @@ export interface Keplr {
   isUnlocked(): Promise<boolean>;
   misesAccount(): Promise<MisesAccountData>;
   hasWalletAccount(): Promise<boolean>;
+  openWallet(): Promise<void>;
   disconnect(params: { userid: string; appid: string }): Promise<boolean>;
   connect(params: {
     userid: string;

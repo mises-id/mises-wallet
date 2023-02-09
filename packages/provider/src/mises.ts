@@ -11,6 +11,10 @@ export class MisesWeb3Client {
     return await this.keplr.hasWalletAccount();
   }
 
+  async openWallet() {
+    return await this.keplr.openWallet();
+  }
+
   async disconnect(params: { userid: string; appid: string }) {
     return await this.keplr.disconnect(params);
   }

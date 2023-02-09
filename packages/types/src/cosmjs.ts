@@ -152,6 +152,8 @@ export interface MisesWeb3Client {
 
   readonly hasWalletAccount: () => Promise<boolean>;
 
+  readonly openWallet: () => Promise<void>;
+
   disconnect(params: { userid: string; appid: string }): Promise<boolean>;
 
   readonly connect: (params: {

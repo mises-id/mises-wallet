@@ -560,3 +560,23 @@ export class SaveTranstionsMsg extends Message<void> {
     return SaveTranstionsMsg.type();
   }
 }
+
+export class OpenWalletMsg extends Message<void> {
+  public static type() {
+    return "open-wallet";
+  }
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return OpenWalletMsg.type();
+  }
+}

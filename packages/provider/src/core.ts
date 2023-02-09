@@ -40,6 +40,7 @@ import {
   UserUnFollowMsg,
   SetUserInfoMsg,
   StakingMsg,
+  OpenWalletMsg,
 } from "./types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 
@@ -391,6 +392,10 @@ export class Keplr implements IKeplr {
       BACKGROUND_PORT,
       new HasWalletAccountMsg()
     );
+  }
+
+  openWallet() {
+    return this.requester.sendMessage(BACKGROUND_PORT, new OpenWalletMsg());
   }
 
   disconnect(params: { userid: string; appid: string }) {

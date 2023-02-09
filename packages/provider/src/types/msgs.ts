@@ -796,3 +796,23 @@ export class StakingMsg extends Message<any> {
     return StakingMsg.type();
   }
 }
+
+export class OpenWalletMsg extends Message<void> {
+  public static type() {
+    return "open-wallet";
+  }
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    //noop
+  }
+  route(): string {
+    return "mises";
+  }
+
+  type(): string {
+    return OpenWalletMsg.type();
+  }
+}

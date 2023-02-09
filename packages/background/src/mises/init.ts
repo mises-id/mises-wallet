@@ -21,6 +21,7 @@ import {
   ActiveUserMsg,
   PortForTxMsg,
   SaveTranstionsMsg,
+  OpenWalletMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -48,6 +49,7 @@ export function init(router: Router, service: MisesService) {
   router.registerMessage(ActiveUserMsg);
   router.registerMessage(PortForTxMsg);
   router.registerMessage(SaveTranstionsMsg);
+  router.registerMessage(OpenWalletMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

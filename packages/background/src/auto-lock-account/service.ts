@@ -61,18 +61,17 @@ export class AutoLockAccountService {
   }
 
   public checkAppIsActive(): boolean {
-    const background = browser.extension.getBackgroundPage();
-    const views = browser.extension.getViews();
-    if (background) {
-      for (const view of views) {
-        if (background.location.href !== view.location.href) {
-          return true;
-        }
-      }
-    } else if (views.length > 0) {
-      return true;
-    }
-
+    // const background = browser.extension.getBackgroundPage();
+    // const views = browser.extension.getViews();
+    // if (background) {
+    //   for (const view of views) {
+    //     if (background.location.href !== view.location.href) {
+    //       return true;
+    //     }
+    //   }
+    // } else if (views.length > 0) {
+    //   return true;
+    // }
     return false;
   }
 
@@ -99,17 +98,18 @@ export class AutoLockAccountService {
     }
   }
 
-  public lock() {
+  public async lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
-      const background = browser.extension.getBackgroundPage();
-      const views = browser.extension.getViews();
-      for (const view of views) {
-        // Possibly, keyring can be locked with UI opened. Ex) when device sleep.
-        // In this case, to simplify the UI logic, just close all UI.
-        if (!background || background.location.href !== view.location.href) {
-          view.location.reload();
-        }
+      let tabs = await browser.tabs.query({
+        discarded: false,
+        status: "complete",
+      });
+      tabs = tabs.filter(
+        (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
+      );
+      for (const tab of tabs) {
+        browser.tabs.reload(tab.id);
       }
     }
   }

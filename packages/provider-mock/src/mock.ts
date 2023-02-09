@@ -282,6 +282,10 @@ export class MockKeplr implements Keplr {
     return true;
   }
 
+  async openWallet(): Promise<void> {
+    // noop
+  }
+
   async disconnect(_params: {
     userid: string;
     appid: string;

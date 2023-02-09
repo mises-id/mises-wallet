@@ -148,6 +148,8 @@ export class MisesService {
       priKey.replace("0x", "")
     );
 
+    console.log("activateUser", this.activeUser);
+
     const userInfo = await this.misesUserInfo();
 
     this.storeUserInfo(userInfo);
@@ -155,13 +157,11 @@ export class MisesService {
     browser.storage.local.set({
       setAccount: true,
     });
-
-    console.log("activateUser", this.activeUser);
   }
 
   async misesUserInfo() {
     const userInfo =
-      (await this.kvStore.get<userInfo>(this.activeUser.address())) ||
+      (await this.kvStore.get<userInfo>(this.activeUser?.address())) ||
       defaultUserInfo; // init userInfo
 
     const nowTimeStamp = new Date().getTime();
@@ -823,4 +823,6 @@ export class MisesService {
     this.userInfo.transtions = list;
     this.save();
   }
+
+  openWallet() {}
 }

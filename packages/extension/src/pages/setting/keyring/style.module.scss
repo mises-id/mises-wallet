@@ -16,7 +16,7 @@
   margin-bottom: $layout-padding;
 }
 
-.popmask{
+.popmask {
   position: fixed;
   left: 0;
   bottom: 0;
@@ -25,18 +25,17 @@
   background-color: rgba(0, 0, 0, 0.1);
   z-index: 2;
 }
-.lock{
+.lock {
   height: 100%;
   display: flex;
   align-items: center;
   font-size: 13px;
   padding-right: 10px;
-
 }
-.lockBtn{
+.lockBtn {
   display: inline-block;
   border: 1px solid #5e72e4;
   border-radius: 30px;
   padding: 0 10px;
   color: #5e72e4;
-} 
+}

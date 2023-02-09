@@ -640,6 +640,10 @@ export class InjectedKeplr implements IKeplr {
     return this.requestMethod<boolean>("hasWalletAccount", []);
   }
 
+  openWallet(): Promise<void> {
+    return this.requestMethod<void>("openWallet", []);
+  }
+
   disconnect(params: { userid: string; appid: string }): Promise<boolean> {
     return this.requestMethod<boolean>("disconnect", [params]);
   }

@@ -161,32 +161,52 @@ export class ExtensionEnv {
         } else {
           url += "?" + queryString;
         }
-
-        const backgroundPage = await browser.runtime.getBackgroundPage();
-        const views = browser.extension
-          .getViews({
-            // Request only for the same tab as the requested frontend.
-            // But the browser popup itself has no information about tab.
-            // Also, if user has multiple windows on, we need another way to distinguish them.
-            // See the comment right below this part.
-            tabId: sender.tab?.id,
-          })
-          .filter((window) => {
-            // You need to request interaction with the frontend that requested the message.
-            // It is difficult to achieve this with the browser api alone.
-            // Check the router id under the window of each view
-            // and process only the view that has the same router id of the requested frontend.
-            return (
-              window.location.href !== backgroundPage.location.href &&
-              (routerMeta.routerId == null ||
-                routerMeta.routerId === window.keplrExtensionRouterId)
-            );
+        if (sender.tab?.id) {
+          let tabs = await browser.tabs.query({
+            discarded: false,
+            status: "complete",
           });
-        if (views.length > 0) {
-          for (const view of views) {
-            view.location.href = url;
+
+          tabs = tabs.filter(
+            (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
+          );
+
+          if (tabs.length > 0) {
+            for (const tab of tabs) {
+              if (tab.id) {
+                browser.tabs.update(tab.id, {
+                  url,
+                });
+              }
+            }
           }
         }
+
+        // const backgroundPage = await browser.runtime.getBackgroundPage();
+        // const views = browser.extension
+        //   .getViews({
+        //     // Request only for the same tab as the requested frontend.
+        //     // But the browser popup itself has no information about tab.
+        //     // Also, if user has multiple windows on, we need another way to distinguish them.
+        //     // See the comment right below this part.
+        //     tabId: sender.tab?.id,
+        //   })
+        //   .filter((window) => {
+        //     // You need to request interaction with the frontend that requested the message.
+        //     // It is difficult to achieve this with the browser api alone.
+        //     // Check the router id under the window of each view
+        //     // and process only the view that has the same router id of the requested frontend.
+        //     return (
+        //       window.location.href !== backgroundPage.location.href &&
+        //       (routerMeta.routerId == null ||
+        //         routerMeta.routerId === window.keplrExtensionRouterId)
+        //     );
+        //   });
+        // if (views.length > 0) {
+        //   for (const view of views) {
+        //     view.location.href = url;
+        //   }
+        // }
 
         msg.routerMeta = {
           ...msg.routerMeta,
