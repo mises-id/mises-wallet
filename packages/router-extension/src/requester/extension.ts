@@ -16,10 +16,11 @@ export class InExtensionMessageRequester implements MessageRequester {
     // Set message's origin.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    msg["origin"] = window.location.origin;
+    msg["origin"] = `chrome-extension://${browser.runtime.id}/popup.html`;
+    console.log(msg["origin"]);
     msg.routerMeta = {
       ...msg.routerMeta,
-      routerId: getKeplrExtensionRouterId(),
+      routerId: await getKeplrExtensionRouterId(),
     };
 
     const result = JSONUint8Array.unwrap(
@@ -59,10 +60,10 @@ export class InExtensionMessageRequester implements MessageRequester {
     // Set message's origin.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    msg["origin"] = window.location.origin;
+    msg["origin"] = `chrome-extension://${browser.runtime.id}/popup.html`;
     msg.routerMeta = {
       ...msg.routerMeta,
-      routerId: getKeplrExtensionRouterId(),
+      routerId: await getKeplrExtensionRouterId(),
     };
 
     const result = JSONUint8Array.unwrap(

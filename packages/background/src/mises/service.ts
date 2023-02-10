@@ -138,7 +138,7 @@ export class MisesService {
       this.queryClient = queryClient;
       this.tmClient = tmClient;
 
-      console.log("init sucess");
+      console.log("init success");
       return queryClient;
     } catch (error) {
       console.log(error, "initQueryClient failed");

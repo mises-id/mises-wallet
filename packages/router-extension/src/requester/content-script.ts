@@ -21,7 +21,7 @@ export class ContentScriptMessageRequester implements MessageRequester {
     msg["origin"] = window.location.origin;
     msg.routerMeta = {
       ...msg.routerMeta,
-      routerId: getKeplrExtensionRouterId(),
+      routerId: await getKeplrExtensionRouterId(),
     };
 
     const wrappedMsg = JSONUint8Array.wrap(msg);
