@@ -138,10 +138,6 @@ const extensionConfig = (env, args) => {
             to: "./",
           },
           {
-            from: "./scripts/app-init.js",
-            to: "./",
-          },
-          {
             from:
               "../../node_modules/webextension-polyfill/dist/browser-polyfill.js",
           },

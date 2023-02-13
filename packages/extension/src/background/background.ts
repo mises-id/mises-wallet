@@ -1,3 +1,4 @@
+importScripts("browser-polyfill.js");
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 import {
   ExtensionRouter,

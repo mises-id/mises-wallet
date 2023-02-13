@@ -42,6 +42,7 @@
     "@ledgerhq/hw-transport-webusb": "^6.20.0",
     "aes-js": "^3.1.2",
     "axios": "^0.27.2",
+    "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "mises-js-sdk": "^0.1.14",
     "react-idle-timer": "^4.2.5",
     "browser-passworder": "^2.0.3",

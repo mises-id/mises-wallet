@@ -2,16 +2,12 @@
  * getKeplrExtensionRouterId returns the `window.keplrExtensionRouterId`.
  * If the `window.keplrExtensionRouterId` is not initialized, it will be initialized and returned.
  */
-export async function getKeplrExtensionRouterId(): Promise<number> {
-  const { keplrExtensionRouterId } = await browser.storage.local.get(
-    "keplrExtensionRouterId"
-  );
-  let keplrExtensionRouterIdRandom = 0;
-  if (keplrExtensionRouterId == null) {
-    keplrExtensionRouterIdRandom = Math.floor(Math.random() * 1000000);
-    browser.storage.local.set({
-      keplrExtensionRouterId: keplrExtensionRouterIdRandom,
-    });
+export function getKeplrExtensionRouterId(): number {
+  const globalWindow: any = typeof window !== "undefined" ? window : chrome;
+  if (globalWindow.keplrExtensionRouterId == null) {
+    globalWindow.keplrExtensionRouterId = Math.floor(
+      Math.random() * Number.MAX_SAFE_INTEGER
+    );
   }
-  return keplrExtensionRouterIdRandom;
+  return globalWindow.keplrExtensionRouterId;
 }

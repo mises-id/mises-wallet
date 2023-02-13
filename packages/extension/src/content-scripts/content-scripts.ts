@@ -121,7 +121,7 @@ if (url.hostname === "twitter.com") {
             .then((r) => {
               if (r) {
                 alert(`Phishing Alert
-@${id} is detected as Keplr’s phishing account.
+@${id} is detected as Mises's phishing account.
 This twitter account has malicious intent so recommend you not to interact with it.`);
               }
             })

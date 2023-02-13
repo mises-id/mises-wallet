@@ -7727,6 +7727,11 @@
     expo-modules-autolinking "^0.0.3"
     invariant "^2.2.4"
 
+"@vespaiach/axios-fetch-adapter@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.npmmirror.com/@vespaiach/axios-fetch-adapter/-/axios-fetch-adapter-0.3.1.tgz#b0c08167bec9cc558f578a1b9ccff52ead1cf1cb"
+  integrity sha512-+1F52VWXmQHSRFSv4/H0wtnxfvjRMPK5531e880MIjypPdUSX6QZuoDgEVeCE1vjhzDdxCVX7rOqkub7StEUwQ==
+
 "@walletconnect/browser-utils@^1.6.4":
   version "1.6.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/browser-utils/-/browser-utils-1.6.4.tgz#9a489aa680370c7071e603b02c5c94298d1c5d41"

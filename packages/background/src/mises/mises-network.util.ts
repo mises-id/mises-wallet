@@ -5,6 +5,7 @@ export const MISES_POINT: string = "http://127.0.0.1:26657";
 
 import axios, { AxiosResponse } from "axios";
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
+import adapter from "@vespaiach/axios-fetch-adapter";
 export interface RequestInterceptors<T> {
   // 请求拦截
   requestInterceptors?: (config: AxiosRequestConfig) => AxiosRequestConfig;
@@ -44,7 +45,10 @@ export class Request {
   constructor(config: RequestConfig) {
     this.requestUrlList = [];
     this.cancelRequestSourceList = [];
-    this.instance = axios.create(config);
+    this.instance = axios.create({
+      ...config,
+      adapter,
+    });
     this.interceptorsObj = config.interceptors;
     // 拦截器执行顺序 接口请求 -> 实例请求 -> 全局请求 -> 实例响应 -> 全局响应 -> 接口响应
     this.instance.interceptors.request.use(
@@ -196,6 +200,7 @@ export const misesRequest = async <D = any, T = any>(
     const data = await request.request<misesResponse<T>>(config);
     return data.data;
   } catch (error) {
+    console.log(error, "error");
     return Promise.reject(error);
   }
 };

@@ -16,7 +16,6 @@ export class ExtensionGuards {
     }
 
     const url = new URL(sender.url);
-    console.log(url, msg.origin);
     if (url.origin !== msg.origin) {
       throw new Error("Invalid origin");
     }

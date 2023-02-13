@@ -18,7 +18,7 @@
     }
   },
   "background": {
-    "service_worker": "app-init.js"
+    "service_worker": "background.bundle.js"
   },
   "author": "https://www.mises.site",
   "permissions": [
@@ -29,7 +29,12 @@
     "idle",
     "misesPrivate"
   ],
-  "host_permissions": ["file://*/*", "http://*/*", "https://*/*"],
+  "host_permissions": [
+    "file://*/*",
+    "http://*/*",
+    "https://*/*",
+    "*://api.*.mises.site/*"
+  ],
   "content_scripts": [
     {
       "matches": ["file://*/*", "http://*/*", "https://*/*"],

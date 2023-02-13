@@ -43,14 +43,13 @@ export class ExtensionRouter extends Router {
   // You shouldn't set this handler as async funtion,
   // because mozila's extension polyfill deals with the message handler as resolved if it returns the `Promise`.
   // So, if this handler is async function, it always return the `Promise` if it returns `undefined` and it is dealt with as resolved.
-  protected onMessage = async (
+  protected onMessage = (
     message: any,
     sender: MessageSender
-  ): Promise<Result | undefined> => {
+  ): Promise<Result> | undefined => {
     if (message.port !== this.port) {
       return;
     }
-
     // The receiverRouterId will be set when requesting an interaction from the background to the frontend.
     // If this value exists, it compares this value with the current router id and processes them only if they are the same.
     if (
