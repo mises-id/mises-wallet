@@ -545,4 +545,8 @@ export class KeplrWalletConnectV1 implements Keplr {
   async staking(_params: any): Promise<any> {
     return true;
   }
+
+  async verifyDomain(_params: any): Promise<any> {
+    return true;
+  }
 }

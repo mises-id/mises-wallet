@@ -816,3 +816,29 @@ export class OpenWalletMsg extends Message<void> {
     return OpenWalletMsg.type();
   }
 }
+export class VerifyDomainMsg extends Message<void> {
+  public static type() {
+    return "verify-domain";
+  }
+
+  constructor(public readonly params: any) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return "mises-safe";
+  }
+
+  type(): string {
+    return VerifyDomainMsg.type();
+  }
+}

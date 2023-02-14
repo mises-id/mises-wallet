@@ -391,7 +391,10 @@ export class MisesService {
   }
 
   save() {
-    return this.kvStore.set<userInfo>(this.activeUser.address(), this.userInfo);
+    const misesId = this.activeUser?.address();
+    if (misesId) {
+      return this.kvStore.set<userInfo>(misesId, this.userInfo);
+    }
   }
 
   async getBalanceUMIS() {
@@ -824,5 +827,7 @@ export class MisesService {
     this.save();
   }
 
-  openWallet() {}
+  openWallet() {
+    // noop
+  }
 }

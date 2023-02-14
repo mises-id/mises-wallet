@@ -6,6 +6,7 @@ import style from "./style.module.scss";
 // import { useLanguage } from "../../languages";
 import { useIntl } from "react-intl";
 import { observer } from "mobx-react-lite";
+// import { useStore } from "../../stores";
 
 export const SettingPage: FunctionComponent = observer(() => {
   // const language = useLanguage();
@@ -22,7 +23,7 @@ export const SettingPage: FunctionComponent = observer(() => {
   //         fiat: language.fiatCurrency.toUpperCase(),
   //       }
   //     );
-
+  // const {} = useStore();
   return (
     <HeaderLayout
       showChainName={false}
@@ -110,32 +111,21 @@ export const SettingPage: FunctionComponent = observer(() => {
             []
           )}
         />
-        {/* <PageButton
-          title="Show Advanced IBC Transfers"
-          onClick={() => {
-            uiConfigStore.setShowAdvancedIBCTransfer(
-              !uiConfigStore.showAdvancedIBCTransfer
-            );
-          }}
+        <PageButton
+          title="Security"
+          subParagraph="website & Contract security verification"
+          onClick={() => {}}
           icons={[
             <label
               key="toggle"
               className="custom-toggle"
               style={{ marginBottom: 0 }}
             >
-              <input
-                type="checkbox"
-                checked={uiConfigStore.showAdvancedIBCTransfer}
-                onChange={() => {
-                  uiConfigStore.setShowAdvancedIBCTransfer(
-                    !uiConfigStore.showAdvancedIBCTransfer
-                  );
-                }}
-              />
+              <input type="checkbox" onChange={() => {}} />
               <span className="custom-toggle-slider rounded-circle" />
             </label>,
           ]}
-        /> */}
+        />
         {/* <PageButton
           title={intl.formatMessage({
             id: "setting.endpoints",

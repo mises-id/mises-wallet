@@ -39,6 +39,7 @@
     "amplitude-js": "^8.16.0",
     "argon-dashboard-react": "^1.1.0",
     "axios": "^0.27.2",
+    "antd": "^4.16.3",
     "mises-js-sdk": "^0.1.14",
     "@sentry/browser": "^6.0.0",
     "@sentry/react": "^7.28.1",

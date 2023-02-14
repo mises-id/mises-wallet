@@ -30,6 +30,7 @@ import {
   TokensStore,
   WalletStatus,
   MisesStore,
+  MisesSafeStore,
 } from "@keplr-wallet/stores";
 import {
   KeplrETCQueries,
@@ -58,6 +59,7 @@ export class RootStore {
   public readonly chainStore: ChainStore;
   public readonly keyRingStore: KeyRingStore;
   public readonly misesStore: MisesStore;
+  public readonly misesSafeStore: MisesSafeStore;
   public readonly ibcChannelStore: IBCChannelStore;
 
   protected readonly interactionStore: InteractionStore;
@@ -146,6 +148,8 @@ export class RootStore {
     );
 
     this.misesStore = new MisesStore(new InExtensionMessageRequester());
+
+    this.misesSafeStore = new MisesSafeStore(new InExtensionMessageRequester());
 
     this.ibcChannelStore = new IBCChannelStore(
       new ExtensionKVStore("store_ibc_channel")

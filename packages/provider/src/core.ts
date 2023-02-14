@@ -41,6 +41,7 @@ import {
   SetUserInfoMsg,
   StakingMsg,
   OpenWalletMsg,
+  VerifyDomainMsg,
 } from "./types";
 import { SecretUtils } from "secretjs/types/enigmautils";
 
@@ -437,5 +438,12 @@ export class Keplr implements IKeplr {
 
   staking(params: any) {
     return this.requester.sendMessage(BACKGROUND_PORT, new StakingMsg(params));
+  }
+
+  verifyDomain(params: any) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new VerifyDomainMsg(params)
+    );
   }
 }

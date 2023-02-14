@@ -13,12 +13,14 @@ import * as Permission from "./permission/internal";
 import * as PhishingList from "./phishing-list/internal";
 import * as AutoLocker from "./auto-lock-account/internal";
 import * as Mises from "./mises/internal";
+import * as MisesSafe from "./mises-safe/internal";
 
 export * from "./persistent-memory";
 export * from "./chains";
 export * from "./ledger";
 export * from "./keyring";
 export * from "./mises";
+export * from "./mises-safe";
 export * from "./secret-wasm";
 export * from "./tx";
 export * from "./updater";
@@ -94,6 +96,10 @@ export function init(
 
   const misesService = new Mises.MisesService(storeCreator("mises"));
 
+  const misesSafeService = new MisesSafe.MisesSafeService(
+    storeCreator("misesSafe")
+  );
+
   const secretWasmService = new SecretWasm.SecretWasmService(
     storeCreator("secretwasm")
   );
@@ -140,6 +146,7 @@ export function init(
     misesService
   );
   misesService.init();
+  misesSafeService.init();
   secretWasmService.init(chainsService, keyRingService, permissionService);
   backgroundTxService.init(chainsService, permissionService);
   phishingListService.init();
@@ -159,4 +166,5 @@ export function init(
   PhishingList.init(router, phishingListService);
   AutoLocker.init(router, autoLockAccountService);
   Mises.init(router, misesService);
+  MisesSafe.init(router, misesSafeService);
 }

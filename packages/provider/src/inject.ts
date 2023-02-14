@@ -161,7 +161,6 @@ export class InjectedKeplr implements IKeplr {
       if (!message || message.type !== "mises-proxy-request") {
         return;
       }
-
       try {
         if (!message.id) {
           throw new Error("Empty id");
@@ -671,5 +670,11 @@ export class InjectedKeplr implements IKeplr {
 
   staking(params: any): Promise<any> {
     return this.requestMethod<any>("staking", [params]);
+  }
+
+  verifyDomain(params: any): Promise<any> {
+    console.log(params);
+    return Promise.resolve();
+    // return this.requestMethod<any>("verifyDomain", [params]);
   }
 }

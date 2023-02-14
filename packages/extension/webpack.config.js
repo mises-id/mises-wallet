@@ -102,6 +102,7 @@ const extensionConfig = (env, args) => {
       background: ["./src/background/background.ts"],
       contentScripts: ["./src/content-scripts/content-scripts.ts"],
       injectedScript: ["./src/content-scripts/inject/injected-script.ts"],
+      safeInjectedScript: ["./src/content-scripts/safe-inject/index.ts"],
     },
     output: {
       path: path.resolve(__dirname, isEnvDevelopment ? "dist" : "build/chrome"),
@@ -148,22 +149,22 @@ const extensionConfig = (env, args) => {
         template: "./src/index.html",
         filename: "popup.html",
         excludeChunks: [
-          "blocklist",
+          // "blocklist",
           "background",
           "contentScripts",
           "injectedScript",
         ],
       }),
-      new HtmlWebpackPlugin({
-        template: "./src/index.html",
-        filename: "blocklist.html",
-        excludeChunks: [
-          "popup",
-          "background",
-          "contentScripts",
-          "injectedScript",
-        ],
-      }),
+      // new HtmlWebpackPlugin({
+      //   template: "./src/index.html",
+      //   filename: "blocklist.html",
+      //   excludeChunks: [
+      //     "popup",
+      //     "background",
+      //     "contentScripts",
+      //     "injectedScript",
+      //   ],
+      // }),
       new WriteFilePlugin(),
       new webpack.EnvironmentPlugin([
         "NODE_ENV",

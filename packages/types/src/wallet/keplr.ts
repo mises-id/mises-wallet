@@ -177,4 +177,5 @@ export interface Keplr {
   userUnFollow(toUid: string): Promise<void>;
   setUserInfo(params: any): Promise<boolean>;
   staking(params: any): Promise<any>;
+  verifyDomain(params: any): Promise<any>;
 }
