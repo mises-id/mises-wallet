@@ -95,10 +95,10 @@ export class MisesSafeService {
     return storageKey.ContractTrust + contractAddress.replace(".", "-");
   }
   async apiVerifyDomain(domain: string) {
-    const result = await this.kvStore.get(domain);
+    /*  const result = await this.kvStore.get(domain);
     if (result) {
       return result;
-    }
+    } */
     const res = await misesRequest({
       url: "/phishing_site/check",
       data: {
@@ -106,15 +106,15 @@ export class MisesSafeService {
       },
     });
 
-    this.kvStore.set(domain, res);
+    //this.kvStore.set(domain, res);
     return res;
   }
 
   async apiVerifyContract(contractAddress: string) {
-    const result = await this.kvStore.get(contractAddress);
+    /*  const result = await this.kvStore.get(contractAddress);
     if (result) {
       return result;
-    }
+    } */
     const res = await misesRequest({
       url: "/web3safe/verify_contract",
       data: {
@@ -122,7 +122,7 @@ export class MisesSafeService {
       },
     });
 
-    this.kvStore.set(contractAddress, res);
+    //this.kvStore.set(contractAddress, res);
     return res;
   }
 }

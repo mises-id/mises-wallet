@@ -23,6 +23,7 @@ const domainSafeType = {
   whiteDomain: "white",
   blackDomain: "black",
   fuzzyDomain: "fuzzy",
+  normalDomain: "normal",
 };
 
 const storageKey = {
@@ -49,7 +50,7 @@ export class ContentScripts {
       domainSafeType: "",
       domain: document.location.hostname.split(".").slice(-2).join("."),
       hostname: document.location.hostname,
-      type: domainSafeType.whiteDomain,
+      type: domainSafeType.normalDomain,
       suggestedDomain: "",
       checkStatus: domainCheckStatus.waitCheck,
       isShowDomainAlert: false,
@@ -123,6 +124,7 @@ export class ContentScripts {
             //cache
             return target(...argumentsList);
           }
+          return null;
         }
         //is should verify contract address if domain not in white list to verifying contract address
         if (this.isShouldVerifyContract() && isNotable) {
@@ -148,7 +150,8 @@ export class ContentScripts {
               contractAddress
             )
           ) {
-            const contractAddressTrustLevel = verifyContractResult.data.level;
+            console.log("actionName21: ", actionName);
+            const contractAddressTrustLevel = verifyContractResult.level;
             if (contractAddressTrustLevel === "danger") {
               this.showContractAlert({
                 type: "contractAlert",
@@ -181,12 +184,10 @@ export class ContentScripts {
         const proxy1 = new Proxy(window.ethereum.request, handler);
         window.ethereum.request = proxy1;
         clearInterval(proxyInterval);
-        console.log("proxy1");
       } else if (typeof window.web3 !== "undefined") {
         const proxy2 = new Proxy(window.web3.currentProvider, handler);
         window.web3.currentProvider = proxy2;
         clearInterval(proxyInterval);
-        console.log("proxy2");
       } else {
         console.log("Did not find ethereum or web3");
       }
@@ -218,18 +219,18 @@ export class ContentScripts {
       // const notableActionList = ['approve', 'setApprovalForAll', 'transfer', 'safeTransferFrom', 'safeTransferFrom1'];
       if (typeof constList.method !== "undefined") {
         if (constList.method === "eth_sendTransaction") {
-          let functionName;
+          let functionName = "transfer";
           // 当 params 长度为 0 或 params[0].data 为 undefined 时
           if (constList.params.length === 0) {
             functionName = "transfer";
           } else if (constList.params[0].data === undefined) {
             functionName = "transfer";
           } else {
-            const key: dictionaryKeys = constList.params[0].data.substring(
+            /* const key: dictionaryKeys = constList.params[0].data.substring(
               0,
               10
             );
-            functionName = dictionary[key];
+            functionName = dictionary[key]; */
           }
           return { result: true, action: functionName };
           /*  if (notableActionList.includes(functionName)) {
@@ -255,14 +256,11 @@ export class ContentScripts {
   isShouldShowDomainAlert() {
     //ignore
     const key = this.getDomainCacheKey();
-    console.log(key, "keykeykeykey");
-    return true;
     const isIgnore = sessionStorage.getItem(key);
-    return (
-      !this.domainInfo.isShowDomainAlert &&
-      this.domainInfo.domainSafeType !== domainSafeType.whiteDomain &&
-      !isIgnore
-    );
+    const isRiskDomain =
+      this.domainInfo.domainSafeType === domainSafeType.fuzzyDomain ||
+      this.domainInfo.domainSafeType === domainSafeType.blackDomain;
+    return !this.domainInfo.isShowDomainAlert && isRiskDomain && !isIgnore;
   }
   //isShouldShowContractAlert
   isShouldShowContractAlert(
@@ -273,16 +271,10 @@ export class ContentScripts {
     const key = this.getContractCacheKey(contractAddress);
     const isIgnore = sessionStorage.getItem(key);
     console.log("Contract is ignore", isIgnore);
-    return (
-      typeof verifyContractResult.code !== "undefined" &&
-      verifyContractResult.code === 0 &&
-      typeof verifyContractResult.data !== "undefined" &&
-      !isIgnore
-    );
+    return verifyContractResult && !isIgnore;
   }
   //isShouldVerifyDomain
   isShouldVerifyDomain() {
-    return true;
     //ignore list
     return this.domainInfo.checkStatus === domainCheckStatus.waitCheck;
   }
@@ -298,9 +290,9 @@ export class ContentScripts {
     this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
     console.log("checkResult :>>", checkResult);
     //parse the check result
-    if (typeof checkResult.code !== "undefined" && checkResult.code === 0) {
-      this.domainInfo.domainSafeType = checkResult.data.type_string;
-      this.domainInfo.suggestedDomain = checkResult.data.origin;
+    if (checkResult) {
+      this.domainInfo.domainSafeType = checkResult.type_string;
+      this.domainInfo.suggestedDomain = checkResult.origin;
     }
   }
 

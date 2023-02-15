@@ -20,7 +20,6 @@ export const Drawer = ({
   assetValue?: string;
   onClose: () => void;
 }) => {
-  console.log(actionName, assetValue, "render: DrawerAlert");
   // const [loading, setLoading] = useState(false);
   // const [visible, setVisible] = useState(true);
 
@@ -60,7 +59,12 @@ export const Drawer = ({
   //   }
   //   console.log(type)
   // }, []);
-
+  const isTransferAction =
+    actionName === "transfer" ||
+    actionName === "safeTransferFrom" ||
+    actionName === "safeTransferFrom1";
+  const assetVal = isTransferAction ? "token" : "";
+  const action = isTransferAction ? "transfer" : "authorization";
   return (
     <React.Fragment>
       <div className="mises-drawer-mask" />
@@ -99,17 +103,31 @@ export const Drawer = ({
               </p>
             </React.Fragment>
           )}
-          <div
-            className="danger-button"
-            onClick={() => {
-              postMessageToCurrentPage("block");
-              onClose();
-            }}
-          >
-            {type !== "contractAlert"
-              ? `Go to ${suggestedDomain}`
-              : "Terminate the authorization"}
-          </div>
+          {type === "domainAlert" || type === "domainHandler" ? (
+            <React.Fragment>
+              <div
+                className="danger-button"
+                onClick={() => {
+                  postMessageToCurrentPage("block");
+                  onClose();
+                }}
+              >
+                {suggestedDomain === "" ? "Got it" : `Go to ${suggestedDomain}`}
+              </div>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div
+                className="danger-button"
+                onClick={() => {
+                  postMessageToCurrentPage("block");
+                  onClose();
+                }}
+              >
+                Terminate the {action}
+              </div>
+            </React.Fragment>
+          )}
           <div
             className="secondary-button"
             onClick={() => {
@@ -117,16 +135,16 @@ export const Drawer = ({
               onClose();
             }}
           >
-            Ignore
+            {type === "contractAlert" ? "Continue" : "Ignore"}
           </div>
           <p className="powered">
             <span>
-              Powered by {type !== "contractAlert" ? "Blockem" : "OKLink"}
+              Powered by {type === "contractAlert" ? "Blockem" : "OKLink"}
             </span>
           </p>
           <div className="powered-logo-container">
             <img
-              src={type !== "contractAlert" ? blockem : oklink}
+              src={type === "contractAlert" ? blockem : oklink}
               alt=""
               className="powered-logo"
             />
