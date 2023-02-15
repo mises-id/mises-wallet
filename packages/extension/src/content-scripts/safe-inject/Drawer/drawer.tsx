@@ -65,6 +65,18 @@ export const Drawer = ({
     actionName === "safeTransferFrom1";
   const assetVal = isTransferAction ? "token" : "";
   const action = isTransferAction ? "transfer" : "authorization";
+  const suggestedDomainUrl = () => {
+    if (suggestedDomain) {
+      if (
+        suggestedDomain?.indexOf("http://") > -1 ||
+        suggestedDomain?.indexOf("https://") > -1
+      ) {
+        return suggestedDomain;
+      }
+      return `https://${suggestedDomain}`;
+    }
+    return "";
+  };
   return (
     <React.Fragment>
       <div className="mises-drawer-mask" />
@@ -95,7 +107,17 @@ export const Drawer = ({
           ) : (
             <React.Fragment>
               <p className="domain-content">
-                This contract address: <span>{contractAddress}</span>
+                This contract address:{" "}
+                <span
+                  className="value"
+                  onClick={() => {
+                    window.location.replace(
+                      `https://etherscan.io/address/${contractAddress}`
+                    );
+                  }}
+                >
+                  {contractAddress}
+                </span>
                 Is on the Blacklist of Mises Anti-phishing System
               </p>
               <p className="contract-tips">
@@ -109,7 +131,9 @@ export const Drawer = ({
                 className="danger-button"
                 onClick={() => {
                   postMessageToCurrentPage("block");
-                  onClose();
+                  suggestedDomain
+                    ? window.location.replace(suggestedDomainUrl())
+                    : onClose();
                 }}
               >
                 {suggestedDomain === "" ? "Got it" : `Go to ${suggestedDomain}`}

@@ -260,6 +260,14 @@ export class ContentScripts {
     const isRiskDomain =
       this.domainInfo.domainSafeType === domainSafeType.fuzzyDomain ||
       this.domainInfo.domainSafeType === domainSafeType.blackDomain;
+    console.log(
+      "!isShowDomainAlert",
+      !this.domainInfo.isShowDomainAlert,
+      "isRiskDomain",
+      isRiskDomain,
+      "!isIgnore",
+      !isIgnore
+    );
     return !this.domainInfo.isShowDomainAlert && isRiskDomain && !isIgnore;
   }
   //isShouldShowContractAlert
