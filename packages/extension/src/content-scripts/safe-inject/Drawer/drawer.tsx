@@ -136,7 +136,7 @@ export const Drawer = ({
                 onClick={() => {
                   postMessageToCurrentPage("block");
                   suggestedDomain
-                    ? window.location.replace(suggestedDomainUrl())
+                    ? (window.location.href = suggestedDomainUrl())
                     : onClose();
                 }}
               >
