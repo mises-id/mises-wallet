@@ -37,7 +37,7 @@ const isShouldVerifyStateKey = "isShouldVerify";
 // const TypeBackgroundResponse = "mises-background-response";
 
 export class MisesSafeService {
-  protected isShouldVerify: boolean = true;
+  isShouldVerify: boolean = true;
 
   constructor(protected readonly kvStore: KVStore) {
     this.localShouldVerify();
@@ -70,6 +70,7 @@ export class MisesSafeService {
 
   async initMessageClient(res: any) {
     if (!this.isShouldVerify) {
+      console.log("disable Verify");
       return false;
     }
     // backgroundClient.listen("mises-content-request", (res: { params: { method: any; params: any; }; }, sendResponse: any) => {

@@ -6,7 +6,7 @@ import style from "./style.module.scss";
 // import { useLanguage } from "../../languages";
 import { useIntl } from "react-intl";
 import { observer } from "mobx-react-lite";
-// import { useStore } from "../../stores";
+import { useStore } from "../../stores";
 
 export const SettingPage: FunctionComponent = observer(() => {
   // const language = useLanguage();
@@ -23,7 +23,7 @@ export const SettingPage: FunctionComponent = observer(() => {
   //         fiat: language.fiatCurrency.toUpperCase(),
   //       }
   //     );
-  // const {} = useStore();
+  const { misesSafeStore } = useStore();
   return (
     <HeaderLayout
       showChainName={false}
@@ -114,14 +114,24 @@ export const SettingPage: FunctionComponent = observer(() => {
         <PageButton
           title="Security"
           subParagraph="website & Contract security verification"
-          onClick={() => {}}
+          onClick={() => {
+            misesSafeStore.setMisesSafeConfig(!misesSafeStore.isShouldVerify);
+          }}
           icons={[
             <label
               key="toggle"
               className="custom-toggle"
               style={{ marginBottom: 0 }}
             >
-              <input type="checkbox" onChange={() => {}} />
+              <input
+                type="checkbox"
+                checked={misesSafeStore.isShouldVerify}
+                onChange={() => {
+                  misesSafeStore.setMisesSafeConfig(
+                    !misesSafeStore.isShouldVerify
+                  );
+                }}
+              />
               <span className="custom-toggle-slider rounded-circle" />
             </label>,
           ]}

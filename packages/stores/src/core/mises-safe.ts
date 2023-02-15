@@ -1,4 +1,8 @@
-import { MessageRequester } from "@keplr-wallet/router";
+import {
+  GetIsShouldVerifyMsg,
+  SetIsShouldVerifyMsg,
+} from "@keplr-wallet/background";
+import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
 import { makeObservable, observable } from "mobx";
 
 export class MisesSafeStore {
@@ -7,8 +11,25 @@ export class MisesSafeStore {
 
   constructor(protected readonly requester: MessageRequester) {
     makeObservable(this);
+    this.initSafeConfig();
   }
-  getMisesSafeConfig() {
-    //noop
+
+  initSafeConfig() {
+    this.getMisesSafeConfig().then((res) => (this.isShouldVerify = res));
+  }
+
+  async getMisesSafeConfig() {
+    return await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new GetIsShouldVerifyMsg()
+    );
+  }
+  setMisesSafeConfig(state: boolean) {
+    console.log(!!state, "setMisesSafeConfig");
+    this.isShouldVerify = !!state;
+    this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new SetIsShouldVerifyMsg(state)
+    );
   }
 }

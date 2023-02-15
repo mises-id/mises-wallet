@@ -76,3 +76,30 @@ export class GetIsShouldVerifyMsg extends Message<boolean> {
     return GetIsShouldVerifyMsg.type();
   }
 }
+
+export class SetIsShouldVerifyMsg extends Message<void> {
+  public static type() {
+    return "set-is-should-verify";
+  }
+
+  constructor(public readonly state: boolean) {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  type(): string {
+    return SetIsShouldVerifyMsg.type();
+  }
+}
