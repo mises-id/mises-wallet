@@ -1,17 +1,17 @@
-/* global chrome */
+// /* global chrome */
 import React from "react";
 import { render } from "react-dom";
 import { Drawer } from "./Drawer";
 import { proxyClient } from "./post-message";
 
-const dictionary = {
-  "0x095ea7b3": "approve",
-  "0xa22cb465": "setApprovalForAll",
-  "0x0752881a": "transfer",
-  "0x42842e0e": "safeTransferFrom",
-  "0xb88d4fde": "safeTransferFrom1",
-};
-type dictionaryKeys = keyof typeof dictionary;
+// const dictionary = {
+//   "0x095ea7b3": "approve",
+//   "0xa22cb465": "setApprovalForAll",
+//   "0x0752881a": "transfer",
+//   "0x42842e0e": "safeTransferFrom",
+//   "0xb88d4fde": "safeTransferFrom1",
+// };
+// type dictionaryKeys = keyof typeof dictionary;
 
 const domainCheckStatus = {
   waitCheck: "waitCheck",
@@ -58,10 +58,10 @@ export class ContentScripts {
     this.init();
   }
   init() {
-    document.addEventListener("DOMContentLoaded", () => {
-      this.initContainer();
-      this.initWeb3Proxy();
-    });
+    // document.addEventListener("DOMContentLoaded", () => {
+    this.initContainer();
+    this.initWeb3Proxy();
+    // });
   }
   // 初始化外层包裹元素
   initContainer() {
@@ -95,6 +95,7 @@ export class ContentScripts {
 
   initWeb3Proxy() {
     // const that = this;
+    console.log("initWeb3Proxy");
     // 初始化代理
     const handler = {
       apply: async (target: any, _: any, argumentsList: any) => {

@@ -8,5 +8,7 @@ export class MisesSafeStore {
   constructor(protected readonly requester: MessageRequester) {
     makeObservable(this);
   }
-  getMisesSafeConfig() {}
+  getMisesSafeConfig() {
+    //noop
+  }
 }

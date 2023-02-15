@@ -27,15 +27,18 @@ injectedScript.type = "text/javascript";
 container.insertBefore(injectedScript, container.children[0]);
 injectedScript.remove();
 
-// document.addEventListener('DOMContentLoaded', () => {
-const injectedMisesScript = document.createElement("script");
-injectedMisesScript.src = browser.runtime.getURL(
-  "safeInjectedScript.bundle.js"
-);
-injectedMisesScript.type = "text/javascript";
-container.insertBefore(injectedMisesScript, container.children[1]);
-// injectedMisesScript.remove();
-// })
+document.addEventListener("DOMContentLoaded", () => {
+  initPostMsgClient();
+  const body = document.body;
+  const injectedMisesScript = document.createElement("script");
+  injectedMisesScript.src = browser.runtime.getURL(
+    "safeInjectedScript.bundle.js"
+  );
+  injectedMisesScript.type = "text/javascript";
+  body.appendChild(injectedMisesScript);
+  console.log("injectedMisesScript");
+  injectedMisesScript.remove();
+});
 
 // export class CheckURLIsPhishingMsg extends Message<boolean> {
 //   public static type() {
@@ -221,5 +224,3 @@ const initPostMsgClient = async () => {
     postMsg(e.data.id, res);
   });
 };
-
-initPostMsgClient();

@@ -24,7 +24,7 @@ export class InitSafeMsg extends Message<void> {
     return InitSafeMsg.type();
   }
 }
-export class VerifyDomainMsg extends Message<void> {
+export class VerifyDomainMsg extends Message<any> {
   public static type() {
     return "verify-domain";
   }
@@ -48,5 +48,31 @@ export class VerifyDomainMsg extends Message<void> {
 
   type(): string {
     return VerifyDomainMsg.type();
+  }
+}
+export class GetIsShouldVerifyMsg extends Message<boolean> {
+  public static type() {
+    return "get-is-should-verify";
+  }
+
+  constructor() {
+    super();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  type(): string {
+    return GetIsShouldVerifyMsg.type();
   }
 }

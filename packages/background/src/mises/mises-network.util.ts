@@ -170,7 +170,7 @@ interface misesRequestConfig<T, R> extends RequestConfig<misesResponse<R>> {
 
 const request = new Request({
   baseURL: MISES_SITE_API,
-  timeout: 1000 * 60 * 5,
+  timeout: 2000,
   interceptors: {
     // 请求拦截器
     requestInterceptors: (config) => config,

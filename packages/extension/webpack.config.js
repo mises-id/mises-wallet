@@ -98,7 +98,7 @@ const extensionConfig = (env, args) => {
     watch: isEnvDevelopment,
     entry: {
       popup: ["./src/index.tsx"],
-      blocklist: ["./src/pages/blocklist/index.tsx"],
+      // blocklist: ["./src/pages/blocklist/index.tsx"],
       background: ["./src/background/background.ts"],
       contentScripts: ["./src/content-scripts/content-scripts.ts"],
       injectedScript: ["./src/content-scripts/inject/injected-script.ts"],

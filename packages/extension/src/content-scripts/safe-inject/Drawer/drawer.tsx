@@ -20,6 +20,7 @@ export const Drawer = ({
   assetValue?: string;
   onClose: () => void;
 }) => {
+  console.log(assetValue);
   // const [loading, setLoading] = useState(false);
   // const [visible, setVisible] = useState(true);
 
@@ -63,7 +64,7 @@ export const Drawer = ({
     actionName === "transfer" ||
     actionName === "safeTransferFrom" ||
     actionName === "safeTransferFrom1";
-  const assetVal = isTransferAction ? "token" : "";
+  // const assetVal = isTransferAction ? "token" : "";
   const action = isTransferAction ? "transfer" : "authorization";
   const suggestedDomainUrl = () => {
     if (suggestedDomain) {
@@ -95,8 +96,7 @@ export const Drawer = ({
                 <p>
                   This domain: <span className="value">{domain}</span>
                 </p>
-                <p>May trick you into doing something</p>
-                <p>dangerous:</p>
+                <p>May trick you into doing something dangerous:</p>
               </div>
               <div className="tips">
                 <p>·Steal your private key</p>
@@ -111,14 +111,18 @@ export const Drawer = ({
                 <span
                   className="value"
                   onClick={() => {
-                    window.location.replace(
-                      `https://etherscan.io/address/${contractAddress}`
+                    // window.location.replace(
+                    //   `https://etherscan.io/address/${contractAddress}`
+                    // );
+                    window.open(
+                      `https://etherscan.io/address/${contractAddress}`,
+                      "_blank"
                     );
                   }}
                 >
                   {contractAddress}
-                </span>
-                Is on the Blacklist of Mises Anti-phishing System
+                </span>{" "}
+                <p>Is on the Blacklist of Mises Anti-phishing System</p>
               </p>
               <p className="contract-tips">
                 Please notice a high risk of stolen assets if you continue.
@@ -166,7 +170,14 @@ export const Drawer = ({
               Powered by {type === "contractAlert" ? "Blockem" : "OKLink"}
             </span>
           </p>
-          <div className="powered-logo-container">
+          <div
+            className="powered-logo-container"
+            onClick={() => {
+              type === "contractAlert"
+                ? window.open("https://www.blockem.io/")
+                : "";
+            }}
+          >
             <img
               src={type === "contractAlert" ? blockem : oklink}
               alt=""

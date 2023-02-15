@@ -48,8 +48,7 @@
       "resources": [
         "injectedScript.bundle.js",
         "safeInjectedScript.bundle.js",
-        "assets/logo-256.png",
-        "blocklist.html"
+        "assets/logo-256.png"
       ],
       "matches": ["http://*/*", "https://*/*"]
     }

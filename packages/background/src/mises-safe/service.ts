@@ -34,11 +34,10 @@ const storageKey = {
 
 const isShouldVerifyStateKey = "isShouldVerify";
 
-const TypeBackgroundResponse = "mises-background-response";
+// const TypeBackgroundResponse = "mises-background-response";
 
 export class MisesSafeService {
   protected isShouldVerify: boolean = true;
-  protected isInitClient: boolean = false;
 
   constructor(protected readonly kvStore: KVStore) {
     this.localShouldVerify();
@@ -56,16 +55,12 @@ export class MisesSafeService {
 
   localShouldVerify() {
     this.kvStore.get(isShouldVerifyStateKey).then((res) => {
-      this.isShouldVerify = !!res;
-      this.messageClient();
+      this.isShouldVerify = res ? !!res : true;
     });
   }
 
   setIsShouldVerifyState(state: boolean) {
     this.isShouldVerify = state;
-    if (state) {
-      this.messageClient();
-    }
     this.save();
   }
 
@@ -73,8 +68,10 @@ export class MisesSafeService {
     this.kvStore.set(isShouldVerifyStateKey, this.isShouldVerify);
   }
 
-  initMessageClient(res: any) {
-    this.isInitClient = true;
+  async initMessageClient(res: any) {
+    if (!this.isShouldVerify) {
+      return false;
+    }
     // backgroundClient.listen("mises-content-request", (res: { params: { method: any; params: any; }; }, sendResponse: any) => {
     console.log("backgroud received message :>>", res);
     if (res?.params && typeof res.params.method === "undefined") {

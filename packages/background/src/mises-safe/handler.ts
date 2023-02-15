@@ -9,6 +9,11 @@ export const getHandler: (service: MisesSafeService) => Handler = (service) => {
         return handlerInitSafeMsg(service)(env, msg as InitSafeMsg);
       case VerifyDomainMsg:
         return handlerVerifyDomainMsg(service)(env, msg as VerifyDomainMsg);
+      // case GetIsShouldVerifyMsg:
+      //   return handlerGetIsShouldVerifyMsg(service)(
+      //     env,
+      //     msg as GetIsShouldVerifyMsg
+      //   );
       default:
         throw new Error("Unknown msg type");
     }
@@ -29,3 +34,11 @@ const handlerVerifyDomainMsg: (
 ) => {
   return service.initMessageClient(msg);
 };
+
+// const handlerGetIsShouldVerifyMsg: (
+//   service: MisesSafeService
+// ) => InternalHandler<GetIsShouldVerifyMsg> = (service: MisesSafeService) => (
+//   _
+// ) => {
+//   return service.setIsShouldVerifyState;
+// };

@@ -10,7 +10,7 @@ import * as Updater from "./updater/internal";
 import * as Tokens from "./tokens/internal";
 import * as Interaction from "./interaction/internal";
 import * as Permission from "./permission/internal";
-import * as PhishingList from "./phishing-list/internal";
+// import * as PhishingList from "./phishing-list/internal";
 import * as AutoLocker from "./auto-lock-account/internal";
 import * as Mises from "./mises/internal";
 import * as MisesSafe from "./mises-safe/internal";
@@ -109,15 +109,15 @@ export function init(
     misesService
   );
 
-  const phishingListService = new PhishingList.PhishingListService({
-    blockListUrl:
-      "https://raw.githubusercontent.com/chainapsis/phishing-block-list/main/block-list.txt",
-    twitterListUrl:
-      "https://raw.githubusercontent.com/chainapsis/phishing-block-list/main/twitter-scammer-list.txt",
-    fetchingIntervalMs: 3 * 3600 * 1000, // 3 hours
-    retryIntervalMs: 10 * 60 * 1000, // 10 mins,
-    allowTimeoutMs: 10 * 60 * 1000, // 10 mins,
-  });
+  // const phishingListService = new PhishingList.PhishingListService({
+  //   blockListUrl:
+  //     "https://raw.githubusercontent.com/chainapsis/phishing-block-list/main/block-list.txt",
+  //   twitterListUrl:
+  //     "https://raw.githubusercontent.com/chainapsis/phishing-block-list/main/twitter-scammer-list.txt",
+  //   fetchingIntervalMs: 3 * 3600 * 1000, // 3 hours
+  //   retryIntervalMs: 10 * 60 * 1000, // 10 mins,
+  //   allowTimeoutMs: 10 * 60 * 1000, // 10 mins,
+  // });
   const autoLockAccountService = new AutoLocker.AutoLockAccountService(
     storeCreator("auto-lock-account")
   );
@@ -149,7 +149,7 @@ export function init(
   misesSafeService.init();
   secretWasmService.init(chainsService, keyRingService, permissionService);
   backgroundTxService.init(chainsService, permissionService);
-  phishingListService.init();
+  // phishingListService.init();
   // No need to wait because user can't interact with app right after launch.
   autoLockAccountService.init(keyRingService);
 
@@ -163,7 +163,7 @@ export function init(
   KeyRing.init(router, keyRingService);
   SecretWasm.init(router, secretWasmService);
   BackgroundTx.init(router, backgroundTxService);
-  PhishingList.init(router, phishingListService);
+  // PhishingList.init(router, phishingListService);
   AutoLocker.init(router, autoLockAccountService);
   Mises.init(router, misesService);
   MisesSafe.init(router, misesSafeService);
