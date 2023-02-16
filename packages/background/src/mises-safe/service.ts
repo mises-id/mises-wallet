@@ -25,12 +25,12 @@ const storageKey = {
 //   origin: "",
 // };
 
-// const defaultVerifyContractResult = {
-//   address: "",
-//   trust_percentage: 100,
-//   is_project_verified: false,
-//   level: "safe",
-// };
+const defaultVerifyContractResult = {
+  address: "",
+  trust_percentage: 100,
+  is_project_verified: false,
+  level: "safe",
+};
 
 const isShouldVerifyStateKey = "isShouldVerify";
 
@@ -127,7 +127,12 @@ export class MisesSafeService {
       this.domainWhiteList.includes(domain)
     ) {
       console.log("white list domain", domain);
-      return true;
+      const safVerifyContractResult = {
+        address: contractAddress,
+        trust_percentage: 100,
+        level: "safe",
+      };
+      return safVerifyContractResult;
     }
     const result = await this.kvStore.get(contractAddress);
     if (result) {

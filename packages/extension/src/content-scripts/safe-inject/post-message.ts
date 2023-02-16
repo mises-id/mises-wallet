@@ -37,7 +37,7 @@ class ProxyClient {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         resolve("receive response timeout");
-      }, 3000);
+      }, 500);
       const receiveResponse = (e: { data: any }) => {
         const proxyResponse = this.parseMessage
           ? this.parseMessage(e.data)

@@ -225,9 +225,9 @@ export class ContentScripts {
       if (typeof window.ethereum !== "undefined") {
         const proxy1 = new Proxy(window.ethereum.request, handler);
         window.ethereum.request = proxy1;
-        window.ethereum.send = proxy1;
-        window.ethereum.sendAsync = proxy1;
-        window.ethereum.enable = proxy1;
+        //window.ethereum.send = proxy1;
+        //window.ethereum.sendAsync = proxy1;
+        //window.ethereum.enable = proxy1;
         console.log("Find ethereum");
         clearInterval(proxyInterval);
       } else if (typeof window.web3 !== "undefined") {
