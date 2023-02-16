@@ -242,7 +242,14 @@ Sentry.init({
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
   beforeSend: (event, hint) => {
-    if (hint.originalException?.toString() === "Error: Failed to fetch") {
+    console.log(hint, event);
+    if (
+      hint.originalException &&
+      [
+        "Error: Failed to fetch",
+        "UnhandledRejection: Non-Error promise rejection captured with keys: message",
+      ].includes(hint.originalException?.toString())
+    ) {
       // logEvent(analytics, "misesWallet_error", {
       //   error_message: hint.originalException?.toString(),
       // });

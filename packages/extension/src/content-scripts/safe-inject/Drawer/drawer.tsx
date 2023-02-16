@@ -165,7 +165,20 @@ export const Drawer = ({
           >
             {type === "contractAlert" ? "Continue" : "Ignore"}
           </div>
-          <p className="powered">
+          {type === "contractAlert" ? (
+            <div>
+              <div className="powered">
+                To get more protection, install Blockem extension.
+              </div>
+              <div
+                className="powered-btn"
+                onClick={() => window.open("https://www.blockem.io/")}
+              >
+                <img src={blockem} alt="" className="powered-logo" />
+              </div>
+            </div>
+          ) : null}
+          {/* <p className="powered">
             <span>
               Powered by {type === "contractAlert" ? "Blockem" : "OKLink"}
             </span>
@@ -183,7 +196,7 @@ export const Drawer = ({
               alt=""
               className="powered-logo"
             />
-          </div>
+          </div> */}
         </div>
       </div>
     </React.Fragment>

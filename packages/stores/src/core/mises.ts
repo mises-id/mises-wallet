@@ -135,6 +135,7 @@ export class MisesStore {
   }
 
   setLastActiveTime() {
+    console.log("setLastActiveTime");
     this.requester.sendMessage(
       BACKGROUND_PORT,
       new StartAutoLockMonitoringMsg()

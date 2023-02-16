@@ -47,9 +47,11 @@ export class AutoLockAccountService {
   }
 
   startAppStateCheckTimer() {
+    console.log("startAppStateCheckTimer");
     if (this.autoLockDuration > 0 && this.keyRingIsUnlocked) {
       this.stopAutoLockTimer();
       this.startAutoLockTimer();
+      console.log("startAppStateCheckTimer>>>>>>>>>");
     }
   }
 
@@ -88,6 +90,7 @@ export class AutoLockAccountService {
       this.stopAppStateCheckTimer();
       this.stopAutoLockTimer();
       this.lock();
+      console.log("autoLockTimer");
     }, this.autoLockDuration);
   }
 
@@ -101,6 +104,7 @@ export class AutoLockAccountService {
   public async lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
+      console.log("locked>>>>>>>>");
       let tabs = await browser.tabs.query({
         discarded: false,
         status: "complete",
@@ -109,6 +113,7 @@ export class AutoLockAccountService {
         (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
       );
       for (const tab of tabs) {
+        console.log("reload>>>>>>>>");
         browser.tabs.reload(tab.id);
       }
     }

@@ -38,11 +38,21 @@ const isShouldVerifyStateKey = "isShouldVerify";
 
 export class MisesSafeService {
   isShouldVerify: boolean = true;
+  domainWhiteList: string[] = [];
 
   constructor(protected readonly kvStore: KVStore) {
     this.localShouldVerify();
+    this.getDomainwhiteList();
   }
   // private misesSafe!: MisesSafe;
+
+  getDomainwhiteList() {
+    misesRequest({
+      url: "https://web3.mises.site/website/whitesites.json",
+    }).then((res) => {
+      this.domainWhiteList = res;
+    });
+  }
 
   init() {
     this.messageClient();
@@ -112,6 +122,13 @@ export class MisesSafeService {
   }
 
   async apiVerifyContract(contractAddress: string, domain: string) {
+    if (
+      this.domainWhiteList.length > 0 &&
+      this.domainWhiteList.includes(domain)
+    ) {
+      console.log("white list domain", domain);
+      return true;
+    }
     const result = await this.kvStore.get(contractAddress);
     if (result) {
       return result;
