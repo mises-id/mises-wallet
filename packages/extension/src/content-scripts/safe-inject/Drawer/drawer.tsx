@@ -65,7 +65,7 @@ export const Drawer = ({
     actionName === "safeTransferFrom" ||
     actionName === "safeTransferFrom1";
   // const assetVal = isTransferAction ? "token" : "";
-  const action = isTransferAction ? "transfer" : "authorization";
+  const action = isTransferAction ? "transaction" : "authorization";
   const suggestedDomainUrl = () => {
     if (suggestedDomain) {
       if (

@@ -35,6 +35,9 @@ class ProxyClient {
     };
 
     return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        resolve("receive response timeout");
+      }, 3000);
       const receiveResponse = (e: { data: any }) => {
         const proxyResponse = this.parseMessage
           ? this.parseMessage(e.data)
@@ -60,6 +63,7 @@ class ProxyClient {
           reject(new Error(result.error));
           return;
         }
+        clearTimeout(timer);
         resolve(result.return);
       };
 
@@ -71,8 +75,15 @@ class ProxyClient {
   async verifyDomain(domain: any) {
     return await this.requestMethod("verifyDomain", { domain });
   }
-  async verifyContract(contractAddress: any) {
-    return await this.requestMethod("verifyContract", { contractAddress });
+  async verifyContract(contractAddress: string, domain: string) {
+    return await this.requestMethod("verifyContract", {
+      contractAddress,
+      domain,
+    });
+  }
+
+  consoleLog(log: any) {
+    return this.requestMethod("consoleLog", log);
   }
 
   //CurrentPage

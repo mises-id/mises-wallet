@@ -82,7 +82,10 @@ export class MisesSafeService {
       case listenMethods.mVerifyDomain:
         return this.apiVerifyDomain(res.params.params.domain);
       case listenMethods.mVerifyContract:
-        return this.apiVerifyContract(res.params.params.contractAddress);
+        return this.apiVerifyContract(
+          res.params.params.contractAddress,
+          res.params.params.domain
+        );
     }
   }
 
@@ -108,19 +111,20 @@ export class MisesSafeService {
     return res;
   }
 
-  async apiVerifyContract(contractAddress: string) {
-    /*  const result = await this.kvStore.get(contractAddress);
+  async apiVerifyContract(contractAddress: string, domain: string) {
+    const result = await this.kvStore.get(contractAddress);
     if (result) {
       return result;
-    } */
+    }
     const res = await misesRequest({
       url: "/web3safe/verify_contract",
       data: {
         address: contractAddress,
+        domain: domain,
       },
     });
 
-    //this.kvStore.set(contractAddress, res);
+    this.kvStore.set(contractAddress, res);
     return res;
   }
 }

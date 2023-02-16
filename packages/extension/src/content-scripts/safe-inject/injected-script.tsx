@@ -31,25 +31,69 @@ const storageKey = {
   ContractIgnore: "contract_ignore_",
 };
 
+const dangerVerifyContractLevel = "danger";
+
 const containerId = "mises-safe-container";
+
+const parseOriginToHostname = (param: string): string => {
+  let domain = param;
+
+  if (domain.match(/^[a-zA-Z0-9-]+:\/\/.+$/)) {
+    domain = domain.replace(/^[a-zA-Z0-9-]+:\/\//, "");
+  }
+
+  const slash = domain.indexOf("/");
+  if (slash >= 0) {
+    domain = domain.slice(0, slash);
+  }
+  const qMark = domain.indexOf("?");
+  if (qMark >= 0) {
+    domain = domain.slice(0, qMark);
+  }
+
+  const split = domain
+    .split(".")
+    .map((str) => str.trim())
+    .filter((str) => str.length > 0);
+
+  if (split.length < 2) {
+    throw new Error(`Invalid domain: ${param}`);
+  }
+
+  const i = split[split.length - 1].indexOf(":");
+  if (i >= 0) {
+    split[split.length - 1] = split[split.length - 1].slice(0, i);
+  }
+
+  return split.join(".");
+};
 
 export class ContentScripts {
   container: HTMLElement | null;
   domainInfo: {
     domainSafeType: string;
-    domain: string;
     hostname: string;
     type: string;
     suggestedDomain: string;
     checkStatus: string;
     isShowDomainAlert: boolean;
   };
+  config: {
+    maxRetryNum: number;
+    retryCount: number;
+  };
   constructor() {
     this.container = null;
+    this.config = {
+      maxRetryNum: 3,
+      retryCount: 0,
+    };
     this.domainInfo = {
       domainSafeType: "",
-      domain: document.location.hostname.split(".").slice(-2).join("."),
-      hostname: document.location.hostname,
+      hostname:
+        window.location.ancestorOrigins.length > 0
+          ? parseOriginToHostname(window.location.ancestorOrigins[0])
+          : window.location.hostname,
       type: domainSafeType.normalDomain,
       suggestedDomain: "",
       checkStatus: domainCheckStatus.waitCheck,
@@ -58,10 +102,8 @@ export class ContentScripts {
     this.init();
   }
   init() {
-    // document.addEventListener("DOMContentLoaded", () => {
     this.initContainer();
     this.initWeb3Proxy();
-    // });
   }
   // 初始化外层包裹元素
   initContainer() {
@@ -95,7 +137,6 @@ export class ContentScripts {
 
   initWeb3Proxy() {
     // const that = this;
-    console.log("initWeb3Proxy");
     // 初始化代理
     const handler = {
       apply: async (target: any, _: any, argumentsList: any) => {
@@ -103,8 +144,8 @@ export class ContentScripts {
         console.log("Transaction Method Data :>> ", constList);
         const isNotable = this.isNotableAction(constList).result;
         const actionName = this.isNotableAction(constList).action;
-        const methodName = constList.method;
-
+        const methodName =
+          constList !== undefined ? constList.method : "unKonwn";
         //is should verifying domain
         if (this.isShouldVerifyDomain()) {
           await this.verifyDomain();
@@ -141,7 +182,8 @@ export class ContentScripts {
             assetValue = "Token";
           }
           const verifyContractResult: any = await proxyClient.verifyContract(
-            contractAddress
+            contractAddress,
+            this.domainInfo.hostname
           );
           console.log("verifyContractResult :>>", verifyContractResult);
           //is should show contract address risking alert
@@ -151,9 +193,8 @@ export class ContentScripts {
               contractAddress
             )
           ) {
-            console.log("actionName21: ", actionName);
             const contractAddressTrustLevel = verifyContractResult.level;
-            if (contractAddressTrustLevel === "danger") {
+            if (contractAddressTrustLevel === dangerVerifyContractLevel) {
               this.showContractAlert({
                 type: "contractAlert",
                 contractAddress,
@@ -165,7 +206,7 @@ export class ContentScripts {
               const decisionData: any = await proxyClient.listenUserDecision();
               if (decisionData.value === "continue") {
                 //set cache
-                sessionStorage.setItem(
+                localStorage.setItem(
                   this.getContractCacheKey(contractAddress),
                   "1"
                 );
@@ -184,13 +225,18 @@ export class ContentScripts {
       if (typeof window.ethereum !== "undefined") {
         const proxy1 = new Proxy(window.ethereum.request, handler);
         window.ethereum.request = proxy1;
+        window.ethereum.send = proxy1;
+        window.ethereum.sendAsync = proxy1;
+        window.ethereum.enable = proxy1;
+        console.log("Find ethereum");
         clearInterval(proxyInterval);
       } else if (typeof window.web3 !== "undefined") {
         const proxy2 = new Proxy(window.web3.currentProvider, handler);
         window.web3.currentProvider = proxy2;
+        console.log("Find web3");
         clearInterval(proxyInterval);
       } else {
-        console.log("Did not find ethereum or web3");
+        proxyClient.consoleLog("Did not find ethereum or web3");
       }
     }
     setTimeout(() => {
@@ -201,7 +247,7 @@ export class ContentScripts {
   afterAlertDecision(type: string, decision: string) {
     if (decision === "continue" && type === "domain") {
       const key = this.getDomainCacheKey();
-      sessionStorage.setItem(key, "1");
+      localStorage.setItem(key, "1");
     }
   }
 
@@ -257,41 +303,41 @@ export class ContentScripts {
   isShouldShowDomainAlert() {
     //ignore
     const key = this.getDomainCacheKey();
-    const isIgnore = sessionStorage.getItem(key);
+    const isIgnore = localStorage.getItem(key);
     const isRiskDomain =
       this.domainInfo.domainSafeType === domainSafeType.fuzzyDomain ||
       this.domainInfo.domainSafeType === domainSafeType.blackDomain;
-    console.log(
-      "!isShowDomainAlert",
-      !this.domainInfo.isShowDomainAlert,
-      "isRiskDomain",
-      isRiskDomain,
-      "!isIgnore",
-      !isIgnore
-    );
     return !this.domainInfo.isShowDomainAlert && isRiskDomain && !isIgnore;
   }
   //isShouldShowContractAlert
   isShouldShowContractAlert(
-    verifyContractResult: { code: number; data: any },
+    verifyContractResult: { code: number; level: string },
     contractAddress: string
   ) {
     //ignore
     const key = this.getContractCacheKey(contractAddress);
-    const isIgnore = sessionStorage.getItem(key);
+    const isIgnore = localStorage.getItem(key);
     console.log("Contract is ignore", isIgnore);
-    return verifyContractResult && !isIgnore;
+    return (
+      verifyContractResult &&
+      verifyContractResult.level === dangerVerifyContractLevel &&
+      !isIgnore
+    );
   }
   //isShouldVerifyDomain
   isShouldVerifyDomain() {
+    return false;
     //ignore list
-    return this.domainInfo.checkStatus === domainCheckStatus.waitCheck;
+    return this.domainInfo.checkStatus !== domainCheckStatus.finshedCheck;
   }
   //verifyDomain
   async verifyDomain() {
-    if (this.domainInfo.checkStatus !== domainCheckStatus.waitCheck) {
-      return;
+    if (this.domainInfo.checkStatus === domainCheckStatus.finshedCheck) {
+      return true;
     }
+    /* if (this.domainInfo.checkStatus === domainCheckStatus.pendingCheck) {
+      return false;
+    } */
     this.domainInfo.checkStatus = domainCheckStatus.pendingCheck;
     const checkResult: any = await proxyClient.verifyDomain(
       this.domainInfo.hostname
@@ -302,6 +348,12 @@ export class ContentScripts {
     if (checkResult) {
       this.domainInfo.domainSafeType = checkResult.type_string;
       this.domainInfo.suggestedDomain = checkResult.origin;
+    } else if (this.config.retryCount < this.config.maxRetryNum) {
+      this.domainInfo.checkStatus = domainCheckStatus.waitCheck;
+      this.config.retryCount++;
+      console.log("verifyDomain retry ", this.config.retryCount);
+    } else {
+      this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
     }
   }
 

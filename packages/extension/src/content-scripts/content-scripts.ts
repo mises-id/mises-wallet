@@ -36,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   injectedMisesScript.type = "text/javascript";
   body.appendChild(injectedMisesScript);
-  console.log("injectedMisesScript");
   injectedMisesScript.remove();
 });
 
@@ -198,8 +197,6 @@ const postMsg = (id: any, res: unknown) => {
 };
 
 const initPostMsgClient = async () => {
-  console.log("mises");
-  console.log("content start listening message");
   window.addEventListener("message", async (e) => {
     // 监听 message 事件
     if (e.origin !== window.location.origin) {
@@ -210,6 +207,10 @@ const initPostMsgClient = async () => {
       return;
     }
     if (typeof e.data.method === "undefined") {
+      return;
+    }
+    if (e.data.method === "consoleLog") {
+      console.log("content consoleLog:>>", e.data);
       return;
     }
     console.log("content start sending message to background :>>", e.data);
