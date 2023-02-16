@@ -97,7 +97,7 @@
   .powered {
     position: relative;
     color: #cccccc;
-    font-size: 16px;
+    font-size: 12px;
     text-align: center;
     // span {
     //   position: absolute;
@@ -124,11 +124,11 @@
   //   padding: 23px 0;
   // }
   .powered-logo {
-    width: 75px;
+    width: 65px;
     display: block;
   }
   .powered-btn {
-    border: 1px solid #f5f5f5;
+    border: 1px solid #000;
     border-radius: 50px;
     height: 44px;
     font-size: 17px;
