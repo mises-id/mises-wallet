@@ -1,7 +1,7 @@
 import React from "react";
 import { proxyClient } from "../post-message";
 import "./drawer.scss";
-import { blockem, logo, oklink, prompt } from "./img";
+import { blockem, logo, prompt } from "./img";
 
 export const Drawer = ({
   type,
