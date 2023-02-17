@@ -228,15 +228,15 @@ export class ContentScripts {
         //window.ethereum.send = proxy1;
         //window.ethereum.sendAsync = proxy1;
         //window.ethereum.enable = proxy1;
-        console.log("Find ethereum");
+        // console.log("Find ethereum");
         clearInterval(proxyInterval);
       } else if (typeof window.web3 !== "undefined") {
         const proxy2 = new Proxy(window.web3.currentProvider, handler);
         window.web3.currentProvider = proxy2;
-        console.log("Find web3");
+        // console.log("Find web3");
         clearInterval(proxyInterval);
       } else {
-        proxyClient.consoleLog("Did not find ethereum or web3");
+        // proxyClient.consoleLog("Did not find ethereum or web3");
       }
     }
     setTimeout(() => {

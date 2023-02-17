@@ -94,7 +94,6 @@ export class KeyRing {
 
     this.migrator = migrator;
     migrator.migrateData().then((res) => {
-      console.log("get migrateData", res);
       this.migratorStore = res;
     });
   }
@@ -841,7 +840,6 @@ export class KeyRing {
       if (!this.isKeyStoreCoinTypeSet(chainId)) {
         await this.setKeyStoreCoinType(chainId, coinType);
       }
-      console.log("sign");
       return signature;
     }
   }
@@ -1619,7 +1617,6 @@ export class KeyRing {
       }
     }
 
-    console.log(multiKeyStore, "multiKeyStore");
     return multiKeyStore;
   }
 

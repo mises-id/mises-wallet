@@ -610,7 +610,6 @@ export class MisesService {
 
   async staking(params: any) {
     try {
-      console.log(params, "postTx:getParmas======");
       const activeUser = this.activeUser;
       const data = await activeUser.postTx(
         params.msgs,

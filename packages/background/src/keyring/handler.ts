@@ -284,7 +284,6 @@ const handleGetKeyMsg: (
       msg.chainId,
       msg.origin
     );
-
     const key = await service.getKey(msg.chainId);
 
     return {
@@ -474,7 +473,6 @@ const handleMigratorKeyRing: (
 ) => InternalHandler<MigratorKeyRingMsg> = (service) => {
   return async (_, msg) => {
     const result = await service.migratorKeyRing(msg.password);
-    console.log(result);
     return result;
   };
 };

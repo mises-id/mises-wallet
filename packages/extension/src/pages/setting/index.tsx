@@ -6,7 +6,7 @@ import style from "./style.module.scss";
 // import { useLanguage } from "../../languages";
 import { useIntl } from "react-intl";
 import { observer } from "mobx-react-lite";
-import { useStore } from "../../stores";
+// import { useStore } from "../../stores";
 
 export const SettingPage: FunctionComponent = observer(() => {
   // const language = useLanguage();
@@ -23,7 +23,7 @@ export const SettingPage: FunctionComponent = observer(() => {
   //         fiat: language.fiatCurrency.toUpperCase(),
   //       }
   //     );
-  const { misesSafeStore } = useStore();
+  // const { misesSafeStore } = useStore();
   return (
     <HeaderLayout
       showChainName={false}
@@ -111,7 +111,7 @@ export const SettingPage: FunctionComponent = observer(() => {
             []
           )}
         />
-        <PageButton
+        {/* <PageButton
           title="Security"
           subParagraph="website & Contract security verification"
           onClick={() => {
@@ -135,7 +135,7 @@ export const SettingPage: FunctionComponent = observer(() => {
               <span className="custom-toggle-slider rounded-circle" />
             </label>,
           ]}
-        />
+        /> */}
         {/* <PageButton
           title={intl.formatMessage({
             id: "setting.endpoints",

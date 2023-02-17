@@ -25,12 +25,12 @@ const storageKey = {
 //   origin: "",
 // };
 
-const defaultVerifyContractResult = {
-  address: "",
-  trust_percentage: 100,
-  is_project_verified: false,
-  level: "safe",
-};
+// const defaultVerifyContractResult = {
+//   address: "",
+//   trust_percentage: 100,
+//   is_project_verified: false,
+//   level: "safe",
+// };
 
 const isShouldVerifyStateKey = "isShouldVerify";
 
@@ -58,7 +58,6 @@ export class MisesSafeService {
     this.messageClient();
   }
   messageClient() {
-    console.log("initMessageClient in background");
     // this.misesSafe = new MisesSafe();
     // !this.isInitClient && this.isShouldVerify && this.initMessageClient();
   }
@@ -84,7 +83,7 @@ export class MisesSafeService {
       return false;
     }
     // backgroundClient.listen("mises-content-request", (res: { params: { method: any; params: any; }; }, sendResponse: any) => {
-    console.log("backgroud received message :>>", res);
+    // console.log("backgroud received message :>>", res);
     if (res?.params && typeof res.params.method === "undefined") {
       return;
     }

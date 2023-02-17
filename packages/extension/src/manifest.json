@@ -45,11 +45,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "injectedScript.bundle.js",
-        "safeInjectedScript.bundle.js",
-        "assets/logo-256.png"
-      ],
+      "resources": ["injectedScript.bundle.js", "assets/logo-256.png"],
       "matches": ["http://*/*", "https://*/*"]
     }
   ],

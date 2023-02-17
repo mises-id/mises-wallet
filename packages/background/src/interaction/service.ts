@@ -35,7 +35,6 @@ export class InteractionService {
       type,
       data,
     });
-    console.log("sendMessage");
     this.eventMsgRequester
       .sendMessage(port, msg)
       .then(() => {
@@ -64,10 +63,8 @@ export class InteractionService {
       data
     );
     const msg = new PushInteractionDataMsg(interactionWaitingData);
-    console.log("interactionWaitingData", msg.data.id);
 
     return await this.wait(msg.data.id, () => {
-      console.log(url, msg, options);
       env.requestInteraction(url, msg, options);
     });
   }
