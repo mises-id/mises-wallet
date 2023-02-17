@@ -20,7 +20,6 @@ import {
   IBCCurrencyRegsitrar,
   InteractionStore,
   KeyRingStore,
-  LedgerInitStore,
   ObservableQueryBase,
   PermissionStore,
   QueriesStore,
@@ -65,7 +64,6 @@ export class RootStore {
   protected readonly interactionStore: InteractionStore;
   public readonly permissionStore: PermissionStore;
   public readonly signInteractionStore: SignInteractionStore;
-  public readonly ledgerInitStore: LedgerInitStore;
   public readonly chainSuggestStore: ChainSuggestStore;
 
   public readonly queriesStore: QueriesStore<
@@ -160,10 +158,6 @@ export class RootStore {
       new InExtensionMessageRequester()
     );
     this.signInteractionStore = new SignInteractionStore(this.interactionStore);
-    this.ledgerInitStore = new LedgerInitStore(
-      this.interactionStore,
-      new InExtensionMessageRequester()
-    );
     this.chainSuggestStore = new ChainSuggestStore(this.interactionStore);
 
     this.queriesStore = new QueriesStore(

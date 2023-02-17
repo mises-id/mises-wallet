@@ -156,7 +156,7 @@ export class RecipientConfig extends TxChainSetter implements IRecipientConfig {
           if (isAddress(rawRecipient)) {
             return;
           }
-        } catch (e) {
+        } catch (e: any) {
           return e;
         }
         return new InvalidHexError("Invalid hex address for chain");
@@ -188,7 +188,7 @@ export class RecipientConfig extends TxChainSetter implements IRecipientConfig {
 
     try {
       Bech32Address.validate(this.recipient, this.bech32Prefix);
-    } catch (e) {
+    } catch (e: any) {
       return new InvalidBech32Error(
         `Invalid bech32: ${e.message || e.toString()}`
       );

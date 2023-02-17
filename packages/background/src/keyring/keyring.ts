@@ -684,6 +684,7 @@ export class KeyRing {
     message: Uint8Array,
     useEthereumSigning: boolean
   ): Promise<Uint8Array> {
+    console.log(env);
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
     }
@@ -715,6 +716,7 @@ export class KeyRing {
     message: Uint8Array,
     type: EthSignType
   ): Promise<Uint8Array> {
+    console.log(env);
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
     }

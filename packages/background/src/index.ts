@@ -25,7 +25,6 @@ export * from "./updater";
 export * from "./tokens";
 export * from "./interaction";
 export * from "./permission";
-export * from "./phishing-list";
 export * from "./auto-lock-account";
 
 import { KVStore } from "@keplr-wallet/common";
