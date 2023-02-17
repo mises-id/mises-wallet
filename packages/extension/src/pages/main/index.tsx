@@ -25,7 +25,6 @@ import { DenomHelper } from "@keplr-wallet/common";
 import { Dec } from "@keplr-wallet/unit";
 import { WalletStatus } from "@keplr-wallet/stores";
 import { VestingInfo } from "./vesting-info";
-import { LedgerAppModal } from "./ledger-app-modal";
 import { useNotification } from "../../components/notification";
 
 export const MainPage: FunctionComponent = observer(() => {
@@ -159,7 +158,6 @@ export const MainPage: FunctionComponent = observer(() => {
       }
     >
       <BIP44SelectModal />
-      <LedgerAppModal />
       <Card className={classnames(style.card, "shadow")}>
         <CardBody>
           <div className={style.containerAccountInner}>

@@ -19,7 +19,6 @@ import { BIP44HDPath, CommonCrypto, ExportKeyRingData } from "./types";
 import { escapeHTML, KVStore, sortObjectByKey } from "@keplr-wallet/common";
 
 import { ChainsService } from "../chains";
-import { LedgerApp, LedgerService } from "../ledger";
 import {
   BIP44,
   ChainInfo,
@@ -57,7 +56,6 @@ export class KeyRingService {
     interactionService: InteractionService,
     chainsService: ChainsService,
     permissionService: PermissionService,
-    ledgerService: LedgerService,
     misesService: MisesService
   ) {
     this.interactionService = interactionService;
@@ -67,7 +65,6 @@ export class KeyRingService {
     this.keyRing = new KeyRing(
       this.embedChainInfos,
       this.kvStore,
-      ledgerService,
       this.crypto,
       misesService
     );
@@ -193,25 +190,6 @@ export class KeyRingService {
     multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
   }> {
     return await this.keyRing.createPrivateKey(kdf, privateKey, password, meta);
-  }
-
-  async createLedgerKey(
-    env: Env,
-    kdf: "scrypt" | "sha256" | "pbkdf2",
-    password: string,
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath
-  ): Promise<{
-    status: KeyRingStatus;
-    multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
-  }> {
-    return await this.keyRing.createLedgerKey(
-      env,
-      kdf,
-      password,
-      meta,
-      bip44HDPath
-    );
   }
 
   lock(): KeyRingStatus {
@@ -647,17 +625,6 @@ export class KeyRingService {
     return this.keyRing.addPrivateKey(kdf, privateKey, meta);
   }
 
-  async addLedgerKey(
-    env: Env,
-    kdf: "scrypt" | "sha256" | "pbkdf2",
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath
-  ): Promise<{
-    multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
-  }> {
-    return this.keyRing.addLedgerKey(env, kdf, meta, bip44HDPath);
-  }
-
   public async changeKeyStoreFromMultiKeyStore(
     index: number
   ): Promise<{
@@ -734,10 +701,6 @@ export class KeyRingService {
 
   async exportKeyRingDatas(password: string): Promise<ExportKeyRingData[]> {
     return await this.keyRing.exportKeyRingDatas(password);
-  }
-
-  async initializeNonDefaultLedgerApp(env: Env, ledgerApp: LedgerApp) {
-    return await this.keyRing.initializeNonDefaultLedgerApp(env, ledgerApp);
   }
 
   async addAccount(name: string, bip44HDPath: BIP44HDPath) {

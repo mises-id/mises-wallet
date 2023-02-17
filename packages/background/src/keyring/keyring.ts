@@ -1,12 +1,6 @@
 import { Crypto, KeyStore } from "./crypto";
-import {
-  Hash,
-  Mnemonic,
-  PrivKeySecp256k1,
-  PubKeySecp256k1,
-} from "@keplr-wallet/crypto";
+import { Hash, Mnemonic, PrivKeySecp256k1 } from "@keplr-wallet/crypto";
 import { KVStore } from "@keplr-wallet/common";
-import { LedgerApp, LedgerService } from "../ledger";
 import { BIP44HDPath, CommonCrypto, ExportKeyRingData } from "./types";
 import { ChainInfo, EthSignType } from "@keplr-wallet/types";
 import { Env, KeplrError } from "@keplr-wallet/router";
@@ -16,7 +10,6 @@ import { ChainIdHelper } from "@keplr-wallet/cosmos";
 
 import { Wallet } from "@ethersproject/wallet";
 import * as BytesUtils from "@ethersproject/bytes";
-import { computeAddress } from "@ethersproject/transactions";
 import { EIP712MessageValidator } from "./eip712";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { MisesService } from "../mises";
@@ -82,7 +75,6 @@ export class KeyRing {
   constructor(
     private readonly embedChainInfos: ChainInfo[],
     private readonly kvStore: KVStore,
-    private readonly ledgerKeeper: LedgerService,
     private readonly crypto: CommonCrypto,
     private readonly misesService: MisesService
   ) {
@@ -319,58 +311,6 @@ export class KeyRing {
     };
   }
 
-  public async createLedgerKey(
-    env: Env,
-    kdf: "scrypt" | "sha256" | "pbkdf2",
-    password: string,
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath
-  ): Promise<{
-    status: KeyRingStatus;
-    multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
-  }> {
-    if (this.status !== KeyRingStatus.EMPTY) {
-      throw new KeplrError(
-        "keyring",
-        142,
-        "Key ring is not loaded or not empty"
-      );
-    }
-
-    // Get public key first
-    const publicKey = await this.ledgerKeeper.getPublicKey(
-      env,
-      LedgerApp.Cosmos,
-      bip44HDPath
-    );
-
-    const pubKeys = {
-      [LedgerApp.Cosmos]: publicKey,
-    };
-
-    const keyStore = await KeyRing.CreateLedgerKeyStore(
-      this.crypto,
-      kdf,
-      pubKeys,
-      password,
-      await this.assignKeyStoreIdMeta(meta),
-      bip44HDPath
-    );
-
-    this.password = password;
-    this.keyStore = keyStore;
-    this.multiKeyStore.push(this.keyStore);
-
-    this.ledgerPublicKeyCache = pubKeys;
-
-    await this.save();
-
-    return {
-      status: this.status,
-      multiKeyStoreInfo: this.getMultiKeyStoreInfo(),
-    };
-  }
-
   public lock() {
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
@@ -411,30 +351,6 @@ export class KeyRing {
         ).toString(),
         "hex"
       );
-    } else if (this.type === "ledger") {
-      // Attempt to decode the ciphertext as a JSON public key map. If that fails,
-      // try decoding as a single public key hex.
-      const pubKeys: Record<string, Uint8Array> = {};
-      const cipherText = await Crypto.decrypt(
-        this.crypto,
-        this.keyStore,
-        password
-      );
-
-      try {
-        const encodedPubkeys = JSON.parse(Buffer.from(cipherText).toString());
-        Object.keys(encodedPubkeys).forEach(
-          (k) => (pubKeys[k] = Buffer.from(encodedPubkeys[k], "hex"))
-        );
-      } catch (e) {
-        // Decode as bytes (Legacy representation)
-        pubKeys[LedgerApp.Cosmos] = Buffer.from(
-          Buffer.from(cipherText).toString(),
-          "hex"
-        );
-      }
-
-      this.ledgerPublicKeyCache = pubKeys;
     } else {
       throw new KeplrError("keyring", 145, "Unexpected type of keyring");
     }
@@ -687,59 +603,28 @@ export class KeyRing {
     if (!this.keyStore) {
       throw new KeplrError("keyring", 130, "Key store is empty");
     }
+    const privKey = this.loadPrivKey(coinType);
+    const pubKey = privKey.getPubKey();
 
-    if (this.keyStore.type === "ledger") {
-      if (!this.ledgerPublicKeyCache) {
-        throw new KeplrError("keyring", 150, "Ledger public key not set");
-      }
-
-      if (useEthereumAddress) {
-        const pubKey = this.ensureLedgerPublicKey(LedgerApp.Ethereum);
-        // Generate the Ethereum address for this public key
-        const address = computeAddress(pubKey);
-
-        return {
-          algo: "ethsecp256k1",
-          pubKey: pubKey,
-          address: Buffer.from(address.replace("0x", ""), "hex"),
-          isNanoLedger: true,
-        };
-      }
-
-      const pubKey = new PubKeySecp256k1(
-        this.ensureLedgerPublicKey(LedgerApp.Cosmos)
-      );
+    if (useEthereumAddress) {
+      // For Ethereum Key-Gen Only:
+      const wallet = new Wallet(privKey.toBytes());
 
       return {
-        algo: "secp256k1",
+        algo: "ethsecp256k1",
         pubKey: pubKey.toBytes(),
-        address: pubKey.getAddress(),
-        isNanoLedger: true,
-      };
-    } else {
-      const privKey = this.loadPrivKey(coinType);
-      const pubKey = privKey.getPubKey();
-
-      if (useEthereumAddress) {
-        // For Ethereum Key-Gen Only:
-        const wallet = new Wallet(privKey.toBytes());
-
-        return {
-          algo: "ethsecp256k1",
-          pubKey: pubKey.toBytes(),
-          address: Buffer.from(wallet.address.replace("0x", ""), "hex"),
-          isNanoLedger: false,
-        };
-      }
-
-      // Default
-      return {
-        algo: "secp256k1",
-        pubKey: pubKey.toBytes(),
-        address: pubKey.getAddress(),
+        address: Buffer.from(wallet.address.replace("0x", ""), "hex"),
         isNanoLedger: false,
       };
     }
+
+    // Default
+    return {
+      algo: "secp256k1",
+      pubKey: pubKey.toBytes(),
+      address: pubKey.getAddress(),
+      isNanoLedger: false,
+    };
   }
 
   private loadPrivKey(coinType: number): PrivKeySecp256k1 {
@@ -806,44 +691,21 @@ export class KeyRing {
     if (!this.keyStore) {
       throw new KeplrError("keyring", 130, "Key store is empty");
     }
+    const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
 
-    if (this.keyStore.type === "ledger") {
-      const pubKeys = this.ledgerPublicKeyCache;
+    const privKey = this.loadPrivKey(coinType);
+    const signature = useEthereumSigning
+      ? privKey.signDigest32(Hash.keccak256(message))
+      : privKey.sign(message);
 
-      if (!pubKeys) {
-        throw new KeplrError(
-          "keyring",
-          151,
-          "Ledger public key is not initialized"
-        );
-      }
-
-      if (useEthereumSigning) {
-        throw new Error("Can't sign cosmos sign doc by ethereum app on ledger");
-      }
-
-      return await this.ledgerKeeper.sign(
-        env,
-        KeyRing.getKeyStoreBIP44Path(this.keyStore),
-        await this.ensureLedgerPublicKey(LedgerApp.Cosmos),
-        message
-      );
-    } else {
-      const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
-
-      const privKey = this.loadPrivKey(coinType);
-      const signature = useEthereumSigning
-        ? privKey.signDigest32(Hash.keccak256(message))
-        : privKey.sign(message);
-
-      // Signing indicates an explicit use of this coin type.
-      // Mainly, this logic exists to explicitly set the coin type when signing by an external request.
-      if (!this.isKeyStoreCoinTypeSet(chainId)) {
-        await this.setKeyStoreCoinType(chainId, coinType);
-      }
-      console.log("sign");
-      return signature;
+    // Signing indicates an explicit use of this coin type.
+    // Mainly, this logic exists to explicitly set the coin type when signing by an external request.
+    if (!this.isKeyStoreCoinTypeSet(chainId)) {
+      await this.setKeyStoreCoinType(chainId, coinType);
     }
+    console.log("sign");
+    return signature;
+    // }
   }
 
   public async signEthereum(
@@ -859,24 +721,6 @@ export class KeyRing {
 
     if (!this.keyStore) {
       throw new KeplrError("keyring", 130, "Key store is empty");
-    }
-
-    if (this.keyStore.type === "ledger") {
-      if (!this.ledgerPublicKeyCache) {
-        throw new KeplrError(
-          "keyring",
-          151,
-          "Ledger public key is not initialized"
-        );
-      }
-
-      return this.ledgerKeeper.signEthereum(
-        env,
-        type,
-        KeyRing.getKeyStoreBIP44Path(this.keyStore),
-        await this.ensureLedgerPublicKey(LedgerApp.Ethereum),
-        message
-      );
     }
 
     const coinType = this.computeKeyStoreCoinType(chainId, defaultCoinType);
@@ -1144,50 +988,6 @@ export class KeyRing {
     };
   }
 
-  public async addLedgerKey(
-    env: Env,
-    kdf: "scrypt" | "sha256" | "pbkdf2",
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath
-  ): Promise<{
-    multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
-  }> {
-    if (this.status !== KeyRingStatus.UNLOCKED || this.password == "") {
-      throw new KeplrError(
-        "keyring",
-        141,
-        "Key ring is locked or not initialized"
-      );
-    }
-
-    // Get public key first
-    const publicKey = await this.ledgerKeeper.getPublicKey(
-      env,
-      LedgerApp.Cosmos,
-      bip44HDPath
-    );
-
-    const pubKeys = {
-      [LedgerApp.Cosmos]: publicKey,
-    };
-
-    const keyStore = await KeyRing.CreateLedgerKeyStore(
-      this.crypto,
-      kdf,
-      pubKeys,
-      this.password,
-      await this.assignKeyStoreIdMeta(meta),
-      bip44HDPath
-    );
-
-    this.multiKeyStore.push(keyStore);
-
-    await this.save();
-    return {
-      multiKeyStoreInfo: this.getMultiKeyStoreInfo(),
-    };
-  }
-
   public async changeKeyStoreFromMultiKeyStore(
     index: number
   ): Promise<{
@@ -1339,32 +1139,6 @@ export class KeyRing {
     );
   }
 
-  private static async CreateLedgerKeyStore(
-    crypto: CommonCrypto,
-    kdf: "scrypt" | "sha256" | "pbkdf2",
-    publicKeys: Record<string, Uint8Array | undefined>,
-    password: string,
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath
-  ): Promise<KeyStore> {
-    const publicKeyMap: Record<string, string> = {};
-    Object.keys(publicKeys)
-      .filter((k) => publicKeys[k] != null)
-      .forEach(
-        (k) => (publicKeyMap[k] = Buffer.from(publicKeys[k]!).toString("hex"))
-      );
-
-    return await Crypto.encrypt(
-      crypto,
-      kdf,
-      "ledger",
-      JSON.stringify(publicKeyMap),
-      password,
-      meta,
-      bip44HDPath
-    );
-  }
-
   private async assignKeyStoreIdMeta(meta: {
     [key: string]: string;
   }): Promise<{
@@ -1443,108 +1217,6 @@ export class KeyRing {
         );
       }
     }
-  }
-
-  // Return public key if it has been initialized.
-  // Else, try to initialize and return the public key.
-  // There is no guarantee that the ledger has been initialized except for cosmos.
-  // This method can handle the case of not initialized ledger app.
-  // Use this method instead of use `this.ledgerPublicKeyCache`
-  private ensureLedgerPublicKey(ledgerApp: LedgerApp): Uint8Array {
-    if (!this.keyStore) {
-      throw new KeplrError("keyring", 130, "Keystore is empty");
-    }
-
-    if (this.keyStore.type !== "ledger") {
-      throw new Error("Keystore is not ledger");
-    }
-
-    if (!this.ledgerPublicKeyCache) {
-      throw new KeplrError("keyring", 150, "Ledger not initialized");
-    }
-
-    const cached = this.ledgerPublicKeyCache[ledgerApp];
-    if (cached) {
-      return cached;
-    }
-
-    throw new KeplrError(
-      "keyring",
-      901,
-      "Please initialize ethereum app on ledger first"
-    );
-  }
-
-  public async initializeNonDefaultLedgerApp(env: Env, ledgerApp: LedgerApp) {
-    if (!this.keyStore) {
-      throw new KeplrError("keyring", 130, "Keystore is empty");
-    }
-
-    if (this.keyStore.type !== "ledger") {
-      throw new Error("Keystore is not ledger");
-    }
-
-    if (!this.ledgerPublicKeyCache) {
-      throw new KeplrError("keyring", 150, "Ledger not initialized");
-    }
-
-    const cached = this.ledgerPublicKeyCache[ledgerApp];
-    if (cached) {
-      throw new Error(`Ledger app (${ledgerApp}) has been initialized`);
-    }
-
-    const pubKey = await this.ledgerKeeper.getPublicKey(
-      env,
-      ledgerApp,
-      KeyRing.getKeyStoreBIP44Path(this.keyStore)
-    );
-
-    const pubKeys = {
-      ...this.ledgerPublicKeyCache,
-      [ledgerApp]: pubKey,
-    };
-
-    // Create a new keystore that is equivalent in all ways, except for the ciphertext,
-    // to persist the new public key.
-    const newKeyStore = await KeyRing.CreateLedgerKeyStore(
-      this.crypto,
-      this.keyStore.crypto.kdf,
-      pubKeys,
-      this.password,
-      this.keyStore.meta ?? {},
-      this.keyStore.bip44HDPath ?? {
-        account: 0,
-        change: 0,
-        addressIndex: 0,
-      }
-    );
-
-    // Replace the keystore in the MultiKeyStore
-    let index: number | undefined;
-    this.multiKeyStore.forEach((k, i) => {
-      if (
-        this.keyStore &&
-        KeyRing.getKeyStoreId(this.keyStore) === KeyRing.getKeyStoreId(k)
-      ) {
-        index = i;
-      }
-    });
-
-    if (index === undefined) {
-      throw new Error("Could not find keystore in keyring");
-    }
-
-    // Update local cache
-    this.ledgerPublicKeyCache = pubKeys;
-
-    // Persist keystore changes
-    this.keyStore = newKeyStore;
-    this.multiKeyStore[index] = newKeyStore;
-
-    // No need to wait.
-    this.save();
-
-    return pubKey;
   }
 
   async addAccount(name: string, bip44HDPath: BIP44HDPath) {
