@@ -2,9 +2,8 @@ import { MessageRequester, Router } from "@keplr-wallet/router";
 
 import * as PersistentMemory from "./persistent-memory/internal";
 import * as Chains from "./chains/internal";
-import * as Ledger from "./ledger/internal";
 import * as KeyRing from "./keyring/internal";
-import * as SecretWasm from "./secret-wasm/internal";
+// import * as SecretWasm from "./secret-wasm/internal";
 import * as BackgroundTx from "./tx/internal";
 import * as Updater from "./updater/internal";
 import * as Tokens from "./tokens/internal";
@@ -17,7 +16,6 @@ import * as Mises from "./mises/internal";
 
 export * from "./persistent-memory";
 export * from "./chains";
-export * from "./ledger";
 export * from "./keyring";
 export * from "./mises";
 // export * from "./mises-safe";
@@ -27,14 +25,12 @@ export * from "./updater";
 export * from "./tokens";
 export * from "./interaction";
 export * from "./permission";
-export * from "./phishing-list";
 export * from "./auto-lock-account";
 
 import { KVStore } from "@keplr-wallet/common";
 import { ChainInfo } from "@keplr-wallet/types";
 import { CommonCrypto } from "./keyring";
 import { Notification } from "./tx";
-import { LedgerOptions } from "./ledger/options";
 
 export function init(
   router: Router,
@@ -46,7 +42,6 @@ export function init(
   privilegedOrigins: string[],
   commonCrypto: CommonCrypto,
   notification: Notification,
-  ledgerOptions: Partial<LedgerOptions> = {},
   experimentalOptions: Partial<{
     suggestChain: Partial<{
       // Chains registered as suggest chains are managed in memory.
@@ -83,11 +78,6 @@ export function init(
     }
   );
 
-  const ledgerService = new Ledger.LedgerService(
-    storeCreator("ledger"),
-    ledgerOptions
-  );
-
   const keyRingService = new KeyRing.KeyRingService(
     storeCreator("keyring"),
     embedChainInfos,
@@ -100,9 +90,9 @@ export function init(
   //   storeCreator("misesSafe")
   // );
 
-  const secretWasmService = new SecretWasm.SecretWasmService(
-    storeCreator("secretwasm")
-  );
+  // const secretWasmService = new SecretWasm.SecretWasmService(
+  //   storeCreator("secretwasm")
+  // );
 
   const backgroundTxService = new BackgroundTx.BackgroundTxService(
     notification,
@@ -137,17 +127,15 @@ export function init(
     interactionService,
     permissionService
   );
-  ledgerService.init(interactionService);
   keyRingService.init(
     interactionService,
     chainsService,
     permissionService,
-    ledgerService,
     misesService
   );
   misesService.init();
   // misesSafeService.init();
-  secretWasmService.init(chainsService, keyRingService, permissionService);
+  // secretWasmService.init(chainsService, keyRingService, permissionService);
   backgroundTxService.init(chainsService, permissionService);
   // phishingListService.init();
   // No need to wait because user can't interact with app right after launch.
@@ -159,9 +147,8 @@ export function init(
   Updater.init(router, chainUpdaterService);
   Tokens.init(router, tokensService);
   Chains.init(router, chainsService);
-  Ledger.init(router, ledgerService);
   KeyRing.init(router, keyRingService);
-  SecretWasm.init(router, secretWasmService);
+  // SecretWasm.init(router, secretWasmService);
   BackgroundTx.init(router, backgroundTxService);
   // PhishingList.init(router, phishingListService);
   AutoLocker.init(router, autoLockAccountService);

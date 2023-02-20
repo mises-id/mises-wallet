@@ -20,8 +20,6 @@ import {
   AddPrivateKeyMsg,
   GetMultiKeyStoreInfoMsg,
   ChangeKeyRingMsg,
-  AddLedgerKeyMsg,
-  CreateLedgerKeyMsg,
   SetKeyStoreCoinTypeMsg,
   RestoreKeyRingMsg,
   GetIsKeyStoreCoinTypeSetMsg,
@@ -29,7 +27,6 @@ import {
   ExportKeyRingDatasMsg,
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
-  InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
   AddAccountMsg,
   MigratorKeyRingMsg,
@@ -70,13 +67,6 @@ export const getHandler: (service: KeyRingService) => Handler = (
         );
       case AddPrivateKeyMsg:
         return handleAddPrivateKeyMsg(service)(env, msg as AddPrivateKeyMsg);
-      case CreateLedgerKeyMsg:
-        return handleCreateLedgerKeyMsg(service)(
-          env,
-          msg as CreateLedgerKeyMsg
-        );
-      case AddLedgerKeyMsg:
-        return handleAddLedgerKeyMsg(service)(env, msg as AddLedgerKeyMsg);
       case LockKeyRingMsg:
         return handleLockKeyRingMsg(service)(env, msg as LockKeyRingMsg);
       case UnlockKeyRingMsg:
@@ -128,11 +118,6 @@ export const getHandler: (service: KeyRingService) => Handler = (
         return handleExportKeyRingDatasMsg(service)(
           env,
           msg as ExportKeyRingDatasMsg
-        );
-      case InitNonDefaultLedgerAppMsg:
-        return handleInitNonDefaultLedgerAppMsg(service)(
-          env,
-          msg as InitNonDefaultLedgerAppMsg
         );
       case AddAccountMsg:
         return handleAddAccountMsg(service)(env, msg as AddAccountMsg);
@@ -226,28 +211,6 @@ const handleAddPrivateKeyMsg: (
   };
 };
 
-const handleCreateLedgerKeyMsg: (
-  service: KeyRingService
-) => InternalHandler<CreateLedgerKeyMsg> = (service) => {
-  return async (env, msg) => {
-    return await service.createLedgerKey(
-      env,
-      msg.kdf,
-      msg.password,
-      msg.meta,
-      msg.bip44HDPath
-    );
-  };
-};
-
-const handleAddLedgerKeyMsg: (
-  service: KeyRingService
-) => InternalHandler<AddLedgerKeyMsg> = (service) => {
-  return async (env, msg) => {
-    return await service.addLedgerKey(env, msg.kdf, msg.meta, msg.bip44HDPath);
-  };
-};
-
 const handleLockKeyRingMsg: (
   service: KeyRingService
 ) => InternalHandler<LockKeyRingMsg> = (service) => {
@@ -295,7 +258,7 @@ const handleGetKeyMsg: (
         (await service.chainsService.getChainInfo(msg.chainId)).bech32Config
           .bech32PrefixAccAddr
       ),
-      isNanoLedger: key.isNanoLedger,
+      isNanoLedger: false,
     };
   };
 };
@@ -448,14 +411,6 @@ const handleExportKeyRingDatasMsg: (
 ) => InternalHandler<ExportKeyRingDatasMsg> = (service) => {
   return async (_, msg) => {
     return await service.exportKeyRingDatas(msg.password);
-  };
-};
-
-const handleInitNonDefaultLedgerAppMsg: (
-  service: KeyRingService
-) => InternalHandler<InitNonDefaultLedgerAppMsg> = (service) => {
-  return async (env, msg) => {
-    await service.initializeNonDefaultLedgerApp(env, msg.ledgerApp);
   };
 };
 

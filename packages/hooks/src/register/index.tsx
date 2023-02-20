@@ -127,34 +127,6 @@ export class RegisterConfig {
     }
   }
 
-  // Create or add the ledger account.
-  // If the mode is "add", password will be ignored.
-  @flow
-  *createLedger(name: string, password: string, bip44HDPath: BIP44HDPath) {
-    this._isLoading = true;
-    try {
-      if (this.mode === "create") {
-        yield this.keyRingStore.createLedgerKey(
-          password,
-          {
-            name,
-          },
-          bip44HDPath
-        );
-      } else {
-        yield this.keyRingStore.addLedgerKey(
-          {
-            name,
-          },
-          bip44HDPath
-        );
-      }
-      this._isFinalized = true;
-    } finally {
-      this._isLoading = false;
-    }
-  }
-
   // Create or add the account based on the private key.
   // If the mode is "add", password will be ignored.
   @flow

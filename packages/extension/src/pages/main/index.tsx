@@ -20,19 +20,17 @@ import { BIP44SelectModal } from "./bip44-select-modal";
 import { useIntl } from "react-intl";
 import { useConfirm } from "../../components/confirm";
 import { ChainUpdaterService } from "@keplr-wallet/background";
-import { IBCTransferView } from "./ibc-transfer";
 import { DenomHelper } from "@keplr-wallet/common";
 import { Dec } from "@keplr-wallet/unit";
 import { WalletStatus } from "@keplr-wallet/stores";
 import { VestingInfo } from "./vesting-info";
-import { LedgerAppModal } from "./ledger-app-modal";
 import { useNotification } from "../../components/notification";
 
 export const MainPage: FunctionComponent = observer(() => {
   const history = useHistory();
   const intl = useIntl();
 
-  const { chainStore, accountStore, queriesStore, uiConfigStore } = useStore();
+  const { chainStore, accountStore, queriesStore } = useStore();
 
   const confirm = useConfirm();
 
@@ -159,7 +157,6 @@ export const MainPage: FunctionComponent = observer(() => {
       }
     >
       <BIP44SelectModal />
-      <LedgerAppModal />
       <Card className={classnames(style.card, "shadow")}>
         <CardBody>
           <div className={style.containerAccountInner}>
@@ -182,14 +179,6 @@ export const MainPage: FunctionComponent = observer(() => {
       {hasTokens ? (
         <Card className={classnames(style.card, "shadow")}>
           <CardBody>{<TokensView />}</CardBody>
-        </Card>
-      ) : null}
-      {uiConfigStore.showAdvancedIBCTransfer &&
-      chainStore.current.features?.includes("ibc-transfer") ? (
-        <Card className={classnames(style.card, "shadow")}>
-          <CardBody>
-            <IBCTransferView />
-          </CardBody>
         </Card>
       ) : null}
     </HeaderLayout>
