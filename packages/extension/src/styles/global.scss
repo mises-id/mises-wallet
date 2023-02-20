@@ -8,22 +8,11 @@ $fa-font-path: "~@fortawesome/fontawesome-free/webfonts";
 @import "../../../../node_modules/@fortawesome/fontawesome-free/scss/brands";
 
 @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800&display=swap");
-@font-face {
-  font-family: Nanum Barun Gothic;
-  src: url(../public/assets/font/NanumBarunGothic.ttf);
-  font-weight: normal;
-}
-@font-face {
-  font-family: Nanum Barun Gothic;
-  src: url(../public/assets/font/NanumBarunGothicLight.ttf);
-  font-weight: 300;
-}
-@font-face {
-  font-family: Nanum Barun Gothic;
-  src: url(../public/assets/font/NanumBarunGothicBold.ttf);
-  font-weight: bold;
-}
-
+// @font-face {
+//   font-family: Nanum Barun Gothic;
+//   src: url(../public/assets/font/NanumBarunGothic.ttf);
+//   font-weight: normal;
+// }
 $font-family-base: "Nunito Sans", sans-serif;
 $body-color: black;
 @import "../../../../node_modules/argon-dashboard-react/src/assets/scss/argon-dashboard-react";
@@ -54,7 +43,7 @@ body {
     word-break: keep-all;
     word-wrap: break-word;
 
-    font-family: "Nanum Barun Gothic", sans-serif !important;
+    // font-family: "Nanum Barun Gothic", sans-serif !important;
   }
 }
 

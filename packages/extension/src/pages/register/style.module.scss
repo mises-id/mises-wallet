@@ -124,9 +124,9 @@ html[data-register-page="true"] {
     &::placeholder {
       font-family: "Nunito Sans", sans-serif;
 
-      body[data-lang="ko"] & {
-        font-family: "Nanum Barun Gothic", sans-serif !important;
-      }
+      // body[data-lang="ko"] & {
+      //   font-family: "Nanum Barun Gothic", sans-serif !important;
+      // }
     }
   }
 

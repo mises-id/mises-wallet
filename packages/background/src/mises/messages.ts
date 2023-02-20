@@ -569,6 +569,10 @@ export class OpenWalletMsg extends Message<void> {
     super();
   }
 
+  approveExternal(): boolean {
+    return true;
+  }
+
   validateBasic(): void {
     //noop
   }

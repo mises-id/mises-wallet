@@ -102,21 +102,7 @@ export const RegisterPage: FunctionComponent = observer(() => {
             src={require("../../public/assets/mises.png")}
             alt="logo"
           />
-          {/* <img
-            className={style.brandText}
-            src={require("../../public/assets/brand-text-fit-logo-height.png")}
-            alt="logo"
-          /> */}
         </div>
-        {/* {registerConfig.isIntro ? (
-          <div className={style.introBrandSubTextContainer}>
-            <img
-              className={style.introBrandSubText}
-              src={require("../../public/assets/brand-sub-text.png")}
-              alt="The Interchain Wallet"
-            />
-          </div>
-        ) : null} */}
       </div>
       {registerConfig.render()}
       {registerConfig.isFinalized ? <WelcomePage /> : null}

@@ -99,6 +99,7 @@ export type IndexTx = {
 export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
+  keepAlivePort: browser.runtime.Port | null = null;
 
   constructor(protected readonly kvStore: KVStore) {}
   data: any = {};
@@ -155,6 +156,8 @@ export class MisesService {
     const userInfo = await this.misesUserInfo();
 
     this.storeUserInfo(userInfo);
+
+    this.initKeepAlive();
 
     browser.storage.local.set({
       setAccount: true,
@@ -216,6 +219,7 @@ export class MisesService {
 
     this.activeUser = undefined as any;
 
+    this.disconnectKeepAlive();
     // this.setToMisesPrivate(defaultUserInfo);
   }
 
@@ -827,6 +831,41 @@ export class MisesService {
   }
 
   openWallet() {
-    // noop
+    browser.tabs.create({
+      url: browser.runtime.getURL("popup.html"),
+    });
+  }
+
+  handleMessage(msg: any) {
+    console.log("handleMessage" + msg);
+  }
+
+  handleDisconnect(msg: any) {
+    console.log("handleDisconnect" + msg);
+    this.keepAlivePort?.onMessage.removeListener(this.handleMessage);
+    this.keepAlivePort?.onDisconnect.removeListener(this.handleDisconnect);
+    this.keepAlivePort = null;
+  }
+
+  initKeepAlive() {
+    console.log("connectNative");
+    if (this.keepAlivePort) {
+      return;
+    }
+    this.keepAlivePort = browser.runtime.connectNative("site.mises.browser");
+
+    this.keepAlivePort.onMessage.addListener(this.handleMessage);
+
+    this.keepAlivePort.onDisconnect.addListener(this.handleDisconnect);
+
+    this.keepAlivePort.postMessage({ text: "keep-alive service worker" });
+  }
+
+  disconnectKeepAlive() {
+    if (this.keepAlivePort) {
+      console.log("disconnectKeepAlive");
+      this.keepAlivePort?.disconnect();
+      // this.handleDisconnect({});
+    }
   }
 }
