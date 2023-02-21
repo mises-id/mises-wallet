@@ -19,13 +19,18 @@ const storageKey = {
   DomainRisk: "v3_domain_risk_",
 };
 
+const userAction = {
+  Ignore: "IGNOR",
+  Block: "BLOCK",
+};
+
 const isShouldVerifyStateKey = "isShouldVerify";
+const dangerVerifyContractLevel = "danger";
 
 // const TypeBackgroundResponse = "mises-background-response";
 
 export class MisesSafeService {
   isShouldVerify: boolean = true;
-  domainWhiteList: string[] = [];
   domainWhiteListMap: Map<string, string> = new Map();
 
   constructor(protected readonly kvStore: KVStore) {
@@ -39,7 +44,6 @@ export class MisesSafeService {
     misesRequest({
       url: "https://web3.mises.site/website/whitesites.json",
     }).then((res) => {
-      this.domainWhiteList = res;
       res.forEach((v: string) => this.domainWhiteListMap.set(v, "1"));
     });
   }
@@ -81,7 +85,7 @@ export class MisesSafeService {
       case listenMethods.mVerifyDomain:
         return this.apiVerifyDomain(res.params.params.domain);
       case listenMethods.mVerifyContract:
-        return this.apiVerifyContract(
+        return this.verifyContract(
           res.params.params.contractAddress,
           res.params.params.domain
         );
@@ -114,16 +118,74 @@ export class MisesSafeService {
     return this.domainWhiteListMap.has(domain);
   }
 
-  async apiVerifyContract(contractAddress: string, domain: string) {
-    if (this.isDomainWhitelisted(domain)) {
-      console.log("white list domain", domain);
-      const safVerifyContractResult = {
+  async verifyContract(contractAddress: string, domain: string) {
+    //is ignore
+    if (await this.isIgnoreContract(contractAddress)) {
+      const verifyContractResult = {
         address: contractAddress,
         trust_percentage: 100,
         level: "safe",
+        tag: "ignore",
       };
-      return safVerifyContractResult;
+      return verifyContractResult;
     }
+    const verifyContractResult = await this.apiVerifyContract(
+      contractAddress,
+      domain
+    );
+    //is should alert user
+    if (
+      verifyContractResult &&
+      verifyContractResult.level === dangerVerifyContractLevel
+    ) {
+      const userDecision = await this.notifyPhishingDetected(contractAddress);
+      console.log("notifyPhishingDetected result: ", userDecision);
+      if (userDecision === userAction.Ignore) {
+        this.setIgnoreContract(contractAddress);
+      } else if (userDecision === userAction.Block) {
+        //close the site
+        chrome.tabs.query({ active: true }, function (tabs) {
+          if (tabs.length > 0) {
+            chrome.tabs.remove(tabs[0].id);
+          }
+        });
+      }
+    }
+    return verifyContractResult;
+  }
+
+  setIgnoreContract(contractAddress: string) {
+    this.kvStore.set(this.getContractCacheKey(contractAddress), "1");
+  }
+
+  async isIgnoreContract(contractAddress: string) {
+    return await this.kvStore.get(contractAddress);
+  }
+
+  notifyPhishingDetected(address: string): Promise<string> {
+    return new Promise((resolve) => {
+      if (
+        (browser as any).misesPrivate &&
+        (browser as any).misesPrivate.notifyPhishingDetected
+      ) {
+        (browser as any).misesPrivate.notifyPhishingDetected(address, resolve);
+        return;
+      }
+      resolve("mises");
+    });
+  }
+
+  async apiVerifyContract(contractAddress: string, domain: string) {
+    if (this.isDomainWhitelisted(domain)) {
+      const safeVerifyContractResult = {
+        address: contractAddress,
+        trust_percentage: 100,
+        level: "safe",
+        tag: "white",
+      };
+      return safeVerifyContractResult;
+    }
+    //cache
     const result = await this.kvStore.get(contractAddress);
     if (result) {
       return result;
@@ -135,7 +197,6 @@ export class MisesSafeService {
         domain: domain,
       },
     });
-
     this.kvStore.set(contractAddress, res);
     return res;
   }
