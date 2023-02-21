@@ -145,8 +145,9 @@ export class MisesSafeService {
       } else if (userDecision === userAction.Block) {
         //close the site
         chrome.tabs.query({ active: true }, function (tabs) {
-          if (tabs.length > 0) {
-            chrome.tabs.remove(tabs[0].id);
+          if (tabs.length > 0 && tabs[0].id) {
+            const id = tabs[0].id;
+            chrome.tabs.remove(id, function () {});
           }
         });
       }
