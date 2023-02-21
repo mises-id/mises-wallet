@@ -136,6 +136,7 @@ export class ContentScripts {
   }
 
   initWeb3Proxy() {
+    console.log("initWeb3Proxy");
     // const that = this;
     // 初始化代理
     const handler = {
@@ -148,10 +149,10 @@ export class ContentScripts {
           constList !== undefined ? constList.method : "unKonwn";
         //is should verifying domain
         if (this.isShouldVerifyDomain()) {
-          await this.verifyDomain();
+          this.verifyDomain();
         }
         //is should show domain alert
-        if (this.isShouldShowDomainAlert()) {
+        /* if (this.isShouldShowDomainAlert()) {
           const domainAlertType =
             methodName === "eth_requestAccounts"
               ? "domainAlert"
@@ -159,15 +160,15 @@ export class ContentScripts {
 
           this.showDomainAlert(domainAlertType);
           //if request eth_requestAccounts wait verify result
-          const decisionData: any = await proxyClient.listenUserDecision();
+          const decisionData: any = proxyClient.listenUserDecision();
           this.afterAlertDecision("domain", decisionData.value);
 
-          if (decisionData.value === "continue") {
+           if (decisionData.value === "continue") {
             //cache
             return target(...argumentsList);
           }
-          return null;
-        }
+          return null; 
+        } */
         //is should verify contract address if domain not in white list to verifying contract address
         if (this.isShouldVerifyContract() && isNotable) {
           let contractAddress, assetValue;
@@ -181,11 +182,12 @@ export class ContentScripts {
             contractAddress = constList.params[0].to;
             assetValue = "Token";
           }
-          const verifyContractResult: any = await proxyClient.verifyContract(
+          const verifyContractResult: any = proxyClient.verifyContract(
             contractAddress,
             this.domainInfo.hostname
           );
           console.log("verifyContractResult :>>", verifyContractResult);
+          return target(...argumentsList);
           //is should show contract address risking alert
           if (
             this.isShouldShowContractAlert(
@@ -228,15 +230,15 @@ export class ContentScripts {
         //window.ethereum.send = proxy1;
         //window.ethereum.sendAsync = proxy1;
         //window.ethereum.enable = proxy1;
-        // console.log("Find ethereum");
+        console.log("Find ethereum");
         clearInterval(proxyInterval);
       } else if (typeof window.web3 !== "undefined") {
         const proxy2 = new Proxy(window.web3.currentProvider, handler);
         window.web3.currentProvider = proxy2;
-        // console.log("Find web3");
+        console.log("Find web3");
         clearInterval(proxyInterval);
       } else {
-        // proxyClient.consoleLog("Did not find ethereum or web3");
+        console.log("Did not find ethereum or web3");
       }
     }
     setTimeout(() => {

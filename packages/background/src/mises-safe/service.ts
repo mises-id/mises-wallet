@@ -19,19 +19,6 @@ const storageKey = {
   DomainRisk: "v3_domain_risk_",
 };
 
-// const defaultVerifyDomainResult = {
-//   domain_name: "",
-//   type_string: "white",
-//   origin: "",
-// };
-
-// const defaultVerifyContractResult = {
-//   address: "",
-//   trust_percentage: 100,
-//   is_project_verified: false,
-//   level: "safe",
-// };
-
 const isShouldVerifyStateKey = "isShouldVerify";
 
 // const TypeBackgroundResponse = "mises-background-response";
@@ -39,8 +26,10 @@ const isShouldVerifyStateKey = "isShouldVerify";
 export class MisesSafeService {
   isShouldVerify: boolean = true;
   domainWhiteList: string[] = [];
+  domainWhiteListMap: Map<string, string> = new Map();
 
   constructor(protected readonly kvStore: KVStore) {
+    console.log("MisesSafeService init");
     this.localShouldVerify();
     this.getDomainwhiteList();
   }
@@ -51,6 +40,7 @@ export class MisesSafeService {
       url: "https://web3.mises.site/website/whitesites.json",
     }).then((res) => {
       this.domainWhiteList = res;
+      res.forEach((v: string) => this.domainWhiteListMap.set(v, "1"));
     });
   }
 
@@ -120,11 +110,12 @@ export class MisesSafeService {
     return res;
   }
 
+  isDomainWhitelisted(domain: string) {
+    return this.domainWhiteListMap.has(domain);
+  }
+
   async apiVerifyContract(contractAddress: string, domain: string) {
-    if (
-      this.domainWhiteList.length > 0 &&
-      this.domainWhiteList.includes(domain)
-    ) {
+    if (this.isDomainWhitelisted(domain)) {
       console.log("white list domain", domain);
       const safVerifyContractResult = {
         address: contractAddress,
