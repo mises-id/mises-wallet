@@ -30,27 +30,22 @@
     "misesPrivate",
     "nativeMessaging"
   ],
-  "host_permissions": [
-    "file://*/*",
-    "http://*/*",
-    "https://*/*",
-    "*://api.*.mises.site/*"
-  ],
+  "host_permissions": ["file://*/*", "http://*/*", "https://*/*"],
   "content_scripts": [
     {
       "matches": ["file://*/*", "http://*/*", "https://*/*"],
-      "js": [
-        "browser-polyfill.js",
-        "contentScripts.bundle.js",
-        "safeInjectedScript.bundle.js"
-      ],
+      "js": ["browser-polyfill.js", "contentScripts.bundle.js"],
       "run_at": "document_start",
       "all_frames": true
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["injectedScript.bundle.js", "assets/logo-256.png"],
+      "resources": [
+        "injectedScript.bundle.js",
+        "assets/logo-256.png",
+        "safeInjectedScript.bundle.js"
+      ],
       "matches": ["http://*/*", "https://*/*"]
     }
   ],

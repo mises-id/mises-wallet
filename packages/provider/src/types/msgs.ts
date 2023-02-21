@@ -25,6 +25,10 @@ export class EnableAccessMsg extends Message<void> {
     }
   }
 
+  approveExternal(): boolean {
+    return true;
+  }
+
   route(): string {
     return "permission";
   }

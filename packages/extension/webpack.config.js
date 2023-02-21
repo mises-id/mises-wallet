@@ -9,6 +9,7 @@ const WriteFilePlugin = require("write-file-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 const fs = require("fs");
+const WebpackCleanConsolePlugin = require("webpack-clean-console-plugin");
 
 const isEnvDevelopment = process.env.NODE_ENV !== "production";
 const isEnvAnalyzer = process.env.ANALYZER === "true";
@@ -98,7 +99,6 @@ const extensionConfig = (env, args) => {
     watch: isEnvDevelopment,
     entry: {
       popup: ["./src/index.tsx"],
-      // blocklist: ["./src/pages/blocklist/index.tsx"],
       background: ["./src/background/background.ts"],
       contentScripts: ["./src/content-scripts/content-scripts.ts"],
       injectedScript: ["./src/content-scripts/inject/injected-script.ts"],
@@ -130,6 +130,7 @@ const extensionConfig = (env, args) => {
     plugins: [
       // Remove all and write anyway
       // TODO: Optimizing build process
+      new WebpackCleanConsolePlugin({ include: ["log", "info"] }),
       new CleanWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin(),
       new CopyWebpackPlugin(
@@ -148,23 +149,8 @@ const extensionConfig = (env, args) => {
       new HtmlWebpackPlugin({
         template: "./src/index.html",
         filename: "popup.html",
-        excludeChunks: [
-          // "blocklist",
-          "background",
-          "contentScripts",
-          "injectedScript",
-        ],
+        excludeChunks: ["background", "contentScripts", "injectedScript"],
       }),
-      // new HtmlWebpackPlugin({
-      //   template: "./src/index.html",
-      //   filename: "blocklist.html",
-      //   excludeChunks: [
-      //     "popup",
-      //     "background",
-      //     "contentScripts",
-      //     "injectedScript",
-      //   ],
-      // }),
       new WriteFilePlugin(),
       new webpack.EnvironmentPlugin([
         "NODE_ENV",
