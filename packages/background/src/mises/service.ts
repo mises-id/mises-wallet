@@ -841,10 +841,12 @@ export class MisesService {
   }
 
   handleDisconnect(msg: any) {
-    console.log("handleDisconnect" + msg);
-    this.keepAlivePort?.onMessage.removeListener(this.handleMessage);
-    this.keepAlivePort?.onDisconnect.removeListener(this.handleDisconnect);
-    this.keepAlivePort = null;
+    if (this.keepAlivePort) {
+      console.log("handleDisconnect" + msg);
+      this.keepAlivePort.onMessage.removeListener(this.handleMessage);
+      this.keepAlivePort.onDisconnect.removeListener(this.handleDisconnect);
+      this.keepAlivePort = null;
+    }
   }
 
   initKeepAlive() {
@@ -865,7 +867,7 @@ export class MisesService {
     if (this.keepAlivePort) {
       console.log("disconnectKeepAlive");
       this.keepAlivePort?.disconnect();
-      // this.handleDisconnect({});
+      this.handleDisconnect({});
     }
   }
 }
