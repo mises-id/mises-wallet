@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
 import { SignModal } from "../../modals/sign";
-import { LedgerGranterModal } from "../../modals/ledger";
 import { WalletConnectApprovalModal } from "../../modals/wallet-connect-approval";
 import { WCMessageRequester } from "../../stores/wallet-connect/msg-requester";
 import { WCGoBackToBrowserModal } from "../../modals/wc-go-back-to-browser";
@@ -14,7 +13,6 @@ export const InteractionModalsProivder: FunctionComponent = observer(
   ({ children }) => {
     const {
       keyRingStore,
-      ledgerInitStore,
       permissionStore,
       signInteractionStore,
       walletConnectStore,
@@ -73,12 +71,6 @@ export const InteractionModalsProivder: FunctionComponent = observer(
             }}
           />
         ) : null*/}
-        {ledgerInitStore.isInitNeeded ? (
-          <LedgerGranterModal
-            isOpen={true}
-            close={() => ledgerInitStore.abortAll()}
-          />
-        ) : null}
         {permissionStore.waitingDatas.map((data) => {
           if (data.data.origins.length === 1) {
             if (

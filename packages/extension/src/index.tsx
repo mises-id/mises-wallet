@@ -12,7 +12,6 @@ import { RegisterPage } from "./pages/register";
 import { MainPage } from "./pages/main";
 import { LockPage } from "./pages/lock";
 import { SendPage } from "./pages/send";
-import { IBCTransferPage } from "./pages/ibc-transfer";
 import { SetKeyRingPage } from "./pages/setting/keyring";
 
 import { Banner } from "./components/banner";
@@ -49,7 +48,6 @@ import { CreateNamePage } from "./pages/setting/keyring/createAccount";
 import { ImportAccountPage } from "./pages/setting/keyring/importAccount";
 import { ClearPage } from "./pages/setting/clear";
 import { ExportPage } from "./pages/setting/export";
-import { LedgerGrantPage } from "./pages/ledger";
 import { AddTokenPage } from "./pages/setting/token/add";
 import { ManageTokenPage } from "./pages/setting/token/manage";
 
@@ -83,10 +81,6 @@ require("./public/assets/logo-256.png");
 require("./public/assets/icon/icon-16.png");
 require("./public/assets/icon/icon-48.png");
 require("./public/assets/icon/icon-128.png");
-require("./public/assets/logo-beta-256.png");
-require("./public/assets/icon/icon-beta-16.png");
-require("./public/assets/icon/icon-beta-48.png");
-require("./public/assets/icon/icon-beta-128.png");
 
 configure({
   enforceActions: "always", // Make mobx to strict mode.
@@ -160,9 +154,7 @@ const RenderRoutes = () => {
       />
       <Route exact path="/register" component={RegisterPage} />
       <Route exact path="/send" component={SendPage} />
-      <Route exact path="/ibc-transfer" component={IBCTransferPage} />
       <Route exact path="/setting" component={SettingPage} />
-      <Route exact path="/ledger-grant" component={LedgerGrantPage} />
       <Route exact path="/setting/language" component={SettingLanguagePage} />
       <Route exact path="/setting/fiat" component={SettingFiatPage} />
       <Route

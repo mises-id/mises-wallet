@@ -14,8 +14,6 @@ import {
   AddPrivateKeyMsg,
   GetMultiKeyStoreInfoMsg,
   ChangeKeyRingMsg,
-  CreateLedgerKeyMsg,
-  AddLedgerKeyMsg,
   GetIsKeyStoreCoinTypeSetMsg,
   SetKeyStoreCoinTypeMsg,
   RestoreKeyRingMsg,
@@ -23,7 +21,6 @@ import {
   ExportKeyRingDatasMsg,
   RequestVerifyADR36AminoSignDoc,
   RequestSignEIP712CosmosTxMsg_v0,
-  InitNonDefaultLedgerAppMsg,
   IsUnlockMsg,
   AddAccountMsg,
   MigratorKeyRingMsg,
@@ -42,8 +39,6 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(AddMnemonicKeyMsg);
   router.registerMessage(CreatePrivateKeyMsg);
   router.registerMessage(AddPrivateKeyMsg);
-  router.registerMessage(CreateLedgerKeyMsg);
-  router.registerMessage(AddLedgerKeyMsg);
   router.registerMessage(LockKeyRingMsg);
   router.registerMessage(UnlockKeyRingMsg);
   router.registerMessage(IsUnlockMsg);
@@ -58,7 +53,6 @@ export function init(router: Router, service: KeyRingService): void {
   router.registerMessage(CheckPasswordMsg);
   router.registerMessage(ExportKeyRingDatasMsg);
   router.registerMessage(RequestSignEIP712CosmosTxMsg_v0);
-  router.registerMessage(InitNonDefaultLedgerAppMsg);
   router.registerMessage(AddAccountMsg);
   router.registerMessage(MigratorKeyRingMsg);
   router.registerMessage(RestoreKeyStoreMsg);

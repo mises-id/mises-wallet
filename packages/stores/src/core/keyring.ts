@@ -1,11 +1,9 @@
 import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
 import {
-  AddLedgerKeyMsg,
   AddMnemonicKeyMsg,
   AddPrivateKeyMsg,
   BIP44HDPath,
   ChangeKeyRingMsg,
-  CreateLedgerKeyMsg,
   CreateMnemonicKeyMsg,
   CreatePrivateKeyMsg,
   DeleteKeyRingMsg,
@@ -202,21 +200,6 @@ export class KeyRingStore {
   }
 
   @flow
-  *createLedgerKey(
-    password: string,
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath,
-    kdf: "scrypt" | "sha256" | "pbkdf2" = this.defaultKdf
-  ) {
-    const msg = new CreateLedgerKeyMsg(kdf, password, meta, bip44HDPath);
-    const result = yield* toGenerator(
-      this.requester.sendMessage(BACKGROUND_PORT, msg)
-    );
-    this.status = result.status;
-    this.multiKeyStoreInfo = result.multiKeyStoreInfo;
-  }
-
-  @flow
   *addMnemonicKey(
     mnemonic: string,
     meta: Record<string, string>,
@@ -236,18 +219,6 @@ export class KeyRingStore {
     kdf: "scrypt" | "sha256" | "pbkdf2" = this.defaultKdf
   ) {
     const msg = new AddPrivateKeyMsg(kdf, privateKey, meta);
-    this.multiKeyStoreInfo = (yield* toGenerator(
-      this.requester.sendMessage(BACKGROUND_PORT, msg)
-    )).multiKeyStoreInfo;
-  }
-
-  @flow
-  *addLedgerKey(
-    meta: Record<string, string>,
-    bip44HDPath: BIP44HDPath,
-    kdf: "scrypt" | "sha256" | "pbkdf2" = this.defaultKdf
-  ) {
-    const msg = new AddLedgerKeyMsg(kdf, meta, bip44HDPath);
     this.multiKeyStoreInfo = (yield* toGenerator(
       this.requester.sendMessage(BACKGROUND_PORT, msg)
     )).multiKeyStoreInfo;
