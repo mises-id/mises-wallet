@@ -9,7 +9,7 @@ const WriteFilePlugin = require("write-file-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 const fs = require("fs");
-const WebpackCleanConsolePlugin = require("webpack-clean-console-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 const isEnvDevelopment = process.env.NODE_ENV !== "production";
 const isEnvAnalyzer = process.env.ANALYZER === "true";
@@ -90,6 +90,18 @@ const fileRule = {
 };
 
 const extensionConfig = (env, args) => {
+  const minimizer = isEnvDevelopment
+    ? []
+    : [
+        new UglifyJsPlugin({
+          uglifyOptions: {
+            compress: {
+              drop_console: true,
+            },
+          },
+        }),
+      ];
+
   return {
     name: "extension",
     mode: isEnvDevelopment ? "development" : "production",
@@ -119,6 +131,7 @@ const extensionConfig = (env, args) => {
           },
         },
       },
+      minimizer,
     },
     resolve: {
       ...commonResolve("src/public/assets"),
@@ -130,7 +143,6 @@ const extensionConfig = (env, args) => {
     plugins: [
       // Remove all and write anyway
       // TODO: Optimizing build process
-      new WebpackCleanConsolePlugin({ include: ["log", "info"] }),
       new CleanWebpackPlugin(),
       new ForkTsCheckerWebpackPlugin(),
       new CopyWebpackPlugin(

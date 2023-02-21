@@ -109,6 +109,6 @@
     "webpack-cli": "^3.3.7",
     "webpack-dev-server": "^3.8.2",
     "write-file-webpack-plugin": "^4.5.1",
-    "webpack-clean-console-plugin": "^0.0.7"
+    "uglifyjs-webpack-plugin": "^2.2.0"
   }
 }
