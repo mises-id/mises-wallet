@@ -26,7 +26,6 @@ injectedScript.src = browser.runtime.getURL("injectedScript.bundle.js");
 injectedScript.type = "text/javascript";
 container.insertBefore(injectedScript, container.children[0]);
 injectedScript.remove();
-console.log("cg");
 document.addEventListener("DOMContentLoaded", () => {
   initPostMsgClient();
   const body = document.body;
@@ -65,13 +64,10 @@ export class VerifyDomainMsg extends Message<any> {
     return VerifyDomainMsg.type();
   }
 }
-
 // mises-safe
 
 const postMsg = (id: any, res: unknown) => {
   const targetOrigin = window.location.origin;
-  // const resp = JSON.parse(JSON.stringify(res));
-  // const resultData = res as any;
   const contentToProxyMessage = {
     type: "mises-safe-proxy-request-response",
     id,
@@ -107,10 +103,9 @@ const initPostMsgClient = async () => {
       BACKGROUND_PORT,
       new VerifyDomainMsg(e.data)
     );
-    // // const res = await contentClient.sendMessage(new ChromeMessageRequest('mises-content-request', e.data));
-    // // post msg back to proxyClient
+    //post msg back to proxyClient
     console.log("background start sending message to :>>", res);
-    // //this.postMsg(res);
+    //this.postMsg(res);
     postMsg(e.data.id, res);
   });
 };

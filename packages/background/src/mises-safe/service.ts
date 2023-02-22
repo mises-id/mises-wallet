@@ -19,13 +19,16 @@ const storageKey = {
   DomainRisk: "v3_domain_risk_",
 };
 
+const contractLevel = {
+  Safe: "safe",
+  Danger: "danger",
+};
 const userAction = {
   Ignore: "IGNOR",
   Block: "BLOCK",
 };
 
 const isShouldVerifyStateKey = "isShouldVerify";
-const dangerVerifyContractLevel = "danger";
 
 // const TypeBackgroundResponse = "mises-background-response";
 
@@ -44,7 +47,14 @@ export class MisesSafeService {
     misesRequest({
       url: "https://web3.mises.site/website/whitesites.json",
     }).then((res) => {
-      res.forEach((v: string) => this.domainWhiteListMap.set(v, "1"));
+      if (res) {
+        res.forEach((v: string) => {
+          const domain = this.parseDomainUntilSecondLevel(v);
+          if (v != "") {
+            this.domainWhiteListMap.set(domain, "1");
+          }
+        });
+      }
     });
   }
 
@@ -67,6 +77,36 @@ export class MisesSafeService {
     this.save();
   }
 
+  parseDomainUntilSecondLevel(param: string): string {
+    let domain = param;
+
+    if (domain.match(/^[a-zA-Z0-9-]+:\/\/.+$/)) {
+      domain = domain.replace(/^[a-zA-Z0-9-]+:\/\//, "");
+    }
+    const slash = domain.indexOf("/");
+    if (slash >= 0) {
+      domain = domain.slice(0, slash);
+    }
+    const qMark = domain.indexOf("?");
+    if (qMark >= 0) {
+      domain = domain.slice(0, qMark);
+    }
+    const split = domain
+      .split(".")
+      .map((str) => str.trim())
+      .filter((str) => str.length > 0);
+
+    if (split.length < 2) {
+      return "";
+    }
+    const i = split[split.length - 1].indexOf(":");
+    if (i >= 0) {
+      split[split.length - 1] = split[split.length - 1].slice(0, i);
+    }
+
+    return split[split.length - 2] + "." + split[split.length - 1];
+  }
+
   save() {
     this.kvStore.set(isShouldVerifyStateKey, this.isShouldVerify);
   }
@@ -76,8 +116,6 @@ export class MisesSafeService {
       console.log("disable Verify");
       return false;
     }
-    // backgroundClient.listen("mises-content-request", (res: { params: { method: any; params: any; }; }, sendResponse: any) => {
-    // console.log("backgroud received message :>>", res);
     if (res?.params && typeof res.params.method === "undefined") {
       return;
     }
@@ -95,9 +133,11 @@ export class MisesSafeService {
   getDomainCacheKey(domain: string) {
     return storageKey.DomainRisk + domain.replace(".", "-");
   }
+
   getContractCacheKey(contractAddress: string) {
     return storageKey.ContractTrust + contractAddress.replace(".", "-");
   }
+
   async apiVerifyDomain(domain: string) {
     /*  const result = await this.kvStore.get(domain);
     if (result) {
@@ -115,16 +155,19 @@ export class MisesSafeService {
   }
 
   isDomainWhitelisted(domain: string) {
-    return this.domainWhiteListMap.has(domain);
+    domain = this.parseDomainUntilSecondLevel(domain);
+    return domain !== "" && this.domainWhiteListMap.has(domain);
   }
 
   async verifyContract(contractAddress: string, domain: string) {
     //is ignore
-    if (await this.isIgnoreContract(contractAddress)) {
+    const isIgnore = await this.isIgnoreContract(contractAddress);
+    console.log("verifyContract ignore: ", isIgnore !== undefined);
+    if (isIgnore) {
       const verifyContractResult = {
         address: contractAddress,
         trust_percentage: 100,
-        level: "safe",
+        level: contractLevel.Safe,
         tag: "ignore",
       };
       return verifyContractResult;
@@ -133,23 +176,17 @@ export class MisesSafeService {
       contractAddress,
       domain
     );
+    console.log("verifyContractResult: ", verifyContractResult);
     //is should alert user
     if (
       verifyContractResult &&
-      verifyContractResult.level === dangerVerifyContractLevel
+      verifyContractResult.level === contractLevel.Danger
     ) {
+      console.log("notifyPhishingDetected start: ", contractAddress);
       const userDecision = await this.notifyPhishingDetected(contractAddress);
       console.log("notifyPhishingDetected result: ", userDecision);
       if (userDecision === userAction.Ignore) {
         this.setIgnoreContract(contractAddress);
-      } else if (userDecision === userAction.Block) {
-        //close the site
-        chrome.tabs.query({ active: true }, function (tabs) {
-          if (tabs.length > 0 && tabs[0].id) {
-            const id = tabs[0].id;
-            chrome.tabs.remove(id, function () {});
-          }
-        });
       }
     }
     return verifyContractResult;
@@ -181,7 +218,7 @@ export class MisesSafeService {
       const safeVerifyContractResult = {
         address: contractAddress,
         trust_percentage: 100,
-        level: "safe",
+        level: contractLevel.Safe,
         tag: "white",
       };
       return safeVerifyContractResult;
@@ -198,7 +235,9 @@ export class MisesSafeService {
         domain: domain,
       },
     });
-    this.kvStore.set(contractAddress, res);
+    if (res && res.level !== contractLevel.Danger) {
+      this.kvStore.set(contractAddress, res);
+    }
     return res;
   }
 }
