@@ -15,7 +15,7 @@ export class BalanceUMISMsg extends Message<Coin> {
     return "balance-umis";
   }
 
-  constructor() {
+  constructor(public readonly isCache: boolean) {
     super();
   }
 

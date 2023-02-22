@@ -44,7 +44,7 @@ export class MisesSafeService {
     misesRequest({
       url: "https://web3.mises.site/website/whitesites.json",
     }).then((res) => {
-      res.forEach((v: string) => this.domainWhiteListMap.set(v, "1"));
+      res?.forEach((v: string) => this.domainWhiteListMap.set(v, "1"));
     });
   }
 

@@ -32,10 +32,10 @@ export class MisesStore {
     this.initAutoLockAccountDuration();
   }
 
-  async getBalanceUMIS() {
+  async getBalanceUMIS(isCache?: boolean) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new BalanceUMISMsg()
+      new BalanceUMISMsg(isCache)
     );
   }
 

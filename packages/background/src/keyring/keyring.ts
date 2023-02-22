@@ -263,7 +263,7 @@ export class KeyRing {
 
     const privKey = this.loadPrivKey(60);
     const ethWallet = new Wallet(privKey.toBytes());
-    await this.misesService.initQueryClient();
+    // this.misesService.initQueryClient();
     this.misesService.activateUser(ethWallet.privateKey);
 
     await this.save();
@@ -358,7 +358,7 @@ export class KeyRing {
 
     const privKey = this.loadPrivKey(60);
     const ethWallet = new Wallet(privKey.toBytes());
-    await this.misesService.initQueryClient();
+    // this.misesService.initQueryClient();
     this.misesService.activateUser(ethWallet.privateKey);
   }
 

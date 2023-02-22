@@ -90,8 +90,11 @@ export const getHandler: (service: MisesService) => Handler = (service) => {
 
 const handlerBalanceUMISMsg: (
   service: MisesService
-) => InternalHandler<BalanceUMISMsg> = (service: MisesService) => () => {
-  return service.getBalanceUMIS();
+) => InternalHandler<BalanceUMISMsg> = (service: MisesService) => (
+  _: any,
+  msg: { isCache: boolean }
+) => {
+  return service.getBalanceUMIS(msg.isCache);
 };
 
 const handlerMisesChainMsg: (
