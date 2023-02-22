@@ -198,6 +198,9 @@ export const misesRequest = async <D = any, T = any>(
   }
   try {
     const data = await request.request<misesResponse<T>>(config);
+    if (data.code === "ECONNABORTED") {
+      return Promise.reject("ECONNABORTED");
+    }
     return data.data;
   } catch (error) {
     console.log(error, "error");
