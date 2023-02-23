@@ -1,7 +1,4 @@
 // /* global chrome */
-import React from "react";
-import { render } from "react-dom";
-import { Drawer } from "./Drawer";
 import { proxyClient } from "./post-message";
 
 // const dictionary = {
@@ -26,13 +23,6 @@ const domainSafeType = {
   normalDomain: "normal",
 };
 
-const storageKey = {
-  DomainIgnore: "domain_ignore_",
-  ContractIgnore: "contract_ignore_",
-};
-
-const dangerVerifyContractLevel = "danger";
-
 const containerId = "mises-safe-container";
 
 const parseOriginToHostname = (param: string): string => {
@@ -50,7 +40,6 @@ const parseOriginToHostname = (param: string): string => {
   if (qMark >= 0) {
     domain = domain.slice(0, qMark);
   }
-
   const split = domain
     .split(".")
     .map((str) => str.trim())
@@ -59,12 +48,10 @@ const parseOriginToHostname = (param: string): string => {
   if (split.length < 2) {
     throw new Error(`Invalid domain: ${param}`);
   }
-
   const i = split[split.length - 1].indexOf(":");
   if (i >= 0) {
     split[split.length - 1] = split[split.length - 1].slice(0, i);
   }
-
   return split.join(".");
 };
 
@@ -123,18 +110,6 @@ export class ContentScripts {
     document.body.appendChild(this.container);
   }
 
-  showContainer() {
-    const contentStyle =
-      "position: fixed; top: 0; left: 0; display: block; width: 100%; height: 10%; z-index: 9999;";
-    document.getElementById(containerId)?.setAttribute("style", contentStyle);
-  }
-
-  hideContainer() {
-    const contentStyle =
-      "position: fixed; top: 0; left: 0; display: none; width: 100%; height: 10%; z-index: 9999;";
-    document.getElementById(containerId)?.setAttribute("style", contentStyle);
-  }
-
   initWeb3Proxy() {
     console.log("initWeb3Proxy");
     // const that = this;
@@ -144,43 +119,21 @@ export class ContentScripts {
         const constList = [...argumentsList][0];
         console.log("Transaction Method Data :>> ", constList);
         const isNotable = this.isNotableAction(constList).result;
-        const actionName = this.isNotableAction(constList).action;
         const methodName =
           constList !== undefined ? constList.method : "unKonwn";
         //is should verifying domain
         if (this.isShouldVerifyDomain()) {
           this.verifyDomain();
         }
-        //is should show domain alert
-        /* if (this.isShouldShowDomainAlert()) {
-          const domainAlertType =
-            methodName === "eth_requestAccounts"
-              ? "domainAlert"
-              : "domainHandler";
-
-          this.showDomainAlert(domainAlertType);
-          //if request eth_requestAccounts wait verify result
-          const decisionData: any = proxyClient.listenUserDecision();
-          this.afterAlertDecision("domain", decisionData.value);
-
-           if (decisionData.value === "continue") {
-            //cache
-            return target(...argumentsList);
-          }
-          return null; 
-        } */
-        //is should verify contract address if domain not in white list to verifying contract address
         if (this.isShouldVerifyContract() && isNotable) {
-          let contractAddress, assetValue;
+          let contractAddress;
           //TODO check
           if (methodName === "eth_signTypedData_v4") {
             const v4_sign_params = constList.params[1];
             const v4_sign_data = JSON.parse(v4_sign_params);
             contractAddress = v4_sign_data.domain.verifyingContract;
-            assetValue = "Token";
           } else {
             contractAddress = constList.params[0].to;
-            assetValue = "Token";
           }
           const verifyContractResult: any = proxyClient.verifyContract(
             contractAddress,
@@ -189,34 +142,6 @@ export class ContentScripts {
           console.log("verifyContractResult :>>", verifyContractResult);
           return target(...argumentsList);
           //is should show contract address risking alert
-          if (
-            this.isShouldShowContractAlert(
-              verifyContractResult,
-              contractAddress
-            )
-          ) {
-            const contractAddressTrustLevel = verifyContractResult.level;
-            if (contractAddressTrustLevel === dangerVerifyContractLevel) {
-              this.showContractAlert({
-                type: "contractAlert",
-                contractAddress,
-                actionName,
-                assetValue,
-              });
-              // 监听用户选择
-              //const decisionData = await proxyClient.listenMessage('user_decision');
-              const decisionData: any = await proxyClient.listenUserDecision();
-              if (decisionData.value === "continue") {
-                //set cache
-                localStorage.setItem(
-                  this.getContractCacheKey(contractAddress),
-                  "1"
-                );
-                return target(...argumentsList);
-              }
-              return null;
-            }
-          }
         }
         return target(...argumentsList);
       },
@@ -241,24 +166,10 @@ export class ContentScripts {
         console.log("Did not find ethereum or web3");
       }
     }
+
     setTimeout(() => {
       clearInterval(proxyInterval);
     }, 10000);
-  }
-
-  afterAlertDecision(type: string, decision: string) {
-    if (decision === "continue" && type === "domain") {
-      const key = this.getDomainCacheKey();
-      localStorage.setItem(key, "1");
-    }
-  }
-
-  getDomainCacheKey() {
-    return storageKey.DomainIgnore + this.domainInfo.hostname.replace(".", "-");
-  }
-
-  getContractCacheKey(contractAddress: string) {
-    return storageKey.ContractIgnore + contractAddress.replace(".", "-");
   }
 
   //isNotableAction
@@ -275,16 +186,8 @@ export class ContentScripts {
           } else if (constList.params[0].data === undefined) {
             functionName = "transfer";
           } else {
-            /* const key: dictionaryKeys = constList.params[0].data.substring(
-              0,
-              10
-            );
-            functionName = dictionary[key]; */
           }
           return { result: true, action: functionName };
-          /*  if (notableActionList.includes(functionName)) {
-               return { result: true, action: functionName };
-           } */
         }
         if (constList.method === "eth_signTypedData_v4") {
           return { result: true, action: "sign" };
@@ -301,31 +204,6 @@ export class ContentScripts {
     return this.domainInfo.domainSafeType !== domainSafeType.whiteDomain;
   }
 
-  //isShouldShowDomainAlert
-  isShouldShowDomainAlert() {
-    //ignore
-    const key = this.getDomainCacheKey();
-    const isIgnore = localStorage.getItem(key);
-    const isRiskDomain =
-      this.domainInfo.domainSafeType === domainSafeType.fuzzyDomain ||
-      this.domainInfo.domainSafeType === domainSafeType.blackDomain;
-    return !this.domainInfo.isShowDomainAlert && isRiskDomain && !isIgnore;
-  }
-  //isShouldShowContractAlert
-  isShouldShowContractAlert(
-    verifyContractResult: { code: number; level: string },
-    contractAddress: string
-  ) {
-    //ignore
-    const key = this.getContractCacheKey(contractAddress);
-    const isIgnore = localStorage.getItem(key);
-    console.log("Contract is ignore", isIgnore);
-    return (
-      verifyContractResult &&
-      verifyContractResult.level === dangerVerifyContractLevel &&
-      !isIgnore
-    );
-  }
   //isShouldVerifyDomain
   isShouldVerifyDomain() {
     return false;
@@ -357,67 +235,5 @@ export class ContentScripts {
     } else {
       this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
     }
-  }
-
-  //showContractAlert
-  showContractAlert({
-    type,
-    contractAddress,
-    actionName,
-    assetValue,
-  }: {
-    type: string;
-    contractAddress: string;
-    actionName: string | undefined;
-    assetValue: string;
-  }) {
-    this.renderDrawerAlert({ type, contractAddress, actionName, assetValue });
-  }
-  //showDomainAlert
-  showDomainAlert(type: string) {
-    this.domainInfo.isShowDomainAlert = true;
-    this.renderDrawerAlert({
-      type,
-      domain: this.domainInfo.hostname,
-      suggestedDomain: this.domainInfo.suggestedDomain,
-    });
-  }
-  //renderDrawerAlert
-  renderDrawerAlert({
-    type,
-    contractAddress,
-    actionName,
-    assetValue,
-    domain,
-    suggestedDomain,
-  }: {
-    type: string;
-    actionName?: string;
-    contractAddress?: string;
-    domain?: string;
-    suggestedDomain?: string;
-    assetValue?: string;
-  }) {
-    console.log({
-      type,
-      contractAddress,
-      actionName,
-      assetValue,
-      domain,
-      suggestedDomain,
-    });
-    this.showContainer();
-    render(
-      <Drawer
-        type={type}
-        contractAddress={contractAddress}
-        actionName={actionName}
-        assetValue={assetValue}
-        domain={domain}
-        suggestedDomain={suggestedDomain}
-        onClose={this.hideContainer}
-      />,
-      this.container
-    );
   }
 }
