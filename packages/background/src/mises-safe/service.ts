@@ -161,8 +161,8 @@ export class MisesSafeService {
 
   async verifyContract(contractAddress: string, domain: string) {
     //is ignore
-    const isIgnore = await this.isIgnoreContract(contractAddress);
-    console.log("verifyContract ignore: ", isIgnore !== undefined);
+    const isIgnore = await this.isIgnoreDomain(domain);
+    console.log("verifyContract ignore <<:", isIgnore);
     if (isIgnore) {
       const verifyContractResult = {
         address: contractAddress,
@@ -186,7 +186,8 @@ export class MisesSafeService {
       const userDecision = await this.notifyPhishingDetected(contractAddress);
       console.log("notifyPhishingDetected result: ", userDecision);
       if (userDecision === userAction.Ignore) {
-        this.setIgnoreContract(contractAddress);
+        console.log("notifyPhishingDetected set: ", userDecision);
+        this.setIgnorDomain(domain);
       }
     }
     return verifyContractResult;
@@ -197,7 +198,15 @@ export class MisesSafeService {
   }
 
   async isIgnoreContract(contractAddress: string) {
-    return await this.kvStore.get(contractAddress);
+    return await this.kvStore.get(this.getContractCacheKey(contractAddress));
+  }
+
+  setIgnorDomain(domain: string) {
+    this.kvStore.set(this.getDomainCacheKey(domain), "1");
+  }
+
+  async isIgnoreDomain(domain: string) {
+    return await this.kvStore.get(this.getDomainCacheKey(domain));
   }
 
   notifyPhishingDetected(address: string): Promise<string> {
