@@ -1,4 +1,4 @@
-import encryptor from "browser-passworder";
+import encryptor from "@metamask/browser-passworder";
 
 export type keyringParmas = {
   data: {

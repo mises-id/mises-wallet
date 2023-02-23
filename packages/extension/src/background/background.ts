@@ -13,47 +13,53 @@ import { Buffer } from "buffer/";
 
 import { EmbedChainInfos, PrivilegedOrigins } from "../config";
 
+browser.runtime.onInstalled.addListener(() => {
+  console.log("mises wallet installed");
+});
+
 const router = new ExtensionRouter(ExtensionEnv.produceEnv);
 router.addGuard(ExtensionGuards.checkOriginIsValid);
 router.addGuard(ExtensionGuards.checkMessageIsInternal);
-
-init(
-  router,
-  (prefix: string) => new ExtensionKVStore(prefix),
-  new ContentScriptMessageRequester(),
-  EmbedChainInfos,
-  PrivilegedOrigins,
-  {
-    rng: (array) => {
-      return Promise.resolve(crypto.getRandomValues(array));
-    },
-    scrypt: async (text: string, params: ScryptParams) => {
-      return await scrypt.scrypt(
-        Buffer.from(text),
-        Buffer.from(params.salt, "hex"),
-        params.n,
-        params.r,
-        params.p,
-        params.dklen
-      );
-    },
-  },
-  {
-    create: (params: {
-      iconRelativeUrl?: string;
-      title: string;
-      message: string;
-    }) => {
-      browser.notifications.create({
-        type: "basic",
-        iconUrl: params.iconRelativeUrl
-          ? browser.runtime.getURL(params.iconRelativeUrl)
-          : undefined,
-        title: params.title,
-        message: params.message,
-      });
-    },
-  }
-);
-
 router.listen(BACKGROUND_PORT);
+try {
+  init(
+    router,
+    (prefix: string) => new ExtensionKVStore(prefix),
+    new ContentScriptMessageRequester(),
+    EmbedChainInfos,
+    PrivilegedOrigins,
+    {
+      rng: (array) => {
+        return Promise.resolve(crypto.getRandomValues(array));
+      },
+      scrypt: async (text: string, params: ScryptParams) => {
+        return await scrypt.scrypt(
+          Buffer.from(text),
+          Buffer.from(params.salt, "hex"),
+          params.n,
+          params.r,
+          params.p,
+          params.dklen
+        );
+      },
+    },
+    {
+      create: (params: {
+        iconRelativeUrl?: string;
+        title: string;
+        message: string;
+      }) => {
+        browser.notifications.create({
+          type: "basic",
+          iconUrl: params.iconRelativeUrl
+            ? browser.runtime.getURL(params.iconRelativeUrl)
+            : undefined,
+          title: params.title,
+          message: params.message,
+        });
+      },
+    }
+  );
+} catch (e) {
+  console.log(e);
+}

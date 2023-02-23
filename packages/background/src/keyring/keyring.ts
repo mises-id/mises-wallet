@@ -368,6 +368,7 @@ export class KeyRing {
   }
 
   public async restore() {
+    console.log("keyring restore");
     const keyStore = await this.kvStore.get<KeyStore>(KeyStoreKey);
     if (!keyStore) {
       this.keyStore = null;
@@ -415,6 +416,7 @@ export class KeyRing {
     if (hasLegacyKeyStore) {
       await this.save();
     }
+    console.log("keyring restore done");
     this.loaded = true;
   }
 
