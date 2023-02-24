@@ -53,17 +53,17 @@ export class MisesStore {
     );
   }
 
-  async unbondingDelegations(address: string) {
+  async unbondingDelegations(address: string, isCache?: boolean) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new UnbondingDelegationsMsg(address)
+      new UnbondingDelegationsMsg(address, isCache)
     );
   }
 
-  async delegations(address: string) {
+  async delegations(address: string, isCache?: boolean) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new DelegationsMsg(address)
+      new DelegationsMsg(address, isCache)
     );
   }
 

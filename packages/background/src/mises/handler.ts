@@ -122,18 +122,18 @@ const handlerUnbondingDelegations: (
   service: MisesService
 ) => InternalHandler<UnbondingDelegationsMsg> = (service: MisesService) => (
   _: any,
-  msg: { address: string }
+  msg: { address: string; isCache?: boolean }
 ) => {
-  return service.unbondingDelegations(msg.address);
+  return service.unbondingDelegations(msg.address, msg.isCache);
 };
 
 const handlerDelegations: (
   service: MisesService
 ) => InternalHandler<DelegationsMsg> = (service: MisesService) => (
   _: any,
-  msg: { address: string }
+  msg: { address: string; isCache?: boolean }
 ) => {
-  return service.delegations(msg.address);
+  return service.delegations(msg.address, msg.isCache);
 };
 
 const handlerRewards: (service: MisesService) => InternalHandler<RewardsMsg> = (

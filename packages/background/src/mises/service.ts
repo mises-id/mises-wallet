@@ -450,7 +450,6 @@ export class MisesService {
 
     const balance = await this.activeUser?.getBalanceUMIS();
     const toCoinUMIS = this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
-    console.log(toCoinUMIS, "23213213");
     this.userInfo.balance = toCoinUMIS;
     this.save();
     return toCoinUMIS;
@@ -460,22 +459,29 @@ export class MisesService {
     return this.mises.stargateClient.getChainId();
   }
 
-  async unbondingDelegations(address: string) {
+  async unbondingDelegations(address: string, isCache?: boolean) {
+    // if(isCache){
+    //   return this.userInfo.unbondingDelegations;
+    // }
     try {
       await this.queryClientAwait();
       const queryClient = await this.initQueryClient();
-      console.log("unbondingDelegations>>>>>>", queryClient);
-      if (queryClient !== "await")
-        return queryClient?.staking.delegatorUnbondingDelegations(address);
+      if (queryClient !== "await") {
+        const delegatorUnbondingDelegations = await queryClient?.staking.delegatorUnbondingDelegations(
+          address
+        );
+        // this.userInfo.unbondingDelegations = delegatorUnbondingDelegations;
+        console.log(delegatorUnbondingDelegations, isCache);
+        return delegatorUnbondingDelegations;
+      }
     } catch (error) {}
   }
 
-  async delegations(address: string) {
+  async delegations(address: string, isCache?: boolean) {
     try {
       await this.queryClientAwait();
 
       const queryClient = await this.initQueryClient();
-      console.log("delegations>>>>>>", queryClient);
       if (queryClient !== "await") {
         const delegatorDelegationsResponse = await queryClient?.staking.delegatorDelegations(
           address
@@ -497,7 +503,11 @@ export class MisesService {
             };
           }
         }
-
+        console.log(
+          isCache,
+          delegatorDelegationsResponse,
+          "delegatorDelegationsResponse>>>>>>>"
+        );
         return delegatorDelegationsResponse;
       }
     } catch (error) {}
@@ -508,7 +518,6 @@ export class MisesService {
       await this.queryClientAwait();
 
       const queryClient = await this.initQueryClient();
-      console.log("rewards>>>>>>", queryClient);
       if (queryClient !== "await")
         return queryClient?.distribution.delegationTotalRewards(address);
     } catch (error) {}
@@ -519,7 +528,6 @@ export class MisesService {
       await this.queryClientAwait();
 
       const queryClient = await this.initQueryClient();
-      console.log("authAccounts>>>>>>", queryClient);
 
       if (queryClient !== "await") return queryClient?.auth.account(address);
     } catch (error) {}

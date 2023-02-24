@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 
 import { Dec, DecUtils, CoinPretty } from "@keplr-wallet/unit";
 
@@ -108,7 +108,13 @@ const LazyDoughnut = React.lazy(async () => {
 });
 
 export const AssetStakedChartView: FunctionComponent = observer(() => {
-  const { chainStore, accountStore, queriesStore, priceStore } = useStore();
+  const {
+    chainStore,
+    accountStore,
+    queriesStore,
+    priceStore,
+    misesStore,
+  } = useStore();
 
   const intl = useIntl();
 
@@ -127,7 +133,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
   ).stakable;
 
   const stakable = balanceStakableQuery.balance;
-  const isBalanceCache = balanceStakableQuery.isBalanceCache;
+
   const delegated = queries.cosmos.queryDelegations
     .getQueryBech32Address(accountInfo.bech32Address)
     .total.upperCase(true);
@@ -145,6 +151,33 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
 
   // const totalPrice = priceStore.calculatePrice(total, fiatCurrency);
 
+  const [stakableBalance, setStakableBalance] = useState<CoinPretty>(stakable);
+
+  useEffect(() => {
+    misesStore.getBalanceUMIS(true).then((res) => {
+      const stakableBalanceCache = new CoinPretty(
+        stakedSum.currency,
+        res.amount
+      );
+      setStakableBalance(stakableBalanceCache);
+    });
+
+    misesStore.delegations("", true).then((res) => {
+      console.log(res);
+    });
+
+    // misesStore.unbondingDelegations("", true).then(res=>{
+    //   console.log(res);
+    // })
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    setStakableBalance(stakable);
+
+    // eslint-disable-next-line
+  }, [stakable.toString()]);
+
   // If fiat value is fetched, show the value that is multiplied with amount and fiat value.
   // If not, just show the amount of asset.
   const data: number[] = (() => {
@@ -160,16 +193,16 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
       ];
     } else {
       return [
-        parseFloat(stakable.toDec().toString()),
+        parseFloat(stakableBalance.toDec().toString()),
         parseFloat(stakedSum.toDec().toString()),
       ];
     }
   })();
+
   const tatalBalance = new CoinPretty(
     stakedSum.currency,
     data[0] * 1000000 + data[1] * 1000000
   );
-
   return (
     <React.Fragment>
       <div className={styleAsset.containerChart}>
@@ -177,11 +210,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
           <div className={styleAsset.big}>
             <FormattedMessage id="main.account.chart.total-balance" />
           </div>
-          <div
-            className={classnames(styleAsset.small, {
-              [styleAsset.isBalanceCache]: isBalanceCache,
-            })}
-          >
+          <div className={classnames(styleAsset.small)}>
             {/* {totalPrice
               ? totalPrice.toString()
               : total.shrink(true).trim(true).maxDecimals(6).toString()} */}
@@ -242,13 +271,13 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
                     // There are only two labels (stakable, staked (including unbondings)).
                     if (item.index === 0) {
                       if (!total.toDec().equals(new Dec(0))) {
-                        ratio = stakable
+                        ratio = stakableBalance
                           .toDec()
                           .quo(total.toDec())
                           .mul(DecUtils.getPrecisionDec(2));
                       }
 
-                      return `${stakable
+                      return `${stakableBalance
                         .separator("")
                         .trim(true)
                         .shrink(true)
@@ -293,7 +322,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
               color: "#525f7f",
             }}
           >
-            {stakable.shrink(true).maxDecimals(6).toString()}
+            {stakableBalance.shrink(true).maxDecimals(6).toString()}
           </div>
         </div>
         <div className={styleAsset.legend}>

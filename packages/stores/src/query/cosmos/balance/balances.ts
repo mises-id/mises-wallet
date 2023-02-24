@@ -63,11 +63,6 @@ export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
       this.nativeBalances.response.data.balances
     );
   }
-
-  @computed
-  get isBalanceCache(): boolean {
-    return this.nativeBalances.isCache;
-  }
 }
 
 export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances> {
@@ -78,7 +73,6 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
   protected misesStore: MisesStore;
 
   QueryClient: QueryClient;
-  isCache: boolean = false;
 
   constructor(
     kvStore: KVStore,
@@ -99,7 +93,6 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
     this.bech32Address = bech32Address;
 
     this.misesStore = misesStore;
-    this.fetch(true);
     makeObservable(this);
   }
 
@@ -109,20 +102,25 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
   }
 
   @override
-  *fetch(isCache?: boolean) {
-    console.log(isCache, "isCache");
+  *fetch() {
+    this._isFetching = true;
     this.QueryClient?.fetchQuery(
       "getMisesBalance",
-      () => this.getMisesBalance(isCache),
+      () => this.getMisesBalance(),
       this.fetchConfig
-    ).then((result) => {
-      this.setResponse(result);
-      this.isCache = !!isCache;
-    });
+    )
+      .then((result) => {
+        this._isFetching = false;
+        this.setResponse(result);
+      })
+      .catch((error) => {
+        this._isFetching = false;
+        this.setError(error);
+      });
   }
 
-  async getMisesBalance(isCache?: boolean) {
-    const balance = await this.misesStore?.getBalanceUMIS(isCache);
+  async getMisesBalance() {
+    const balance = await this.misesStore?.getBalanceUMIS();
 
     const result: QueryResponse<Balances> = {
       status: 200,

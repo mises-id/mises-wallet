@@ -25,9 +25,6 @@ export class ObservableQueryCw20Balance extends ObservableCosmwasmContractChainQ
 }
 
 export class ObservableQueryCw20BalanceInner extends ObservableQueryBalanceInner {
-  get isBalanceCache(): boolean {
-    return true;
-  }
   protected readonly queryCw20Balance: ObservableQueryCw20Balance;
 
   constructor(

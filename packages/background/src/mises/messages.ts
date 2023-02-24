@@ -106,7 +106,10 @@ export class UnbondingDelegationsMsg extends Message<any> {
     return "unbonding-delegations";
   }
 
-  constructor(public readonly address: string) {
+  constructor(
+    public readonly address: string,
+    public readonly isCache?: boolean
+  ) {
     super();
   }
 
@@ -132,7 +135,10 @@ export class DelegationsMsg extends Message<any> {
     return "delegations";
   }
 
-  constructor(public readonly address: string) {
+  constructor(
+    public readonly address: string,
+    public readonly isCache?: boolean
+  ) {
     super();
   }
 

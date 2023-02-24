@@ -244,21 +244,30 @@ export class ObservableQueryRewardsInner extends ObservableChainQuery<Rewards> {
     if (!this.bech32Address) {
       return;
     }
+    this._isFetching = true;
     this.QueryClient?.fetchQuery(
       "rewards",
       async () => {
         const res = await this.misesStore.rewards(this.bech32Address);
         if (res && res.total[0])
           res.total[0].amount = Number(res.total[0].amount) / Math.pow(10, 18);
+        return res;
+      },
+      this.fetchConfig
+    )
+      .then((res) => {
+        this._isFetching = false;
         this.setResponse({
           data: res,
           status: 200,
           staled: true,
           timestamp: new Date().getTime(),
         });
-      },
-      this.fetchConfig
-    );
+      })
+      .catch((err) => {
+        this._isFetching = false;
+        this.setError(err);
+      });
   }
 }
 
