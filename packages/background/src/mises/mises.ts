@@ -23,6 +23,7 @@ import {
 
 import { QueryClient as QueryFetchClient } from "react-query";
 import { fetchConfig } from "./service";
+import { HttpClient } from "./http-client";
 export class Mises {
   config: MisesConfig;
 
@@ -78,21 +79,28 @@ export class Mises {
       Tendermint34Client
     ]
   > {
-    const tmClient = await Tendermint34Client.connect(MISES_POINT);
-    return [
-      QueryClient.withExtensions<
-        StakingExtension,
-        DistributionExtension,
-        AuthExtension,
-        TxExtension
-      >(
+    try {
+      const tmClient = await Tendermint34Client.create(
+        new HttpClient(MISES_POINT)
+      );
+      return [
+        QueryClient.withExtensions<
+          StakingExtension,
+          DistributionExtension,
+          AuthExtension,
+          TxExtension
+        >(
+          tmClient,
+          setupStakingExtension,
+          setupDistributionExtension,
+          setupAuthExtension,
+          setupTxExtension
+        ),
         tmClient,
-        setupStakingExtension,
-        setupDistributionExtension,
-        setupAuthExtension,
-        setupTxExtension
-      ),
-      tmClient,
-    ];
+      ];
+    } catch (error) {
+      console.log(error);
+      return Promise.reject(error);
+    }
   }
 }

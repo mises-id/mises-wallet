@@ -165,6 +165,7 @@ export interface misesResponse<T> {
 
 // 重写返回类型
 interface misesRequestConfig<T, R> extends RequestConfig<misesResponse<R>> {
+  isCustomRequest?: any;
   data?: T;
 }
 
@@ -201,7 +202,16 @@ export const misesRequest = async <D = any, T = any>(
     if (data.code === "ECONNABORTED") {
       return Promise.reject("ECONNABORTED");
     }
-    return data.data;
+    let response = data;
+    if (config.isCustomRequest) {
+      const res = (data as unknown) as T;
+      response = {
+        data: res,
+        code: "0",
+        message: "success",
+      };
+    }
+    return response.data;
   } catch (error) {
     console.log(error, "error");
     return Promise.reject(error);
