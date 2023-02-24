@@ -1,5 +1,3 @@
-import encryptor from "browser-passworder";
-
 export type keyringParmas = {
   data: {
     [key: string]: any;
@@ -23,11 +21,13 @@ export class Migrator {
   }
 
   async enCodeValut(keyringStore: { vault: string }, password: string) {
+    const encryptor = require("@metamask/browser-passworder");
+
     const { vault: vaultString } = keyringStore;
-    const vault: keyringParmas[] = await encryptor.decrypt(
+    const vault: keyringParmas[] = (await encryptor.decrypt(
       password,
       vaultString
-    );
+    )) as keyringParmas[];
     return vault.filter((val) =>
       ["HD Key Tree", "Simple Key Pair"].includes(val.type)
     );

@@ -93,13 +93,13 @@ const extensionConfig = (env, args) => {
   const minimizer = isEnvDevelopment
     ? []
     : [
-        new UglifyJsPlugin({
-          uglifyOptions: {
-            compress: {
-              drop_console: true,
-            },
-          },
-        }),
+        // new UglifyJsPlugin({
+        //   uglifyOptions: {
+        //     compress: {
+        //       drop_console: true,
+        //     },
+        //   },
+        // }),
       ];
 
   return {

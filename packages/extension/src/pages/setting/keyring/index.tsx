@@ -23,6 +23,7 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
   const loadingIndicator = useLoadingIndicator();
 
   const lock = () => {
+    history.goBack();
     misesStore.setLock();
   };
 

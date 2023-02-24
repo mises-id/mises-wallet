@@ -45,7 +45,7 @@
     "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "mises-js-sdk": "^0.1.14",
     "react-idle-timer": "^4.2.5",
-    "browser-passworder": "^2.0.3",
+    "@metamask/browser-passworder": "^4.0.2",
     "react-query": "^3.35.0",
     "big-integer": "^1.6.48",
     "bip39": "^3.0.2",
