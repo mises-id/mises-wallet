@@ -4,12 +4,11 @@ import {
   ExtensionRouter,
   ExtensionGuards,
   ExtensionEnv,
-  ContentScriptMessageRequester,
 } from "@keplr-wallet/router-extension";
-import { ExtensionKVStore } from "@keplr-wallet/common";
-import { init, ScryptParams } from "@keplr-wallet/background";
-import scrypt from "scrypt-js";
-import { Buffer } from "buffer/";
+// import { ExtensionKVStore } from "@keplr-wallet/common";
+import { ScryptParams } from "@keplr-wallet/background";
+// import scrypt from "scrypt-js";
+// import { Buffer } from "buffer/";
 
 import { EmbedChainInfos, PrivilegedOrigins } from "../config";
 
@@ -21,7 +20,16 @@ const router = new ExtensionRouter(ExtensionEnv.produceEnv);
 router.addGuard(ExtensionGuards.checkOriginIsValid);
 router.addGuard(ExtensionGuards.checkMessageIsInternal);
 router.listen(BACKGROUND_PORT);
-try {
+
+const initBackground = async () => {
+  const { ExtensionKVStore } = require("@keplr-wallet/common");
+  const { init } = require("@keplr-wallet/background");
+  const scrypt = require("scrypt-js");
+  const { Buffer } = require("buffer/");
+  const {
+    ContentScriptMessageRequester,
+  } = require("@keplr-wallet/router-extension");
+
   init(
     router,
     (prefix: string) => new ExtensionKVStore(prefix),
@@ -29,7 +37,7 @@ try {
     EmbedChainInfos,
     PrivilegedOrigins,
     {
-      rng: (array) => {
+      rng: (array: any) => {
         return Promise.resolve(crypto.getRandomValues(array));
       },
       scrypt: async (text: string, params: ScryptParams) => {
@@ -60,6 +68,10 @@ try {
       },
     }
   );
+};
+
+try {
+  initBackground();
 } catch (e) {
   console.log(e);
 }

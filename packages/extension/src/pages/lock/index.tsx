@@ -92,13 +92,14 @@ export const LockPage: FunctionComponent = observer(() => {
             }
           } catch (e: any) {
             console.log("Fail to decrypt: " + e.message);
-            setError(
-              "password",
-              "invalid",
-              intl.formatMessage({
-                id: "lock.input.password.error.invalid",
-              })
-            );
+            const message =
+              e.message === "Unmatched mac"
+                ? intl.formatMessage({
+                    id: "lock.input.password.error.invalid",
+                  })
+                : e.message;
+
+            setError("password", "invalid", message);
             setLoading(false);
           }
         })}
