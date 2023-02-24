@@ -63,6 +63,11 @@ export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
       this.nativeBalances.response.data.balances
     );
   }
+
+  @computed
+  get isBalanceCache(): boolean {
+    return this.nativeBalances.isCache;
+  }
 }
 
 export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances> {
@@ -73,6 +78,7 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
   protected misesStore: MisesStore;
 
   QueryClient: QueryClient;
+  isCache: boolean = false;
 
   constructor(
     kvStore: KVStore,
@@ -104,12 +110,14 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   @override
   *fetch(isCache?: boolean) {
+    console.log(isCache, "isCache");
     this.QueryClient?.fetchQuery(
       "getMisesBalance",
       () => this.getMisesBalance(isCache),
       this.fetchConfig
     ).then((result) => {
       this.setResponse(result);
+      this.isCache = !!isCache;
     });
   }
 

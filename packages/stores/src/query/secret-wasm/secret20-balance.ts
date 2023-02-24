@@ -74,6 +74,9 @@ export class ObservableQuerySecret20Balance extends ObservableSecretContractChai
 }
 
 export class ObservableQuerySecret20BalanceInner extends ObservableQueryBalanceInner {
+  get isBalanceCache(): boolean {
+    return true;
+  }
   protected readonly querySecret20Balance: ObservableQuerySecret20Balance;
 
   constructor(

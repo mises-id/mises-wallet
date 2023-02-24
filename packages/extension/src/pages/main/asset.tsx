@@ -8,6 +8,7 @@ import styleAsset from "./asset.module.scss";
 import { ToolTip } from "../../components/tooltip";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLanguage } from "../../languages";
+import classnames from "classnames";
 
 const LazyDoughnut = React.lazy(async () => {
   const module = await import(
@@ -126,7 +127,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
   ).stakable;
 
   const stakable = balanceStakableQuery.balance;
-
+  const isBalanceCache = balanceStakableQuery.isBalanceCache;
   const delegated = queries.cosmos.queryDelegations
     .getQueryBech32Address(accountInfo.bech32Address)
     .total.upperCase(true);
@@ -176,7 +177,11 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
           <div className={styleAsset.big}>
             <FormattedMessage id="main.account.chart.total-balance" />
           </div>
-          <div className={styleAsset.small}>
+          <div
+            className={classnames(styleAsset.small, {
+              [styleAsset.isBalanceCache]: isBalanceCache,
+            })}
+          >
             {/* {totalPrice
               ? totalPrice.toString()
               : total.shrink(true).trim(true).maxDecimals(6).toString()} */}

@@ -92,7 +92,7 @@ const handlerBalanceUMISMsg: (
   service: MisesService
 ) => InternalHandler<BalanceUMISMsg> = (service: MisesService) => (
   _: any,
-  msg: { isCache: boolean }
+  msg: { isCache?: boolean }
 ) => {
   return service.getBalanceUMIS(msg.isCache);
 };

@@ -24,6 +24,8 @@ export abstract class ObservableQueryBalanceInner<
 
   abstract get balance(): CoinPretty;
 
+  abstract get isBalanceCache(): boolean;
+
   @computed
   get currency(): AppCurrency {
     const denom = this.denomHelper.denom;

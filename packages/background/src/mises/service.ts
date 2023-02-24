@@ -25,6 +25,7 @@ import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import { PubKey } from "@keplr-wallet/types";
 import Long from "long";
 import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
+import { Coin } from "@cosmjs/proto-signing";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -47,7 +48,7 @@ export type userInfo = {
   token: string;
   timestamp: number;
   transtions: IndexTx[];
-  balance: Long;
+  balance: Coin;
 };
 
 type getTokenParams = {
@@ -72,7 +73,10 @@ const defaultUserInfo = {
   token: "",
   timestamp: 0,
   transtions: [],
-  balance: Long.ZERO,
+  balance: {
+    denom: "mis",
+    amount: "0",
+  },
 };
 
 export const fetchConfig = {
@@ -163,7 +167,7 @@ export class MisesService {
       if (queryClientStatus === "await") {
         if (this.queryClientTryCount === this.queryClientTryMaxCount) {
           this.queryClientTryCount = 1; // reset
-          reject();
+          reject("error");
           return;
         }
 
@@ -439,15 +443,17 @@ export class MisesService {
   async getBalanceUMIS(isCache?: boolean) {
     console.log(isCache);
     if (isCache) {
-      console.log(this.userInfo.balance || Long.ZERO);
-      return this.mises.coinDefine.toCoinUMIS(
-        this.userInfo.balance || Long.ZERO
+      return (
+        this.userInfo.balance || this.mises.coinDefine.toCoinUMIS(Long.ZERO)
       );
     }
+
     const balance = await this.activeUser?.getBalanceUMIS();
-    this.userInfo.balance = balance;
+    const toCoinUMIS = this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
+    console.log(toCoinUMIS, "23213213");
+    this.userInfo.balance = toCoinUMIS;
     this.save();
-    return this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
+    return toCoinUMIS;
   }
 
   getChainId() {
