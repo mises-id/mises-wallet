@@ -22,19 +22,15 @@ router.addGuard(ExtensionGuards.checkMessageIsInternal);
 router.listen(BACKGROUND_PORT);
 
 const initBackground = async () => {
-  // eslint-disable-next-line
+  /* eslint-disable */
   const { ExtensionKVStore } = require("@keplr-wallet/common");
-  // eslint-disable-next-line
   const { init } = require("@keplr-wallet/background");
-  // eslint-disable-next-line
   const scrypt = require("scrypt-js");
-  // eslint-disable-next-line
   const { Buffer } = require("buffer/");
   const {
     ContentScriptMessageRequester,
-    // eslint-disable-next-line
   } = require("@keplr-wallet/router-extension");
-
+  /* eslint-disable */
   init(
     router,
     (prefix: string) => new ExtensionKVStore(prefix),

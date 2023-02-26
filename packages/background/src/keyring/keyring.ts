@@ -323,7 +323,21 @@ export class KeyRing {
     this.misesService.lockAll();
   }
 
+  private async checkKeyStoreStatus() {
+    if (!this.keyStore || this.type === "none") {
+      console.log("checkKeyStoreStatus");
+      await this.restore();
+    }
+    return true;
+  }
+
   public async unlock(password: string) {
+    /**
+     * If the service worker is closed and reopened
+     * the restore will not run, so you need to check whether the keystore needs to be restored again
+     */
+    await this.checkKeyStoreStatus();
+
     if (!this.keyStore || this.type === "none") {
       throw new KeplrError("keyring", 144, "Key ring not initialized");
     }
