@@ -23,6 +23,8 @@ import {
   PortForTxMsg,
   SaveTranstionsMsg,
   OpenWalletMsg,
+  GetLocalCacheMsg,
+  SetLocalCacheMsg,
 } from "./messages";
 import { MisesService } from "./service";
 
@@ -82,6 +84,10 @@ export const getHandler: (service: MisesService) => Handler = (service) => {
         return handlerSaveTranstions(service)(env, msg as SaveTranstionsMsg);
       case OpenWalletMsg:
         return handlerOpenWallet(service)(env, msg as OpenWalletMsg);
+      case GetLocalCacheMsg:
+        return handlerGetLocalCache(service)(env, msg as GetLocalCacheMsg);
+      case SetLocalCacheMsg:
+        return handlerSetLocalCache(service)(env, msg as SetLocalCacheMsg);
       default:
         throw new Error("Unknown msg type");
     }
@@ -266,4 +272,19 @@ const handlerOpenWallet: (
   service: MisesService
 ) => InternalHandler<OpenWalletMsg> = (service: MisesService) => () => {
   return service.openWallet();
+};
+
+const handlerGetLocalCache: (
+  service: MisesService
+) => InternalHandler<GetLocalCacheMsg> = (service: MisesService) => () => {
+  return service.userInfo;
+};
+
+const handlerSetLocalCache: (
+  service: MisesService
+) => InternalHandler<SetLocalCacheMsg> = (service: MisesService) => (
+  _,
+  msg
+) => {
+  return service.setCacheUserInfo(msg.params);
 };

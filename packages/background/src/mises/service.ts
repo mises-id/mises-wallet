@@ -49,6 +49,7 @@ export type userInfo = {
   timestamp: number;
   transtions: IndexTx[];
   balance: Coin;
+  stakedSum: Coin;
 };
 
 type getTokenParams = {
@@ -74,6 +75,10 @@ const defaultUserInfo = {
   timestamp: 0,
   transtions: [],
   balance: {
+    denom: "mis",
+    amount: "0",
+  },
+  stakedSum: {
     denom: "mis",
     amount: "0",
   },
@@ -164,17 +169,16 @@ export class MisesService {
   async queryClientAwait() {
     const queryClientStatus = await this.initQueryClient();
     return new Promise<void>((resolve, reject) => {
-      if (queryClientStatus === "await") {
-        if (this.queryClientTryCount === this.queryClientTryMaxCount) {
-          this.queryClientTryCount = 1; // reset
-          reject("error");
-          return;
-        }
+      if (this.queryClientTryCount === this.queryClientTryMaxCount) {
+        this.queryClientTryCount = 1; // reset
+        reject("queryClientAwait timeout");
+        return;
+      }
 
-        const timer = setTimeout(async () => {
+      if (queryClientStatus === "await") {
+        setTimeout(async () => {
           this.queryClientTryCount++;
           await this.queryClientAwait();
-          clearTimeout(timer);
           resolve();
         }, 500 * this.queryClientTryCount);
       } else {
@@ -364,6 +368,7 @@ export class MisesService {
         timestamp,
         balance,
         transtions: this.userInfo.transtions,
+        stakedSum: this.userInfo.stakedSum,
       };
 
       this.storeUserInfo(updateUserInfo);
@@ -948,5 +953,14 @@ export class MisesService {
       this.keepAlivePort?.disconnect();
       this.handleDisconnect({});
     }
+  }
+
+  setCacheUserInfo(params: { stakedSum: Coin }) {
+    this.userInfo = {
+      ...this.userInfo,
+      ...params,
+    };
+    console.log(this.userInfo, "this.userInfothis.userInfo");
+    this.save();
   }
 }

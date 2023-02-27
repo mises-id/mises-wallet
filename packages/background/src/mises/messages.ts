@@ -590,3 +590,43 @@ export class OpenWalletMsg extends Message<void> {
     return OpenWalletMsg.type();
   }
 }
+
+export class GetLocalCacheMsg extends Message<userInfo> {
+  public static type() {
+    return "get-local-cache";
+  }
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return GetLocalCacheMsg.type();
+  }
+}
+
+export class SetLocalCacheMsg extends Message<void> {
+  public static type() {
+    return "set-local-cache";
+  }
+  constructor(public readonly params: { stakedSum: Coin }) {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return SetLocalCacheMsg.type();
+  }
+}

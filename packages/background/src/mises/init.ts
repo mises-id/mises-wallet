@@ -22,6 +22,8 @@ import {
   PortForTxMsg,
   SaveTranstionsMsg,
   OpenWalletMsg,
+  GetLocalCacheMsg,
+  SetLocalCacheMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -50,6 +52,8 @@ export function init(router: Router, service: MisesService) {
   router.registerMessage(PortForTxMsg);
   router.registerMessage(SaveTranstionsMsg);
   router.registerMessage(OpenWalletMsg);
+  router.registerMessage(GetLocalCacheMsg);
+  router.registerMessage(SetLocalCacheMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

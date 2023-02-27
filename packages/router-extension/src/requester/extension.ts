@@ -5,7 +5,6 @@ import {
   KeplrError,
 } from "@keplr-wallet/router";
 import { getKeplrExtensionRouterId } from "../utils";
-
 export class InExtensionMessageRequester implements MessageRequester {
   async sendMessage<M extends Message<unknown>>(
     port: string,
@@ -26,10 +25,18 @@ export class InExtensionMessageRequester implements MessageRequester {
     };
 
     const result = JSONUint8Array.unwrap(
-      await browser.runtime.sendMessage({
-        port,
-        type: msg.type(),
-        msg: JSONUint8Array.wrap(msg),
+      await new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          {
+            port,
+            type: msg.type(),
+            msg: JSONUint8Array.wrap(msg),
+          },
+          (result) => {
+            console.log(result, "result>>>>>>");
+            resolve(result);
+          }
+        );
       })
     );
 
