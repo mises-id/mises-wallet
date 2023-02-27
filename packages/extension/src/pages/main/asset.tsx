@@ -203,9 +203,10 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
   }, []);
 
   useEffect(() => {
+    if (stakedSum.toCoin().amount !== "0") {
+      setStakedSumBalance(stakedSum);
+    }
     setStakableBalance(stakable);
-    setStakedSumBalance(stakedSum);
-
     setTimeout(() => {
       if (stakedSum.toCoin().amount !== "0") {
         const userLocal = {
