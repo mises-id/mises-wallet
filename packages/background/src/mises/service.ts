@@ -95,7 +95,7 @@ export type IndexTx = {
   transactionGroupType: string;
   resultLength: number;
 };
-
+const timeout = 5000;
 export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
@@ -269,6 +269,7 @@ export class MisesService {
         url: "/signin",
         method: "POST",
         data: query,
+        timeout,
       });
       return data.token;
     } catch (error) {
@@ -280,6 +281,7 @@ export class MisesService {
     try {
       return misesRequest<null, gasprice>({
         url: "/mises/gasprices",
+        timeout,
       });
     } catch (error) {
       return Promise.resolve({
