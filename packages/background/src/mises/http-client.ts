@@ -51,6 +51,7 @@ export class HttpClient implements RpcClient {
         "Content-Type": "application/json",
         ...this.headers,
       },
+      timeout: 5000,
       isCustomRequest: true,
     });
     if (isJsonRpcErrorResponse(response)) {

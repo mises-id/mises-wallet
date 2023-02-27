@@ -33,7 +33,7 @@ export class InExtensionMessageRequester implements MessageRequester {
             msg: JSONUint8Array.wrap(msg),
           },
           (result) => {
-            console.log(result, "result>>>>>>");
+            console.log(result, "sendMessage-result>>>>>>");
             resolve(result);
           }
         );
@@ -80,10 +80,19 @@ export class InExtensionMessageRequester implements MessageRequester {
     };
 
     const result = JSONUint8Array.unwrap(
-      await browser.tabs.sendMessage(tabId, {
-        port,
-        type: msg.type(),
-        msg: JSONUint8Array.wrap(msg),
+      await new Promise((resolve) => {
+        chrome.tabs.sendMessage(
+          tabId,
+          {
+            port,
+            type: msg.type(),
+            msg: JSONUint8Array.wrap(msg),
+          },
+          (result) => {
+            console.log(result, "sendMessageToTab-result>>>>>>");
+            resolve(result);
+          }
+        );
       })
     );
 
