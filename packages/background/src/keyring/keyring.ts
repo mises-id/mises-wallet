@@ -250,6 +250,7 @@ export class KeyRing {
     }
 
     this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
+    this.mnemonic = mnemonic;
     this.keyStore = await KeyRing.CreateMnemonicKeyStore(
       this.crypto,
       kdf,
@@ -336,6 +337,7 @@ export class KeyRing {
      * If the service worker is closed and reopened
      * the restore will not run, so you need to check whether the keystore needs to be restored again
      */
+    console.log("unlocked");
     await this.checkKeyStoreStatus();
 
     if (!this.keyStore || this.type === "none") {
@@ -1237,6 +1239,14 @@ export class KeyRing {
   }
 
   async addAccount(name: string, bip44HDPath: BIP44HDPath) {
+    console.log(this.mnemonic, "this.mnemonic");
+    if (!this.mnemonic) {
+      throw new KeplrError(
+        "keyring",
+        152,
+        "Mnemonic not found, Please try again"
+      );
+    }
     try {
       const result = await this.addMnemonicKey(
         "scrypt",
