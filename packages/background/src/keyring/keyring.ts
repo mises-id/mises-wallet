@@ -66,8 +66,6 @@ export class KeyRing {
 
   private password: string = "";
 
-  private mnemonic: string = "";
-
   migratorStore: { vault: string } = { vault: "" };
 
   migrator: Migrator;
@@ -250,7 +248,7 @@ export class KeyRing {
     }
 
     this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
-    this.mnemonic = mnemonic;
+
     this.keyStore = await KeyRing.CreateMnemonicKeyStore(
       this.crypto,
       kdf,
@@ -320,7 +318,6 @@ export class KeyRing {
     this.privateKey = undefined;
     this.ledgerPublicKeyCache = undefined;
     this.password = "";
-    this.mnemonic = "";
     this.misesService.lockAll();
   }
 
@@ -344,18 +341,11 @@ export class KeyRing {
       throw new KeplrError("keyring", 144, "Key ring not initialized");
     }
 
-    this.mnemonic = Buffer.from(
-      await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password)
-    ).toString();
-
-    this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
-      this.mnemonic
-    );
     if (this.type === "mnemonic") {
       // If password is invalid, error will be thrown.
       this.mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
         Buffer.from(
-          await Crypto.decrypt(this.crypto, this.keyStore, password)
+          await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password)
         ).toString()
       );
     } else if (this.type === "privateKey") {
@@ -548,7 +538,7 @@ export class KeyRing {
       .concat(this.multiKeyStore.slice(index + 1));
 
     // Make sure that password is valid.
-    await Crypto.decrypt(this.crypto, keyStore, password);
+    await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password);
 
     let keyStoreChanged = false;
     if (this.keyStore) {
@@ -856,7 +846,7 @@ export class KeyRing {
         throw new KeplrError("keyring", 222, "Unmatched mac");
       }
 
-      const privKey = this.loadMnemonicPrivKey(60, keyStore);
+      const privKey = await this.loadMnemonicPrivKey(60, keyStore);
       const ethWallet = new Wallet(privKey.toBytes());
 
       return ethWallet.privateKey.replace("0x", "");
@@ -868,10 +858,10 @@ export class KeyRing {
     }
   }
 
-  private loadMnemonicPrivKey(
+  private async loadMnemonicPrivKey(
     coinType: number,
     keyStore: KeyStore
-  ): PrivKeySecp256k1 {
+  ): Promise<PrivKeySecp256k1> {
     if (this.status !== KeyRingStatus.UNLOCKED || !keyStore) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
     }
@@ -883,9 +873,12 @@ export class KeyRing {
     if (cachedKey) {
       return new PrivKeySecp256k1(cachedKey);
     }
+    const mnemonic = Buffer.from(
+      await Crypto.decrypt(this.crypto, this.multiKeyStore[0], this.password)
+    ).toString();
 
     const mnemonicMasterSeed = Mnemonic.generateMasterSeedFromMnemonic(
-      this.mnemonic
+      mnemonic
     );
 
     if (!mnemonicMasterSeed) {
@@ -924,12 +917,12 @@ export class KeyRing {
         "Key ring is locked or not initialized"
       );
     }
-
+    console.log(mnemonic);
     const keyStore = await KeyRing.CreateMnemonicKeyStore(
       this.crypto,
       kdf,
-      mnemonic,
-      this.password,
+      "",
+      "",
       await this.assignKeyStoreIdMeta(meta),
       bip44HDPath
     );
@@ -1080,7 +1073,7 @@ export class KeyRing {
       switch (type) {
         case "mnemonic": {
           const mnemonic = Buffer.from(
-            await Crypto.decrypt(this.crypto, keyStore, password)
+            await Crypto.decrypt(this.crypto, this.multiKeyStore[0], password)
           ).toString();
 
           result.push({
@@ -1239,18 +1232,10 @@ export class KeyRing {
   }
 
   async addAccount(name: string, bip44HDPath: BIP44HDPath) {
-    console.log(this.mnemonic, "this.mnemonic");
-    if (!this.mnemonic) {
-      throw new KeplrError(
-        "keyring",
-        152,
-        "Mnemonic not found, Please try again"
-      );
-    }
     try {
       const result = await this.addMnemonicKey(
         "scrypt",
-        this.mnemonic,
+        "",
         {
           name,
         },
@@ -1336,8 +1321,6 @@ export class KeyRing {
         const mnemonic: string = Buffer.from(
           mnemonicKey?.data.mnemonic
         ).toString("utf8");
-
-        this.mnemonic = mnemonic;
 
         const numberOfAccounts: number = mnemonicKey?.data.numberOfAccounts;
 
