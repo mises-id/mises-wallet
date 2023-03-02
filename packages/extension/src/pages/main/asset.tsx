@@ -192,7 +192,6 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
       setStakableBalance(stakableBalanceCache);
     });
     misesStore.getLocalCache().then((res: userInfo) => {
-      console.log(res);
       const stakedSumCache = new CoinPretty(
         stakedSum.currency,
         res.stakedSum.amount
@@ -203,21 +202,26 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
   }, []);
 
   useEffect(() => {
-    if (stakedSum.toCoin().amount !== "0") {
+    console.log(balanceStakableQuery.isFetching, "balanceStakableQuery>>>>>");
+    if (!balanceStakableQuery.isFetching && !balanceStakableQuery.error) {
       setStakedSumBalance(stakedSum);
+      setStakableBalance(stakable);
+      setTimeout(() => {
+        if (stakedSum.toCoin().amount !== "0") {
+          const userLocal = {
+            stakedSum: stakedSum.toCoin(),
+          };
+          console.log(userLocal);
+          misesStore.setLocalCache(userLocal);
+        }
+      }, 500);
     }
-    setStakableBalance(stakable);
-    setTimeout(() => {
-      if (stakedSum.toCoin().amount !== "0") {
-        const userLocal = {
-          stakedSum: stakedSum.toCoin(),
-        };
-        console.log(userLocal);
-        misesStore.setLocalCache(userLocal);
-      }
-    }, 1000);
     // eslint-disable-next-line
-  }, [stakable.toString(), stakedSum.toString()]);
+  }, [
+    stakable.toString(),
+    stakedSum.toString(),
+    balanceStakableQuery.isFetching,
+  ]);
 
   return (
     <React.Fragment>

@@ -33,7 +33,6 @@ export class InExtensionMessageRequester implements MessageRequester {
             msg: JSONUint8Array.wrap(msg),
           },
           (result) => {
-            console.log(result, "sendMessage-result>>>>>>");
             resolve(result);
           }
         );
