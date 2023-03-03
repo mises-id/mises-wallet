@@ -182,27 +182,30 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
     stakedSum.currency,
     data[0] * 1000000 + data[1] * 1000000
   );
-
   useEffect(() => {
-    misesStore.getBalanceUMIS(true).then((res) => {
-      const stakableBalanceCache = new CoinPretty(
-        stakedSum.currency,
-        res.amount
-      );
-      setStakableBalance(stakableBalanceCache);
-    });
-    misesStore.getLocalCache().then((res: userInfo) => {
-      const stakedSumCache = new CoinPretty(
-        stakedSum.currency,
-        res.stakedSum.amount
-      );
-      setStakedSumBalance(stakedSumCache);
-    });
+    const currentAddress = sessionStorage.getItem("currentAddress");
+    if (accountInfo.bech32Address !== currentAddress) {
+      misesStore.getBalanceUMIS(accountInfo.bech32Address).then((res) => {
+        const stakableBalanceCache = new CoinPretty(
+          stakedSum.currency,
+          res.amount
+        );
+        setStakableBalance(stakableBalanceCache);
+      });
+      misesStore
+        .getLocalCache(accountInfo.bech32Address)
+        .then((res: userInfo) => {
+          const stakedSumCache = new CoinPretty(
+            stakedSum.currency,
+            res.stakedSum?.amount || "0"
+          );
+          setStakedSumBalance(stakedSumCache);
+        });
+      sessionStorage.setItem("currentAddress", accountInfo.bech32Address);
+    }
     // eslint-disable-next-line
-  }, []);
-
+  }, [accountInfo.bech32Address]);
   useEffect(() => {
-    console.log(balanceStakableQuery.isFetching, "balanceStakableQuery>>>>>");
     if (!balanceStakableQuery.isFetching && !balanceStakableQuery.error) {
       setStakedSumBalance(stakedSum);
       setStakableBalance(stakable);

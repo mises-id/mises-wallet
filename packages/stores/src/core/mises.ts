@@ -35,10 +35,10 @@ export class MisesStore {
     this.initAutoLockAccountDuration();
   }
 
-  async getBalanceUMIS(isCache?: boolean) {
+  async getBalanceUMIS(address?: string) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new BalanceUMISMsg(isCache)
+      new BalanceUMISMsg(address)
     );
   }
 
@@ -56,17 +56,17 @@ export class MisesStore {
     );
   }
 
-  async unbondingDelegations(address: string, isCache?: boolean) {
+  async unbondingDelegations(address: string) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new UnbondingDelegationsMsg(address, isCache)
+      new UnbondingDelegationsMsg(address)
     );
   }
 
-  async delegations(address: string, isCache?: boolean) {
+  async delegations(address: string) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new DelegationsMsg(address, isCache)
+      new DelegationsMsg(address)
     );
   }
 
@@ -155,8 +155,11 @@ export class MisesStore {
     );
   }
 
-  getLocalCache() {
-    return this.requester.sendMessage(BACKGROUND_PORT, new GetLocalCacheMsg());
+  getLocalCache(address?: string) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new GetLocalCacheMsg(address)
+    );
   }
 
   setLocalCache(params: { stakedSum: Coin }) {

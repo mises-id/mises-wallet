@@ -15,7 +15,7 @@ export class BalanceUMISMsg extends Message<Coin> {
     return "balance-umis";
   }
 
-  constructor(public readonly isCache?: boolean) {
+  constructor(public readonly address?: string) {
     super();
   }
 
@@ -106,10 +106,7 @@ export class UnbondingDelegationsMsg extends Message<any> {
     return "unbonding-delegations";
   }
 
-  constructor(
-    public readonly address: string,
-    public readonly isCache?: boolean
-  ) {
+  constructor(public readonly address: string) {
     super();
   }
 
@@ -135,10 +132,7 @@ export class DelegationsMsg extends Message<any> {
     return "delegations";
   }
 
-  constructor(
-    public readonly address: string,
-    public readonly isCache?: boolean
-  ) {
+  constructor(public readonly address: string) {
     super();
   }
 
@@ -595,7 +589,7 @@ export class GetLocalCacheMsg extends Message<userInfo> {
   public static type() {
     return "get-local-cache";
   }
-  constructor() {
+  constructor(public readonly address?: string) {
     super();
   }
 

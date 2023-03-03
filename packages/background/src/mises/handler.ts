@@ -98,9 +98,9 @@ const handlerBalanceUMISMsg: (
   service: MisesService
 ) => InternalHandler<BalanceUMISMsg> = (service: MisesService) => (
   _: any,
-  msg: { isCache?: boolean }
+  msg: { address?: string }
 ) => {
-  return service.getBalanceUMIS(msg.isCache);
+  return service.getBalanceUMIS(msg.address);
 };
 
 const handlerMisesChainMsg: (
@@ -128,18 +128,18 @@ const handlerUnbondingDelegations: (
   service: MisesService
 ) => InternalHandler<UnbondingDelegationsMsg> = (service: MisesService) => (
   _: any,
-  msg: { address: string; isCache?: boolean }
+  msg: { address: string }
 ) => {
-  return service.unbondingDelegations(msg.address, msg.isCache);
+  return service.unbondingDelegations(msg.address);
 };
 
 const handlerDelegations: (
   service: MisesService
 ) => InternalHandler<DelegationsMsg> = (service: MisesService) => (
   _: any,
-  msg: { address: string; isCache?: boolean }
+  msg: { address: string }
 ) => {
-  return service.delegations(msg.address, msg.isCache);
+  return service.delegations(msg.address);
 };
 
 const handlerRewards: (service: MisesService) => InternalHandler<RewardsMsg> = (
@@ -276,8 +276,11 @@ const handlerOpenWallet: (
 
 const handlerGetLocalCache: (
   service: MisesService
-) => InternalHandler<GetLocalCacheMsg> = (service: MisesService) => () => {
-  return service.userInfo;
+) => InternalHandler<GetLocalCacheMsg> = (service: MisesService) => (
+  _,
+  msg
+) => {
+  return service.getAddressUserInfo(msg.address);
 };
 
 const handlerSetLocalCache: (

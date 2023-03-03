@@ -176,7 +176,6 @@ export class MisesService {
       }
 
       if (queryClientStatus === "await") {
-        console.log(11111);
         setTimeout(async () => {
           this.queryClientTryCount++;
           await this.queryClientAwait();
@@ -448,11 +447,12 @@ export class MisesService {
     }
   }
 
-  async getBalanceUMIS(isCache?: boolean) {
-    console.log(isCache);
-    if (isCache) {
+  async getBalanceUMIS(address?: string) {
+    if (address) {
+      const currentAddressInfo = await this.kvStore.get<userInfo>(address);
       return (
-        this.userInfo.balance || this.mises.coinDefine.toCoinUMIS(Long.ZERO)
+        currentAddressInfo?.balance ||
+        this.mises.coinDefine.toCoinUMIS(Long.ZERO)
       );
     }
 
@@ -467,10 +467,7 @@ export class MisesService {
     return this.mises.stargateClient.getChainId();
   }
 
-  async unbondingDelegations(address: string, isCache?: boolean) {
-    // if(isCache){
-    //   return this.userInfo.unbondingDelegations;
-    // }
+  async unbondingDelegations(address: string) {
     try {
       await this.queryClientAwait();
       const queryClient = await this.initQueryClient();
@@ -478,14 +475,12 @@ export class MisesService {
         const delegatorUnbondingDelegations = await queryClient?.staking.delegatorUnbondingDelegations(
           address
         );
-        // this.userInfo.unbondingDelegations = delegatorUnbondingDelegations;
-        console.log(delegatorUnbondingDelegations, isCache);
         return delegatorUnbondingDelegations;
       }
     } catch (error) {}
   }
 
-  async delegations(address: string, isCache?: boolean) {
+  async delegations(address: string) {
     try {
       await this.queryClientAwait();
 
@@ -511,11 +506,6 @@ export class MisesService {
             };
           }
         }
-        console.log(
-          isCache,
-          delegatorDelegationsResponse,
-          "delegatorDelegationsResponse>>>>>>>"
-        );
         return delegatorDelegationsResponse;
       }
     } catch (error) {}
@@ -963,7 +953,14 @@ export class MisesService {
       ...this.userInfo,
       ...params,
     };
-    console.log(this.userInfo, "this.userInfothis.userInfo");
     this.save();
+  }
+
+  async getAddressUserInfo(address?: string) {
+    if (address) {
+      const currentAddressInfo = await this.kvStore.get<userInfo>(address);
+      return currentAddressInfo || this.userInfo;
+    }
+    return this.userInfo;
   }
 }
