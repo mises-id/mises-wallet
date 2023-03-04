@@ -12,6 +12,7 @@ import { misesRequest } from "../mises/mises-network.util";
 const listenMethods = {
   mVerifyDomain: "verifyDomain",
   mVerifyContract: "verifyContract",
+  mNotifyFuzzyDomain: "notifyFuzzyDomain",
 };
 
 const storageKey = {
@@ -23,6 +24,13 @@ const contractLevel = {
   Safe: "safe",
   Danger: "danger",
 };
+const domainLevel = {
+  White: "white",
+  Normal: "normal",
+  Fuzzy: "fuzzy",
+  Black: "black",
+};
+
 const userAction = {
   Ignore: "IGNOR",
   Block: "BLOCK",
@@ -32,9 +40,29 @@ const isShouldVerifyStateKey = "isShouldVerify";
 
 // const TypeBackgroundResponse = "mises-background-response";
 
+export type notifyPhishingDetectedParams = {
+  notify_type: string;
+  address: string;
+  domain: string;
+  suggested_url: string;
+  notify_tag: string;
+  notify_level: string;
+};
+
+export type verifyDomainResult = {
+  domain: string;
+  level: string;
+  suggested_url: string;
+  html_body_fuzzy_hash?: string;
+  logo_phash?: string;
+  title_keyword?: string;
+  tag?: string;
+};
+
 export class MisesSafeService {
   isShouldVerify: boolean = true;
   domainWhiteListMap: Map<string, string> = new Map();
+  blackNotifyingMap: Map<string, string> = new Map();
 
   constructor(protected readonly kvStore: KVStore) {
     console.log("MisesSafeService init");
@@ -121,7 +149,15 @@ export class MisesSafeService {
     }
     switch (res.params.method) {
       case listenMethods.mVerifyDomain:
-        return this.apiVerifyDomain(res.params.params.domain);
+        return this.verifyDomain(
+          res.params.params.domain,
+          res.params.params.logo
+        );
+      case listenMethods.mNotifyFuzzyDomain:
+        return this.notifyFuzzyDomain(
+          res.params.params.domain,
+          res.params.params.suggested_url
+        );
       case listenMethods.mVerifyContract:
         return this.verifyContract(
           res.params.params.contractAddress,
@@ -130,34 +166,136 @@ export class MisesSafeService {
     }
   }
 
-  getDomainCacheKey(domain: string) {
-    return storageKey.DomainRisk + domain.replace(".", "-");
+  /* VerifyDomain start */
+
+  async verifyDomain(
+    domain: string,
+    logo: string
+  ): Promise<verifyDomainResult> {
+    //is ignore
+    const isIgnore = await this.isIgnoreDomain(domain);
+    console.log("verifyDomain ignore <<:", isIgnore);
+    if (isIgnore) {
+      return {
+        domain: domain,
+        suggested_url: domain,
+        level: domainLevel.White,
+        tag: "ignore",
+      };
+    }
+    //in whitelist domain
+    if (this.isDomainWhitelisted(domain)) {
+      return {
+        domain: domain,
+        suggested_url: domain,
+        level: domainLevel.White,
+        tag: "white",
+      };
+    }
+    const verifyDomainResult = await this.apiVerifyDomain(domain, logo);
+    console.log("verifyDomainResult: ", verifyDomainResult);
+    //is should alert user
+    if (
+      !this.hasBlackNotifying(domain) &&
+      verifyDomainResult &&
+      verifyDomainResult.level === domainLevel.Black
+    ) {
+      console.log("verifyDomain notifyPhishingDetected start: ", domain);
+      this.addBlackNotifying(domain);
+      setTimeout(() => {
+        this.removeBlackNotifying(domain);
+      }, 3000);
+      const userDecision = await this.notifyPhishingDetected(<
+        notifyPhishingDetectedParams
+      >{
+        notify_type: "url",
+        domain: domain,
+        suggested_url: verifyDomainResult.suggested_url || "",
+        notify_tag: "black",
+        notify_level: "danger",
+      });
+      console.log("verifyDomain notifyPhishingDetected result: ", userDecision);
+      if (userDecision === userAction.Ignore) {
+        console.log("verifyDomain notifyPhishingDetected set: ", userDecision);
+        this.setIgnorDomain(domain);
+      }
+    }
+    return verifyDomainResult;
   }
 
-  getContractCacheKey(contractAddress: string) {
-    return storageKey.ContractTrust + contractAddress.replace(".", "-");
+  hasBlackNotifying(domain: string): boolean {
+    return domain !== "" && this.blackNotifyingMap.has(domain);
   }
 
-  async apiVerifyDomain(domain: string) {
-    /*  const result = await this.kvStore.get(domain);
+  removeBlackNotifying(domain: string) {
+    this.blackNotifyingMap.delete(domain);
+  }
+
+  addBlackNotifying(domain: string) {
+    this.blackNotifyingMap.set(domain, "1");
+  }
+
+  async notifyFuzzyDomain(domain: string, suggested_url: string) {
+    console.log(
+      "verifyDomain notifyPhishingDetected start: ",
+      domain,
+      suggested_url
+    );
+    const userDecision = await this.notifyPhishingDetected(<
+      notifyPhishingDetectedParams
+    >{
+      notify_type: "url",
+      notify_tag: "fuzzy",
+      domain: domain,
+      notify_level: "warning",
+      suggested_url: suggested_url,
+    });
+    console.log("fuzzyDomain notifyPhishingDetected result: ", userDecision);
+    if (userDecision === userAction.Ignore) {
+      console.log("fuzzyDomain notifyPhishingDetected set: ", userDecision);
+      this.setIgnorDomain(domain);
+    }
+  }
+  async apiVerifyDomain(domain: string, logo: string) {
+    const result = await this.kvStore.get(domain);
     if (result) {
       return result;
-    } */
+    }
     const res = await misesRequest({
       url: "/phishing_site/check",
       data: {
-        domain_name: domain,
+        domain: domain,
+        logo: logo,
       },
     });
-
-    //this.kvStore.set(domain, res);
+    if (
+      res &&
+      (res.level !== domainLevel.Black || res.level !== domainLevel.Fuzzy)
+    ) {
+      this.kvStore.set(domain, res);
+    }
     return res;
+  }
+
+  setIgnorDomain(domain: string) {
+    this.kvStore.set(this.getDomainCacheKey(domain), "1");
+  }
+
+  async isIgnoreDomain(domain: string) {
+    return await this.kvStore.get(this.getDomainCacheKey(domain));
+  }
+
+  getDomainCacheKey(domain: string) {
+    return storageKey.DomainRisk + domain.replace(".", "-");
   }
 
   isDomainWhitelisted(domain: string) {
     domain = this.parseDomainUntilSecondLevel(domain);
     return domain !== "" && this.domainWhiteListMap.has(domain);
   }
+  /* VerifyDomain end */
+
+  /* verifyContract start */
 
   async verifyContract(contractAddress: string, domain: string) {
     //is ignore
@@ -172,57 +310,7 @@ export class MisesSafeService {
       };
       return verifyContractResult;
     }
-    const verifyContractResult = await this.apiVerifyContract(
-      contractAddress,
-      domain
-    );
-    console.log("verifyContractResult: ", verifyContractResult);
-    //is should alert user
-    if (
-      verifyContractResult &&
-      verifyContractResult.level === contractLevel.Danger
-    ) {
-      console.log("notifyPhishingDetected start: ", contractAddress);
-      const userDecision = await this.notifyPhishingDetected(contractAddress);
-      console.log("notifyPhishingDetected result: ", userDecision);
-      if (userDecision === userAction.Ignore) {
-        console.log("notifyPhishingDetected set: ", userDecision);
-        this.setIgnorDomain(domain);
-      }
-    }
-    return verifyContractResult;
-  }
-
-  setIgnoreContract(contractAddress: string) {
-    this.kvStore.set(this.getContractCacheKey(contractAddress), "1");
-  }
-
-  async isIgnoreContract(contractAddress: string) {
-    return await this.kvStore.get(this.getContractCacheKey(contractAddress));
-  }
-
-  setIgnorDomain(domain: string) {
-    this.kvStore.set(this.getDomainCacheKey(domain), "1");
-  }
-
-  async isIgnoreDomain(domain: string) {
-    return await this.kvStore.get(this.getDomainCacheKey(domain));
-  }
-
-  notifyPhishingDetected(address: string): Promise<string> {
-    return new Promise((resolve) => {
-      if (
-        (browser as any).misesPrivate &&
-        (browser as any).misesPrivate.notifyPhishingDetected
-      ) {
-        (browser as any).misesPrivate.notifyPhishingDetected(address, resolve);
-        return;
-      }
-      resolve("mises");
-    });
-  }
-
-  async apiVerifyContract(contractAddress: string, domain: string) {
+    //in whitelist domain
     if (this.isDomainWhitelisted(domain)) {
       const safeVerifyContractResult = {
         address: contractAddress,
@@ -232,6 +320,35 @@ export class MisesSafeService {
       };
       return safeVerifyContractResult;
     }
+    const verifyContractResult = await this.apiVerifyContract(
+      contractAddress,
+      domain
+    );
+    console.log("verifyContractResult: ", verifyContractResult);
+    //is should alert user
+    if (
+      !this.hasBlackNotifying(contractAddress) &&
+      verifyContractResult &&
+      verifyContractResult.level === contractLevel.Danger
+    ) {
+      this.addBlackNotifying(contractAddress);
+      setTimeout(() => {
+        this.removeBlackNotifying(contractAddress);
+      }, 3000);
+      console.log("notifyPhishingDetected start: ", contractAddress);
+      const userDecision = await this.notifyPhishingDetected(<
+        notifyPhishingDetectedParams
+      >{ address: contractAddress, notify_type: "address" });
+      console.log("notifyPhishingDetected result: ", userDecision);
+      if (userDecision === userAction.Ignore) {
+        console.log("notifyPhishingDetected set: ", userDecision);
+        this.setIgnorDomain(domain);
+      }
+    }
+    return verifyContractResult;
+  }
+
+  async apiVerifyContract(contractAddress: string, domain: string) {
     //cache
     const result = await this.kvStore.get(contractAddress);
     if (result) {
@@ -248,5 +365,37 @@ export class MisesSafeService {
       this.kvStore.set(contractAddress, res);
     }
     return res;
+  }
+
+  setIgnoreContract(contractAddress: string) {
+    this.kvStore.set(this.getContractCacheKey(contractAddress), "1");
+  }
+
+  async isIgnoreContract(contractAddress: string) {
+    return await this.kvStore.get(this.getContractCacheKey(contractAddress));
+  }
+
+  getContractCacheKey(contractAddress: string) {
+    return storageKey.ContractTrust + contractAddress.replace(".", "-");
+  }
+
+  /* verifyContract end */
+
+  notifyPhishingDetected(
+    params: notifyPhishingDetectedParams
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      if (
+        (browser as any).misesPrivate &&
+        (browser as any).misesPrivate.notifyPhishingDetected
+      ) {
+        (browser as any).misesPrivate.notifyPhishingDetected(
+          JSON.stringify(params),
+          resolve
+        );
+        return;
+      }
+      resolve("mises");
+    });
   }
 }
