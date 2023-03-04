@@ -21,6 +21,7 @@ export class Migrator {
   }
 
   async enCodeValut(keyringStore: { vault: string }, password: string) {
+    // eslint-disable-next-line
     const encryptor = require("@metamask/browser-passworder");
 
     const { vault: vaultString } = keyringStore;

@@ -12,9 +12,9 @@ import { ScryptParams } from "@keplr-wallet/background";
 
 import { EmbedChainInfos, PrivilegedOrigins } from "../config";
 
-browser.runtime.onInstalled.addListener(() => {
-  console.log("mises wallet installed");
-});
+// browser.runtime.onInstalled.addListener(() => {
+//   console.log("mises wallet installed");
+// });
 
 const router = new ExtensionRouter(ExtensionEnv.produceEnv);
 router.addGuard(ExtensionGuards.checkOriginIsValid);
@@ -22,6 +22,7 @@ router.addGuard(ExtensionGuards.checkMessageIsInternal);
 router.listen(BACKGROUND_PORT);
 
 const initBackground = async () => {
+  /* eslint-disable */
   const { ExtensionKVStore } = require("@keplr-wallet/common");
   const { init } = require("@keplr-wallet/background");
   const scrypt = require("scrypt-js");
@@ -29,7 +30,7 @@ const initBackground = async () => {
   const {
     ContentScriptMessageRequester,
   } = require("@keplr-wallet/router-extension");
-
+  /* eslint-disable */
   init(
     router,
     (prefix: string) => new ExtensionKVStore(prefix),

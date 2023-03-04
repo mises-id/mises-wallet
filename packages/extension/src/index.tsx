@@ -225,6 +225,7 @@ const RenderRoutes = () => {
 // const analytics = getAnalytics(app);
 
 Sentry.init({
+  enabled: process.env.NODE_ENV === "production",
   dsn:
     "https://66dc9e60f6764bf4a127e9f11f702b9f@o1162849.ingest.sentry.io/4504417442791424",
   integrations: [new BrowserTracing()],
