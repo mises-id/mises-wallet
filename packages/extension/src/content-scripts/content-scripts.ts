@@ -73,11 +73,6 @@ const postMsg = (id: any, res: unknown) => {
     id,
     result: { return: res },
   };
-  console.log(
-    "content post background message to proxy :>>",
-    contentToProxyMessage,
-    targetOrigin
-  );
   window.postMessage(contentToProxyMessage, targetOrigin);
 };
 
@@ -98,13 +93,11 @@ const initPostMsgClient = async () => {
       console.log("content consoleLog:>>", e.data);
       return;
     }
-    console.log("content start sending message to background :>>", e.data);
     const res = await new InExtensionMessageRequester().sendMessage(
       BACKGROUND_PORT,
       new VerifyDomainMsg(e.data)
     );
     //post msg back to proxyClient
-    console.log("background start sending message to :>>", res);
     //this.postMsg(res);
     postMsg(e.data.id, res);
   });

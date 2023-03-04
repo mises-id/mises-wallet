@@ -1,14 +1,7 @@
 // /* global chrome */
 import { proxyClient } from "./post-message";
-
-// const dictionary = {
-//   "0x095ea7b3": "approve",
-//   "0xa22cb465": "setApprovalForAll",
-//   "0x0752881a": "transfer",
-//   "0x42842e0e": "safeTransferFrom",
-//   "0xb88d4fde": "safeTransferFrom1",
-// };
-// type dictionaryKeys = keyof typeof dictionary;
+//import { image_similar } from "./image-similar";
+import { html_similar } from "./html-similar";
 
 const domainCheckStatus = {
   waitCheck: "waitCheck",
@@ -16,16 +9,26 @@ const domainCheckStatus = {
   finshedCheck: "finshedCheck",
 };
 
-const domainSafeType = {
-  whiteDomain: "white",
-  blackDomain: "black",
-  fuzzyDomain: "fuzzy",
-  normalDomain: "normal",
+const domainSafeLevel = {
+  White: "white",
+  Black: "black",
+  Fuzzy: "fuzzy",
+  Normal: "normal",
+};
+
+export type verifyDomainResult = {
+  domain: string;
+  level: string;
+  suggested_url: string;
+  html_body_fuzzy_hash?: string;
+  logo_phash?: string;
+  title_keyword?: string;
+  tag?: string;
 };
 
 const containerId = "mises-safe-container";
 
-const parseOriginToHostname = (param: string): string => {
+const parseUrlToDomain = (param: string, type: string = "domain"): string => {
   let domain = param;
 
   if (domain.match(/^[a-zA-Z0-9-]+:\/\/.+$/)) {
@@ -46,11 +49,14 @@ const parseOriginToHostname = (param: string): string => {
     .filter((str) => str.length > 0);
 
   if (split.length < 2) {
-    throw new Error(`Invalid domain: ${param}`);
+    return "";
   }
   const i = split[split.length - 1].indexOf(":");
   if (i >= 0) {
     split[split.length - 1] = split[split.length - 1].slice(0, i);
+  }
+  if (type === "topdomain") {
+    return split[split.length - 2] + "." + split[split.length - 1];
   }
   return split.join(".");
 };
@@ -58,12 +64,15 @@ const parseOriginToHostname = (param: string): string => {
 export class ContentScripts {
   container: HTMLElement | null;
   domainInfo: {
-    domainSafeType: string;
+    domainSafeLevel: string;
     hostname: string;
     type: string;
-    suggestedDomain: string;
+    suggested_url: string;
     checkStatus: string;
-    isShowDomainAlert: boolean;
+    isFuzzyCheck: boolean;
+    html_body_fuzzy_hash: string;
+    logo_phash: string;
+    title_keyword: string;
   };
   config: {
     maxRetryNum: number;
@@ -72,23 +81,29 @@ export class ContentScripts {
   constructor() {
     this.container = null;
     this.config = {
-      maxRetryNum: 3,
+      maxRetryNum: 1,
       retryCount: 0,
     };
     this.domainInfo = {
-      domainSafeType: "",
+      domainSafeLevel: "",
       hostname:
         window.location.ancestorOrigins.length > 0
-          ? parseOriginToHostname(window.location.ancestorOrigins[0])
+          ? parseUrlToDomain(window.location.ancestorOrigins[0])
           : window.location.hostname,
-      type: domainSafeType.normalDomain,
-      suggestedDomain: "",
+      type: domainSafeLevel.Normal,
+      suggested_url: "",
       checkStatus: domainCheckStatus.waitCheck,
-      isShowDomainAlert: false,
+      isFuzzyCheck: false,
+      html_body_fuzzy_hash: "",
+      logo_phash: "",
+      title_keyword: "",
     };
     this.init();
   }
   init() {
+    if (window.location.ancestorOrigins.length > 0) {
+      return;
+    }
     this.initContainer();
     this.initWeb3Proxy();
   }
@@ -201,12 +216,11 @@ export class ContentScripts {
 
   //isShouldVerifyContract
   isShouldVerifyContract() {
-    return this.domainInfo.domainSafeType !== domainSafeType.whiteDomain;
+    return this.domainInfo.domainSafeLevel !== domainSafeLevel.White;
   }
 
   //isShouldVerifyDomain
   isShouldVerifyDomain() {
-    return false;
     //ignore list
     return this.domainInfo.checkStatus !== domainCheckStatus.finshedCheck;
   }
@@ -215,25 +229,154 @@ export class ContentScripts {
     if (this.domainInfo.checkStatus === domainCheckStatus.finshedCheck) {
       return true;
     }
-    /* if (this.domainInfo.checkStatus === domainCheckStatus.pendingCheck) {
-      return false;
-    } */
+    if (this.config.retryCount >= this.config.maxRetryNum) {
+      return;
+    }
+    this.config.retryCount++;
+    console.log("verifyDomain count ", this.config.retryCount);
     this.domainInfo.checkStatus = domainCheckStatus.pendingCheck;
     const checkResult: any = await proxyClient.verifyDomain(
-      this.domainInfo.hostname
+      this.domainInfo.hostname,
+      this.getSiteLogo()
     );
-    this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
     console.log("checkResult :>>", checkResult);
     //parse the check result
-    if (checkResult) {
-      this.domainInfo.domainSafeType = checkResult.type_string;
-      this.domainInfo.suggestedDomain = checkResult.origin;
-    } else if (this.config.retryCount < this.config.maxRetryNum) {
-      this.domainInfo.checkStatus = domainCheckStatus.waitCheck;
-      this.config.retryCount++;
-      console.log("verifyDomain retry ", this.config.retryCount);
-    } else {
+    if (
+      checkResult &&
+      checkResult.level &&
+      this.domainInfo.checkStatus != domainCheckStatus.finshedCheck
+    ) {
       this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
+      this.domainInfo.domainSafeLevel = checkResult.level;
+      this.domainInfo.suggested_url = checkResult.suggested_url;
+      this.domainInfo.html_body_fuzzy_hash =
+        checkResult.html_body_fuzzy_hash || "";
+      this.domainInfo.logo_phash = checkResult.logo_phash || "";
+      this.domainInfo.title_keyword = checkResult.title_keyword || "";
+      //if domainSafeLevel == fuzzy to check
+      if (this.domainInfo.domainSafeLevel == domainSafeLevel.Fuzzy) {
+        this.doFuzzyCheck();
+      }
     }
+    if (this.config.retryCount >= this.config.maxRetryNum) {
+      this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
+      return;
+    }
+  }
+
+  //doFuzzyCheck
+  async doFuzzyCheck() {
+    if (this.domainInfo.isFuzzyCheck) {
+      return;
+    }
+    this.domainInfo.isFuzzyCheck = true;
+    //check title
+    if (this.fuzzyCheckTitle()) {
+      return this.notifyFuzzyDomain("title");
+    }
+    //html
+    if (this.fuzzyCheckHtml()) {
+      return this.notifyFuzzyDomain("html");
+    }
+    //logo
+    if (this.fuzzyCheckLogo()) {
+      return this.notifyFuzzyDomain("logo");
+    }
+  }
+
+  fuzzyCheckTitle(): boolean {
+    if (this.domainInfo.title_keyword != "") {
+      const origin_title_keyword: string = this.domainInfo.title_keyword.toLowerCase();
+      const title = document.title.toLowerCase();
+      console.log("document: ", title);
+      const title_arr = title.toLowerCase().replace(",", "").split(" ");
+      if (
+        title_arr.find((title) => {
+          return title == origin_title_keyword;
+        })
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  fuzzyCheckLogo(): boolean {
+    const suggested_url_domain = parseUrlToDomain(
+      this.domainInfo.suggested_url,
+      "topdomain"
+    );
+    if (suggested_url_domain == "") {
+      return false;
+    }
+    const links = document.querySelectorAll("head > link");
+    for (const link of links) {
+      if (!link.hasAttribute("href")) {
+        continue;
+      }
+      const href = link.getAttribute("href") || "";
+      if (
+        href.indexOf("http") != -1 &&
+        suggested_url_domain === parseUrlToDomain(href)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  getSiteLogo(): string {
+    const links = document.getElementsByTagName("link");
+    let site_logo = "";
+    if (links.length > 0) {
+      for (let i = 0; i < links.length; i++) {
+        if (i > 10) {
+          break;
+        }
+        if (links[i].rel.indexOf("icon") > -1) {
+          const logo = links[i].href;
+          const sizes = links[i].sizes;
+          if (site_logo == "") {
+            site_logo = logo;
+          }
+          if (sizes && sizes.toString() == "32x32") {
+            site_logo = logo;
+            break;
+          }
+        }
+      }
+    }
+    console.log("site_logo: ", site_logo);
+    return site_logo;
+  }
+
+  fuzzyCheckHtml(): boolean {
+    if (this.domainInfo.html_body_fuzzy_hash == "") {
+      return false;
+    }
+    console.time("fuzzyChekcHtml");
+    const body = document.body.outerHTML;
+    const request_url_html_body_hash = html_similar.digest(body);
+    const score = html_similar.distance(
+      this.domainInfo.html_body_fuzzy_hash,
+      request_url_html_body_hash
+    );
+    console.log("request_url_html_body_hash: ", request_url_html_body_hash);
+    console.log("html_body_fuzzy_hash: ", this.domainInfo.html_body_fuzzy_hash);
+    console.log("html body fuzzy html score: ", score);
+    console.timeEnd("fuzzyChekcHtml");
+    if (score > 60) {
+      return true;
+    }
+    return false;
+  }
+
+  async notifyFuzzyDomain(tag: string) {
+    console.log("doFuzzyCheck notifyFuzzyDomain start tag ", tag);
+    const result = await proxyClient.notifyFuzzyDomain(
+      this.domainInfo.hostname,
+      this.domainInfo.suggested_url
+    );
+    console.log("doFuzzyCheck result >>: ", result);
   }
 }

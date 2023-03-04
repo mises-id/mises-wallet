@@ -18,7 +18,12 @@ class ProxyClient {
   }
   requestMethod(
     method: string,
-    params: { domain?: any; contractAddress?: any }
+    params: {
+      domain?: any;
+      contractAddress?: any;
+      suggested_url?: any;
+      logo?: string;
+    }
   ) {
     const bytes = new Uint8Array(8);
     const id = Array.from(crypto.getRandomValues(bytes))
@@ -37,7 +42,7 @@ class ProxyClient {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         resolve("receive response timeout");
-      }, 500);
+      }, 5000);
       const receiveResponse = (e: { data: any }) => {
         const proxyResponse = this.parseMessage
           ? this.parseMessage(e.data)
@@ -72,13 +77,20 @@ class ProxyClient {
       this.eventListener.postMessage(proxyMessage);
     });
   }
-  async verifyDomain(domain: any) {
-    return await this.requestMethod("verifyDomain", { domain });
+  async verifyDomain(domain: string, logo: string) {
+    return await this.requestMethod("verifyDomain", { domain, logo });
   }
+
   async verifyContract(contractAddress: string, domain: string) {
     return await this.requestMethod("verifyContract", {
       contractAddress,
       domain,
+    });
+  }
+  async notifyFuzzyDomain(domain: string, suggested_url: string) {
+    return await this.requestMethod("notifyFuzzyDomain", {
+      domain,
+      suggested_url,
     });
   }
 
@@ -127,7 +139,6 @@ class ProxyClient {
     this.eventListener.postMessage(proxyMessage);
   }
   async listenUserDecision() {
-    console.log("listenUserDecision");
     return await this.listenCurrentPage("userDecision");
   }
 }
