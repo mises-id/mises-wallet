@@ -1,5 +1,5 @@
-export const MISES_SITE_API: string = "https://api.alb.mises.site/api/v1";
-// export const MISES_SITE_API = 'http://192.168.1.2:8080/api/v1';
+export const MISES_SITE_API: string = "https://api.test.mises.site/api/v1";
+//export const MISES_SITE_API = "http://localhost:8080/api/v1";
 // export const MISES_POINT = 'http://192.168.1.8:26657';
 export const MISES_POINT: string = "http://127.0.0.1:26657";
 
@@ -171,7 +171,7 @@ interface misesRequestConfig<T, R> extends RequestConfig<misesResponse<R>> {
 
 const request = new Request({
   baseURL: MISES_SITE_API,
-  timeout: 3000,
+  timeout: 6000,
   interceptors: {
     // 请求拦截器
     requestInterceptors: (config) => config,
@@ -199,6 +199,7 @@ export const misesRequest = async <D = any, T = any>(
   }
   try {
     const data = await request.request<misesResponse<T>>(config);
+    console.log(data);
     if (data.code === "ECONNABORTED") {
       return Promise.reject("ECONNABORTED");
     }

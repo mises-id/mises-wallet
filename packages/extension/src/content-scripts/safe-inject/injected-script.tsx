@@ -106,8 +106,6 @@ export class ContentScripts {
     }
     this.initContainer();
     this.initWeb3Proxy();
-    this.verifyDomain();
-    //this.fuzzyCheckLogo();
   }
   // 初始化外层包裹元素
   initContainer() {
@@ -292,7 +290,6 @@ export class ContentScripts {
       const title = document.title.toLowerCase();
       console.log("document: ", title);
       const title_arr = title.toLowerCase().replace(",", "").split(" ");
-      console.log("title: ", title_arr);
       if (
         title_arr.find((title) => {
           return title == origin_title_keyword;
