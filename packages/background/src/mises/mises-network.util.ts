@@ -199,7 +199,6 @@ export const misesRequest = async <D = any, T = any>(
   }
   try {
     const data = await request.request<misesResponse<T>>(config);
-    console.log(data);
     if (data.code === "ECONNABORTED") {
       return Promise.reject("ECONNABORTED");
     }
