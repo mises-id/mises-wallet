@@ -1,7 +1,6 @@
 // /* global chrome */
 import { proxyClient } from "./post-message";
 //import { image_similar } from "./image-similar";
-import { html_similar } from "./html-similar";
 
 const domainCheckStatus = {
   waitCheck: "waitCheck",
@@ -274,13 +273,13 @@ export class ContentScripts {
     if (this.fuzzyCheckTitle()) {
       return this.notifyFuzzyDomain("title");
     }
-    //html
-    if (this.fuzzyCheckHtml()) {
-      return this.notifyFuzzyDomain("html");
-    }
     //logo
     if (this.fuzzyCheckLogo()) {
       return this.notifyFuzzyDomain("logo");
+    }
+    //html
+    if (await this.fuzzyCheckHtml()) {
+      return this.notifyFuzzyDomain("html");
     }
   }
 
@@ -350,22 +349,17 @@ export class ContentScripts {
     return site_logo;
   }
 
-  fuzzyCheckHtml(): boolean {
+  async fuzzyCheckHtml(): Promise<boolean> {
     if (this.domainInfo.html_body_fuzzy_hash == "") {
       return false;
     }
-    console.time("fuzzyChekcHtml");
     const body = document.body.outerHTML;
-    const request_url_html_body_hash = html_similar.digest(body);
-    const score = html_similar.distance(
-      this.domainInfo.html_body_fuzzy_hash,
-      request_url_html_body_hash
+    const score = await proxyClient.calculateHtmlSimilarly(
+      body,
+      this.domainInfo.html_body_fuzzy_hash
     );
-    console.log("request_url_html_body_hash: ", request_url_html_body_hash);
-    console.log("html_body_fuzzy_hash: ", this.domainInfo.html_body_fuzzy_hash);
-    console.log("html body fuzzy html score: ", score);
-    console.timeEnd("fuzzyChekcHtml");
-    if (score > 60) {
+    console.log("score: ", score);
+    if (score && score > 60) {
       return true;
     }
     return false;

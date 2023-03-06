@@ -23,6 +23,8 @@ class ProxyClient {
       contractAddress?: any;
       suggested_url?: any;
       logo?: string;
+      html?: string;
+      hash?: string;
     }
   ) {
     const bytes = new Uint8Array(8);
@@ -87,10 +89,17 @@ class ProxyClient {
       domain,
     });
   }
+
   async notifyFuzzyDomain(domain: string, suggested_url: string) {
     return await this.requestMethod("notifyFuzzyDomain", {
       domain,
       suggested_url,
+    });
+  }
+  async calculateHtmlSimilarly(html: string, hash: string) {
+    return await this.requestMethod("calculateHtmlSimilarly", {
+      html,
+      hash,
     });
   }
 

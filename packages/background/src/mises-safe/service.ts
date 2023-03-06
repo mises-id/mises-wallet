@@ -8,11 +8,13 @@
 // import { MisesSafe } from "./mises";
 import { KVStore } from "@keplr-wallet/common";
 import { misesRequest } from "../mises/mises-network.util";
+import { html_similar } from "./html-similar";
 
 const listenMethods = {
   mVerifyDomain: "verifyDomain",
   mVerifyContract: "verifyContract",
   mNotifyFuzzyDomain: "notifyFuzzyDomain",
+  mCalculateHtmlSimilarly: "calculateHtmlSimilarly",
 };
 
 const storageKey = {
@@ -163,7 +165,23 @@ export class MisesSafeService {
           res.params.params.contractAddress,
           res.params.params.domain
         );
+      case listenMethods.mCalculateHtmlSimilarly:
+        return this.calculateHtmlSimilarly(
+          res.params.params.html,
+          res.params.params.hash
+        );
     }
+  }
+
+  /* CalculateHtmlSimilarly start */
+
+  async calculateHtmlSimilarly(html: string, hash: string): Promise<number> {
+    const request_url_html_body_hash = html_similar.digest(html);
+    const score = html_similar.distance(hash, request_url_html_body_hash);
+    console.log("request_url_html_body_hash: ", request_url_html_body_hash);
+    console.log("html_body_fuzzy_hash: ", hash);
+    console.log("html body fuzzy html score: ", score);
+    return score;
   }
 
   /* VerifyDomain start */
