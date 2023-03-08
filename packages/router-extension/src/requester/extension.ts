@@ -5,7 +5,6 @@ import {
   KeplrError,
 } from "@keplr-wallet/router";
 import { getKeplrExtensionRouterId } from "../utils";
-
 export class InExtensionMessageRequester implements MessageRequester {
   async sendMessage<M extends Message<unknown>>(
     port: string,
@@ -34,7 +33,6 @@ export class InExtensionMessageRequester implements MessageRequester {
             msg: JSONUint8Array.wrap(msg),
           },
           (result) => {
-            console.log(result, "sendMessage-result>>>>>>");
             resolve(result);
           }
         );

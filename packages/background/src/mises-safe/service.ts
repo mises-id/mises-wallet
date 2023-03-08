@@ -44,11 +44,11 @@ const isShouldVerifyStateKey = "isShouldVerify";
 
 export type notifyPhishingDetectedParams = {
   notify_type: string;
-  address: string;
-  domain: string;
-  suggested_url: string;
-  notify_tag: string;
-  notify_level: string;
+  address?: string;
+  domain?: string;
+  suggested_url?: string;
+  notify_tag?: string;
+  notify_level?: string;
 };
 
 export type verifyDomainResult = {
@@ -229,9 +229,13 @@ export class MisesSafeService {
       setTimeout(() => {
         this.removeBlackNotifying(domain);
       }, 3000);
-      const userDecision = await this.notifyPhishingDetected(<
-        notifyPhishingDetectedParams
-      >{
+      const userDecision = await this.notifyPhishingDetected<{
+        notify_type: string;
+        domain: string;
+        suggested_url: string;
+        notify_tag: string;
+        notify_level: string;
+      }>({
         notify_type: "url",
         domain: domain,
         suggested_url: verifyDomainResult.suggested_url || "",
@@ -265,9 +269,7 @@ export class MisesSafeService {
       domain,
       suggested_url
     );
-    const userDecision = await this.notifyPhishingDetected(<
-      notifyPhishingDetectedParams
-    >{
+    const userDecision = await this.notifyPhishingDetected({
       notify_type: "url",
       notify_tag: "fuzzy",
       domain: domain,
@@ -362,9 +364,10 @@ export class MisesSafeService {
         this.removeBlackNotifying(contractAddress);
       }, 3000);
       console.log("notifyPhishingDetected start: ", contractAddress);
-      const userDecision = await this.notifyPhishingDetected(<
-        notifyPhishingDetectedParams
-      >{ address: contractAddress, notify_type: "address" });
+      const userDecision = await this.notifyPhishingDetected({
+        address: contractAddress,
+        notify_type: "address",
+      });
       console.log("notifyPhishingDetected result: ", userDecision);
       if (userDecision === userAction.Ignore) {
         console.log("notifyPhishingDetected set: ", userDecision);
@@ -407,8 +410,8 @@ export class MisesSafeService {
 
   /* verifyContract end */
 
-  notifyPhishingDetected(
-    params: notifyPhishingDetectedParams
+  notifyPhishingDetected<T = notifyPhishingDetectedParams>(
+    params: T
   ): Promise<string> {
     return new Promise((resolve) => {
       if (

@@ -93,7 +93,6 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
     this.bech32Address = bech32Address;
 
     this.misesStore = misesStore;
-
     makeObservable(this);
   }
 
@@ -104,13 +103,20 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   @override
   *fetch() {
+    this._isFetching = true;
     this.QueryClient?.fetchQuery(
       "getMisesBalance",
       () => this.getMisesBalance(),
       this.fetchConfig
-    ).then((result) => {
-      this.setResponse(result);
-    });
+    )
+      .then((result) => {
+        this._isFetching = false;
+        this.setResponse(result);
+      })
+      .catch((error) => {
+        this._isFetching = false;
+        this.setError(error);
+      });
   }
 
   async getMisesBalance() {
@@ -132,9 +138,9 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
     super.setResponse(response);
 
     const chainInfo = this.chainGetter.getChain(this.chainId);
-    // 반환된 response 안의 denom을 등록하도록 시도한다.
-    // 어차피 이미 등록되어 있으면 밑의 메소드가 아무 행동도 안하기 때문에 괜찮다.
-    // computed를 줄이기 위해서 배열로 한번에 설정하는게 낫다.
+    // Attempt to register denom in the returned response.
+    // If it's already registered anyway, it's okay because the method below doesn't do anything.
+    // Better to set it all at once as an array to reduce computation.
     const denoms = response.data.balances.map((coin) => coin.denom);
     chainInfo.addUnknownCurrencies(...denoms);
   }

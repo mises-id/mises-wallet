@@ -229,27 +229,37 @@ Sentry.init({
   dsn:
     "https://66dc9e60f6764bf4a127e9f11f702b9f@o1162849.ingest.sentry.io/4504417442791424",
   integrations: [new BrowserTracing()],
-
+  release: manifest.version,
   // Set tracesSampleRate to 1.0 to capture 100%
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
   beforeSend: (event, hint) => {
-    console.log(hint, event);
-    if (
-      hint.originalException &&
-      [
-        "Error: Failed to fetch",
-        "UnhandledRejection: Non-Error promise rejection captured with keys: message",
-      ].includes(hint.originalException?.toString())
-    ) {
-      // logEvent(analytics, "misesWallet_error", {
-      //   error_message: hint.originalException?.toString(),
-      // });
+    if (hint.originalException) {
+      console.log(event, hint.originalException.toString());
+      const errorConnection =
+        hint.originalException.toString().indexOf("connection reset by peer") >
+        -1;
+      const failedToFetch =
+        hint.originalException.toString().indexOf("Failed to fetch") > -1 ||
+        hint.originalException
+          .toString()
+          .indexOf("Cannot read properties of undefined (reading 'response')") >
+          -1;
+      const promiseNonError =
+        hint.originalException
+          .toString()
+          .indexOf("Non-Error promise rejection captured with keys: message") >
+        -1;
+      if (promiseNonError || errorConnection || failedToFetch) {
+        // logEvent(analytics, "misesWallet_error", {
+        //   error_message: hint.originalException?.toString(),
+        // });
 
-      return null;
+        return null;
+      }
     }
-    console.log(event);
+
     return event;
   },
 });

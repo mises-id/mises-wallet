@@ -5,22 +5,6 @@
   "workspaces": {
     "packages": [
       "packages/*"
-    ],
-    "nohoist": [
-      "**/@react-native-*/**",
-      "**/react-native",
-      "**/react-native/**",
-      "**/*-react-native",
-      "**/react-native-*",
-      "**/@react-navigation/**",
-      "**/expo-*",
-      "**/@unimodules/**",
-      "**/unimodules-*",
-      "**/native-base",
-      "**/@react-native-async-storage/async-storage",
-      "**/@ledgerhq/react-native-hw-transport-ble",
-      "**/jetifier",
-      "**/@bugsnag/**"
     ]
   },
   "scripts": {
@@ -37,7 +21,8 @@
     "ci": "yarn install --frozen-lockfile && yarn build && yarn workspace mobile typecheck && yarn test",
     "ci-lint": "yarn install --frozen-lockfile && yarn lint-test",
     "pre-commit": "lint-staged",
-    "version": "zx ./scripts/lerna-lifecyle-check-version.mjs"
+    "version": "zx ./scripts/lerna-lifecyle-check-version.mjs",
+    "fixbuild": "lerna run lint-fix && lerna run build"
   },
   "pre-commit": [
     "pre-commit"

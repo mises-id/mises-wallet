@@ -127,20 +127,25 @@ export class ObservableQueryDelegationsInner extends ObservableChainQuery<Delega
     if (!this.bech32Address) {
       return;
     }
-
+    this._isFetching = true;
     this.QueryClient?.fetchQuery(
       "delegations",
-      async () => {
-        const res = await this.misesStore.delegations(this.bech32Address);
+      () => this.misesStore.delegations(this.bech32Address),
+      this.fetchConfig
+    )
+      .then((res) => {
+        this._isFetching = false;
         this.setResponse({
           data: res,
           status: 200,
           staled: true,
           timestamp: new Date().getTime(),
         });
-      },
-      this.fetchConfig
-    );
+      })
+      .catch((err) => {
+        this._isFetching = false;
+        this.setError(err);
+      });
   }
 }
 

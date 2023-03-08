@@ -60,6 +60,30 @@ export class Crypto {
       r: 8,
       p: 1,
     };
+
+    random = new Uint8Array(16);
+    const iv = Buffer.from(await crypto.rng(random));
+    // If the mnemonic is not imported, there will be no mnemonic content
+    if (!text && !password && type === "mnemonic") {
+      return {
+        version: "1.2",
+        type,
+        coinTypeForChain: {},
+        bip44HDPath,
+        meta,
+        crypto: {
+          cipher: "aes-128-ctr",
+          cipherparams: {
+            iv: iv.toString("hex"),
+          },
+          ciphertext: "",
+          kdf,
+          kdfparams: scryptParams,
+          mac: "",
+        },
+      };
+    }
+
     const derivedKey = await (async () => {
       switch (kdf) {
         case "scrypt":
@@ -88,9 +112,6 @@ export class Crypto {
       }
     })();
     const buf = Buffer.from(text);
-
-    random = new Uint8Array(16);
-    const iv = Buffer.from(await crypto.rng(random));
 
     const counter = new Counter(0);
     counter.setBytes(iv);

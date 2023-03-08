@@ -18,8 +18,11 @@ import {
   LockMsg,
   SaveTranstionsMsg,
   IndexTx,
+  GetLocalCacheMsg,
+  SetLocalCacheMsg,
 } from "@keplr-wallet/background";
 import { PubKey } from "@keplr-wallet/types";
+import { Coin } from "@cosmjs/proto-signing";
 export class MisesStore {
   @observable
   isInitializing: boolean = false;
@@ -32,10 +35,10 @@ export class MisesStore {
     this.initAutoLockAccountDuration();
   }
 
-  async getBalanceUMIS() {
+  async getBalanceUMIS(address?: string) {
     return await this.requester.sendMessage(
       BACKGROUND_PORT,
-      new BalanceUMISMsg()
+      new BalanceUMISMsg(address)
     );
   }
 
@@ -150,5 +153,16 @@ export class MisesStore {
       BACKGROUND_PORT,
       new SaveTranstionsMsg(transactions)
     );
+  }
+
+  getLocalCache(address?: string) {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new GetLocalCacheMsg(address)
+    );
+  }
+
+  setLocalCache(params: { stakedSum: Coin }) {
+    this.requester.sendMessage(BACKGROUND_PORT, new SetLocalCacheMsg(params));
   }
 }

@@ -40,7 +40,7 @@ export class InteractionService {
       .then(() => {
         console.log(port, msg, "success sendMessage");
       })
-      .catch((e) => {
+      .catch((e: any) => {
         console.log(`Failed to send the event to ${port}: ${e.message}`);
       });
   }
