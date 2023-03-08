@@ -25,6 +25,7 @@ import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import { PubKey } from "@keplr-wallet/types";
 import Long from "long";
 import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
+import { Coin } from "@cosmjs/proto-signing";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -47,6 +48,8 @@ export type userInfo = {
   token: string;
   timestamp: number;
   transtions: IndexTx[];
+  balance: Coin;
+  stakedSum: Coin;
 };
 
 type getTokenParams = {
@@ -71,6 +74,14 @@ const defaultUserInfo = {
   token: "",
   timestamp: 0,
   transtions: [],
+  balance: {
+    denom: "mis",
+    amount: "0",
+  },
+  stakedSum: {
+    denom: "mis",
+    amount: "0",
+  },
 };
 
 export const fetchConfig = {
@@ -100,7 +111,9 @@ export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
   keepAlivePort: browser.runtime.Port | null = null;
-
+  queryClientStatus: boolean = false;
+  queryClientTryMaxCount: number = 5;
+  queryClientTryCount: number = 1;
   constructor(protected readonly kvStore: KVStore) {}
   data: any = {};
   private mises!: Mises;
@@ -121,6 +134,12 @@ export class MisesService {
       return this.queryClient;
     }
 
+    if (this.queryClientStatus) {
+      return "await";
+    }
+
+    this.queryClientStatus = true;
+
     this.mises.queryFetchClient.fetchQuery(
       "gasPriceAndLimit",
       () => this.gasPriceAndLimit(),
@@ -128,7 +147,7 @@ export class MisesService {
     );
 
     try {
-      console.log("init start");
+      console.log("init");
       const clients = await this.mises.queryFetchClient.fetchQuery(
         "makeClient",
         () => this.mises.makeClient(),
@@ -139,11 +158,34 @@ export class MisesService {
       this.queryClient = queryClient;
       this.tmClient = tmClient;
 
+      this.queryClientStatus = false;
       console.log("init success");
       return queryClient;
     } catch (error) {
       console.log(error, "initQueryClient failed");
     }
+  }
+
+  async queryClientAwait() {
+    const queryClientStatus = await this.initQueryClient();
+    return new Promise<void>((resolve, reject) => {
+      if (this.queryClientTryCount === this.queryClientTryMaxCount) {
+        this.queryClientTryCount = 1; // reset
+        reject("queryClientAwait timeout");
+        return;
+      }
+
+      if (queryClientStatus === "await") {
+        setTimeout(async () => {
+          this.queryClientTryCount++;
+          await this.queryClientAwait();
+          resolve();
+        }, 500 * this.queryClientTryCount);
+      } else {
+        this.queryClientTryCount = 1;
+        resolve();
+      }
+    });
   }
 
   async activateUser(priKey: string): Promise<void> {
@@ -165,9 +207,11 @@ export class MisesService {
   }
 
   async misesUserInfo() {
-    const misesId = this.activeUser && this.activeUser.address();
+    const misesId = this.activeUser?.address();
+
     const userInfo =
-      (await this.kvStore.get<userInfo>(misesId)) || defaultUserInfo; // init userInfo
+      (misesId && (await this.kvStore.get<userInfo>(misesId))) ||
+      defaultUserInfo; // init userInfo
 
     const nowTimeStamp = new Date().getTime();
     const expireTokenFlag =
@@ -309,7 +353,7 @@ export class MisesService {
       const activeUser = this.activeUser;
       const userinfo = await activeUser.info();
       const version = userinfo.version.add(1);
-      const { misesId, token, timestamp } = this.userInfo;
+      const { misesId, token, timestamp, balance } = this.userInfo;
 
       await activeUser.setInfo({
         ...data,
@@ -324,7 +368,9 @@ export class MisesService {
         token,
         misesId,
         timestamp,
+        balance,
         transtions: this.userInfo.transtions,
+        stakedSum: this.userInfo.stakedSum,
       };
 
       this.storeUserInfo(updateUserInfo);
@@ -385,8 +431,6 @@ export class MisesService {
 
   resetUserInfo() {
     this.userInfo = defaultUserInfo;
-
-    this.save();
   }
 
   storeUserInfo(userInfo: userInfo) {
@@ -403,9 +447,20 @@ export class MisesService {
     }
   }
 
-  async getBalanceUMIS() {
+  async getBalanceUMIS(address?: string) {
+    if (address) {
+      const currentAddressInfo = await this.kvStore.get<userInfo>(address);
+      return (
+        currentAddressInfo?.balance ||
+        this.mises.coinDefine.toCoinUMIS(Long.ZERO)
+      );
+    }
+
     const balance = await this.activeUser?.getBalanceUMIS();
-    return this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
+    const toCoinUMIS = this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
+    this.userInfo.balance = toCoinUMIS;
+    this.save();
+    return toCoinUMIS;
   }
 
   getChainId() {
@@ -413,47 +468,67 @@ export class MisesService {
   }
 
   async unbondingDelegations(address: string) {
-    const queryClient = await this.initQueryClient();
-
-    return queryClient?.staking.delegatorUnbondingDelegations(address);
+    try {
+      await this.queryClientAwait();
+      const queryClient = await this.initQueryClient();
+      if (queryClient !== "await") {
+        const delegatorUnbondingDelegations = await queryClient?.staking.delegatorUnbondingDelegations(
+          address
+        );
+        return delegatorUnbondingDelegations;
+      }
+    } catch (error) {}
   }
 
   async delegations(address: string) {
-    const queryClient = await this.initQueryClient();
-    const delegatorDelegationsResponse = await queryClient?.staking.delegatorDelegations(
-      address
-    );
-    const total =
-      delegatorDelegationsResponse?.pagination?.total?.toNumber() || 0;
+    try {
+      await this.queryClientAwait();
 
-    if (total > 100 && delegatorDelegationsResponse?.delegationResponses) {
-      const nextRes = await queryClient?.staking.delegatorDelegations(
-        address,
-        delegatorDelegationsResponse?.pagination?.nextKey
-      );
-      if (nextRes?.delegationResponses) {
-        return {
-          delegationResponses: [
-            ...delegatorDelegationsResponse.delegationResponses,
-            ...nextRes?.delegationResponses,
-          ],
-        };
+      const queryClient = await this.initQueryClient();
+      if (queryClient !== "await") {
+        const delegatorDelegationsResponse = await queryClient?.staking.delegatorDelegations(
+          address
+        );
+        const total =
+          delegatorDelegationsResponse?.pagination?.total?.toNumber() || 0;
+
+        if (total > 100 && delegatorDelegationsResponse?.delegationResponses) {
+          const nextRes = await queryClient?.staking.delegatorDelegations(
+            address,
+            delegatorDelegationsResponse?.pagination?.nextKey
+          );
+          if (nextRes?.delegationResponses) {
+            return {
+              delegationResponses: [
+                ...delegatorDelegationsResponse.delegationResponses,
+                ...nextRes?.delegationResponses,
+              ],
+            };
+          }
+        }
+        return delegatorDelegationsResponse;
       }
-    }
-
-    return delegatorDelegationsResponse;
+    } catch (error) {}
   }
 
   async rewards(address: string) {
-    const queryClient = await this.initQueryClient();
+    try {
+      await this.queryClientAwait();
 
-    return queryClient?.distribution.delegationTotalRewards(address);
+      const queryClient = await this.initQueryClient();
+      if (queryClient !== "await")
+        return queryClient?.distribution.delegationTotalRewards(address);
+    } catch (error) {}
   }
 
   async authAccounts(address: string) {
-    const queryClient = await this.initQueryClient();
+    try {
+      await this.queryClientAwait();
 
-    return queryClient?.auth.account(address);
+      const queryClient = await this.initQueryClient();
+
+      if (queryClient !== "await") return queryClient?.auth.account(address);
+    } catch (error) {}
   }
 
   public async pollForTx(
@@ -871,5 +946,21 @@ export class MisesService {
       this.keepAlivePort?.disconnect();
       this.handleDisconnect({});
     }
+  }
+
+  setCacheUserInfo(params: { stakedSum: Coin }) {
+    this.userInfo = {
+      ...this.userInfo,
+      ...params,
+    };
+    this.save();
+  }
+
+  async getAddressUserInfo(address?: string) {
+    if (address) {
+      const currentAddressInfo = await this.kvStore.get<userInfo>(address);
+      return currentAddressInfo || this.userInfo;
+    }
+    return this.userInfo;
   }
 }

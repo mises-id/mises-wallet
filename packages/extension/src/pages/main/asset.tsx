@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 
 import { Dec, DecUtils, CoinPretty } from "@keplr-wallet/unit";
 
@@ -8,6 +8,8 @@ import styleAsset from "./asset.module.scss";
 import { ToolTip } from "../../components/tooltip";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLanguage } from "../../languages";
+import classnames from "classnames";
+import { userInfo } from "@keplr-wallet/background";
 
 const LazyDoughnut = React.lazy(async () => {
   const module = await import(
@@ -107,7 +109,13 @@ const LazyDoughnut = React.lazy(async () => {
 });
 
 export const AssetStakedChartView: FunctionComponent = observer(() => {
-  const { chainStore, accountStore, queriesStore, priceStore } = useStore();
+  const {
+    chainStore,
+    accountStore,
+    queriesStore,
+    priceStore,
+    misesStore,
+  } = useStore();
 
   const intl = useIntl();
 
@@ -144,6 +152,11 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
 
   // const totalPrice = priceStore.calculatePrice(total, fiatCurrency);
 
+  const [stakableBalance, setStakableBalance] = useState<CoinPretty>(stakable);
+  const [stakedSumBalance, setStakedSumBalance] = useState<CoinPretty>(
+    stakedSum
+  );
+
   // If fiat value is fetched, show the value that is multiplied with amount and fiat value.
   // If not, just show the amount of asset.
   const data: number[] = (() => {
@@ -159,15 +172,59 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
       ];
     } else {
       return [
-        parseFloat(stakable.toDec().toString()),
-        parseFloat(stakedSum.toDec().toString()),
+        parseFloat(stakableBalance.toDec().toString()),
+        parseFloat(stakedSumBalance.toDec().toString()),
       ];
     }
   })();
-  const tatalBalance = new CoinPretty(
+
+  const totalBalance = new CoinPretty(
     stakedSum.currency,
     data[0] * 1000000 + data[1] * 1000000
   );
+  useEffect(() => {
+    const currentAddress = sessionStorage.getItem("currentAddress");
+    if (accountInfo.bech32Address !== currentAddress) {
+      misesStore.getBalanceUMIS(accountInfo.bech32Address).then((res) => {
+        const stakableBalanceCache = new CoinPretty(
+          stakedSum.currency,
+          res.amount
+        );
+        setStakableBalance(stakableBalanceCache);
+      });
+      misesStore
+        .getLocalCache(accountInfo.bech32Address)
+        .then((res: userInfo) => {
+          const stakedSumCache = new CoinPretty(
+            stakedSum.currency,
+            res.stakedSum?.amount || "0"
+          );
+          setStakedSumBalance(stakedSumCache);
+        });
+      sessionStorage.setItem("currentAddress", accountInfo.bech32Address);
+    }
+    // eslint-disable-next-line
+  }, [accountInfo.bech32Address]);
+  useEffect(() => {
+    if (!balanceStakableQuery.isFetching && !balanceStakableQuery.error) {
+      setStakedSumBalance(stakedSum);
+      setStakableBalance(stakable);
+      setTimeout(() => {
+        if (stakedSum.toCoin().amount !== "0") {
+          const userLocal = {
+            stakedSum: stakedSum.toCoin(),
+          };
+          console.log(userLocal);
+          misesStore.setLocalCache(userLocal);
+        }
+      }, 500);
+    }
+    // eslint-disable-next-line
+  }, [
+    stakable.toString(),
+    stakedSum.toString(),
+    balanceStakableQuery.isFetching,
+  ]);
 
   return (
     <React.Fragment>
@@ -176,11 +233,11 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
           <div className={styleAsset.big}>
             <FormattedMessage id="main.account.chart.total-balance" />
           </div>
-          <div className={styleAsset.small}>
+          <div className={classnames(styleAsset.small)}>
             {/* {totalPrice
               ? totalPrice.toString()
               : total.shrink(true).trim(true).maxDecimals(6).toString()} */}
-            {tatalBalance.shrink(true).trim(true).maxDecimals(4).toString()}
+            {totalBalance.shrink(true).trim(true).maxDecimals(4).toString()}
           </div>
           <div className={styleAsset.indicatorIcon}>
             <React.Fragment>
@@ -237,13 +294,13 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
                     // There are only two labels (stakable, staked (including unbondings)).
                     if (item.index === 0) {
                       if (!total.toDec().equals(new Dec(0))) {
-                        ratio = stakable
+                        ratio = stakableBalance
                           .toDec()
                           .quo(total.toDec())
                           .mul(DecUtils.getPrecisionDec(2));
                       }
 
-                      return `${stakable
+                      return `${stakableBalance
                         .separator("")
                         .trim(true)
                         .shrink(true)
@@ -251,13 +308,13 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
                         .toString()} (${ratio.toString(1)}%)`;
                     } else if (item.index === 1) {
                       if (!total.toDec().equals(new Dec(0))) {
-                        ratio = stakedSum
+                        ratio = stakedSumBalance
                           .toDec()
                           .quo(total.toDec())
                           .mul(DecUtils.getPrecisionDec(2));
                       }
 
-                      return `${stakedSum
+                      return `${stakedSumBalance
                         .separator("")
                         .trim(true)
                         .shrink(true)
@@ -288,7 +345,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
               color: "#525f7f",
             }}
           >
-            {stakable.shrink(true).maxDecimals(6).toString()}
+            {stakableBalance.shrink(true).maxDecimals(6).toString()}
           </div>
         </div>
         <div className={styleAsset.legend}>
@@ -305,7 +362,7 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
               color: "#525f7f",
             }}
           >
-            {stakedSum.shrink(true).maxDecimals(6).toString()}
+            {stakedSumBalance.shrink(true).maxDecimals(6).toString()}
           </div>
         </div>
       </div>
