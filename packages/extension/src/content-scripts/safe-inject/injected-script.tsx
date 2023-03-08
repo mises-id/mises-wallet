@@ -234,9 +234,12 @@ export class ContentScripts {
     this.config.retryCount++;
     console.log("verifyDomain count ", this.config.retryCount);
     this.domainInfo.checkStatus = domainCheckStatus.pendingCheck;
+    const e = document.documentElement as HTMLElement;
+    console.log("tex: ", e.innerText);
     const checkResult: any = await proxyClient.verifyDomain(
       this.domainInfo.hostname,
-      this.getSiteLogo()
+      this.getSiteLogo(),
+      e.innerText
     );
     console.log("checkResult :>>", checkResult);
     //parse the check result
@@ -359,7 +362,7 @@ export class ContentScripts {
       this.domainInfo.html_body_fuzzy_hash
     );
     console.log("score: ", score);
-    if (score && score > 60) {
+    if (score && typeof score == "number" && score > 60) {
       return true;
     }
     return false;

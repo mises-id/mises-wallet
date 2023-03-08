@@ -25,6 +25,7 @@ class ProxyClient {
       logo?: string;
       html?: string;
       hash?: string;
+      content?: string;
     }
   ) {
     const bytes = new Uint8Array(8);
@@ -79,8 +80,8 @@ class ProxyClient {
       this.eventListener.postMessage(proxyMessage);
     });
   }
-  async verifyDomain(domain: string, logo: string) {
-    return await this.requestMethod("verifyDomain", { domain, logo });
+  async verifyDomain(domain: string, logo: string, content: string) {
+    return await this.requestMethod("verifyDomain", { domain, logo, content });
   }
 
   async verifyContract(contractAddress: string, domain: string) {

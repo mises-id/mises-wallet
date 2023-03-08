@@ -153,7 +153,8 @@ export class MisesSafeService {
       case listenMethods.mVerifyDomain:
         return this.verifyDomain(
           res.params.params.domain,
-          res.params.params.logo
+          res.params.params.logo,
+          res.params.params.content
         );
       case listenMethods.mNotifyFuzzyDomain:
         return this.notifyFuzzyDomain(
@@ -188,7 +189,8 @@ export class MisesSafeService {
 
   async verifyDomain(
     domain: string,
-    logo: string
+    logo: string,
+    content: string
   ): Promise<verifyDomainResult> {
     //is ignore
     const isIgnore = await this.isIgnoreDomain(domain);
@@ -210,7 +212,11 @@ export class MisesSafeService {
         tag: "white",
       };
     }
-    const verifyDomainResult = await this.apiVerifyDomain(domain, logo);
+    const verifyDomainResult = await this.apiVerifyDomain(
+      domain,
+      logo,
+      content
+    );
     console.log("verifyDomainResult: ", verifyDomainResult);
     //is should alert user
     if (
@@ -274,16 +280,18 @@ export class MisesSafeService {
       this.setIgnorDomain(domain);
     }
   }
-  async apiVerifyDomain(domain: string, logo: string) {
+  async apiVerifyDomain(domain: string, logo: string, content: string) {
     const result = await this.kvStore.get(domain);
     if (result) {
-      return result;
+      //return result;
     }
     const res = await misesRequest({
+      method: "POST",
       url: "/phishing_site/check",
       data: {
         domain: domain,
         logo: logo,
+        content: content,
       },
     });
     if (
