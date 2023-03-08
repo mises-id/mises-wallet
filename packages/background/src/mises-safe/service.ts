@@ -229,7 +229,13 @@ export class MisesSafeService {
       setTimeout(() => {
         this.removeBlackNotifying(domain);
       }, 3000);
-      const userDecision = await this.notifyPhishingDetected({
+      const userDecision = await this.notifyPhishingDetected<{
+        notify_type: string;
+        domain: string;
+        suggested_url: string;
+        notify_tag: string;
+        notify_level: string;
+      }>({
         notify_type: "url",
         domain: domain,
         suggested_url: verifyDomainResult.suggested_url || "",
@@ -404,8 +410,8 @@ export class MisesSafeService {
 
   /* verifyContract end */
 
-  notifyPhishingDetected(
-    params: notifyPhishingDetectedParams
+  notifyPhishingDetected<T = notifyPhishingDetectedParams>(
+    params: T
   ): Promise<string> {
     return new Promise((resolve) => {
       if (
