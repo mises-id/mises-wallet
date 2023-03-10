@@ -285,7 +285,7 @@ export class MisesSafeService {
   async apiVerifyDomain(domain: string, logo: string, content: string) {
     const result = await this.kvStore.get(domain);
     if (result) {
-      //return result;
+      return result;
     }
     const res = await misesRequest({
       method: "POST",
