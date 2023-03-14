@@ -239,7 +239,7 @@ export class MisesSafeService {
         notify_type: "url",
         domain: domain,
         suggested_url: verifyDomainResult.suggested_url || "",
-        notify_tag: "black",
+        notify_tag: "fuzzy",
         notify_level: "danger",
       });
       console.log("verifyDomain notifyPhishingDetected result: ", userDecision);
@@ -298,7 +298,8 @@ export class MisesSafeService {
     });
     if (
       res &&
-      (res.level !== domainLevel.Black || res.level !== domainLevel.Fuzzy)
+      res.level !== domainLevel.Black &&
+      res.level !== domainLevel.Fuzzy
     ) {
       this.kvStore.set(domain, res);
     }

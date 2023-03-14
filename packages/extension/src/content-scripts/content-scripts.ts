@@ -26,17 +26,41 @@ injectedScript.src = browser.runtime.getURL("injectedScript.bundle.js");
 injectedScript.type = "text/javascript";
 container.insertBefore(injectedScript, container.children[0]);
 injectedScript.remove();
-document.addEventListener("DOMContentLoaded", () => {
-  initPostMsgClient();
-  const body = document.body;
-  const injectedMisesScript = document.createElement("script");
-  injectedMisesScript.src = browser.runtime.getURL(
-    "safeInjectedScript.bundle.js"
-  );
-  injectedMisesScript.type = "text/javascript";
-  body.appendChild(injectedMisesScript);
-  injectedMisesScript.remove();
-});
+const initPostMsgClient = async () => {
+  window.addEventListener("message", async (e) => {
+    // 监听 message 事件
+    if (e.origin !== window.location.origin) {
+      // 验证消息来源地址
+      return;
+    }
+    if (!e.data || e.data.type !== "mises-proxy-request") {
+      return;
+    }
+    if (typeof e.data.method === "undefined") {
+      return;
+    }
+    if (e.data.method === "consoleLog") {
+      console.log("content consoleLog:>>", e.data);
+      return;
+    }
+    const res = await new InExtensionMessageRequester().sendMessage(
+      BACKGROUND_PORT,
+      new VerifyDomainMsg(e.data)
+    );
+    postMsg(e.data.id, res);
+  });
+};
+//InjectedSafeScript
+initPostMsgClient();
+const body = document.head || document.documentElement;
+const injectedMisesScript = document.createElement("script");
+injectedMisesScript.src = browser.runtime.getURL(
+  "safeInjectedScript.bundle.js"
+);
+injectedMisesScript.type = "text/javascript";
+body.insertBefore(injectedMisesScript, body.children[0]);
+injectedMisesScript.remove();
+document.addEventListener("DOMContentLoaded", () => {});
 
 export class VerifyDomainMsg extends Message<any> {
   public static type() {
@@ -74,31 +98,4 @@ const postMsg = (id: any, res: unknown) => {
     result: { return: res },
   };
   window.postMessage(contentToProxyMessage, targetOrigin);
-};
-
-const initPostMsgClient = async () => {
-  window.addEventListener("message", async (e) => {
-    // 监听 message 事件
-    if (e.origin !== window.location.origin) {
-      // 验证消息来源地址
-      return;
-    }
-    if (!e.data || e.data.type !== "mises-proxy-request") {
-      return;
-    }
-    if (typeof e.data.method === "undefined") {
-      return;
-    }
-    if (e.data.method === "consoleLog") {
-      console.log("content consoleLog:>>", e.data);
-      return;
-    }
-    const res = await new InExtensionMessageRequester().sendMessage(
-      BACKGROUND_PORT,
-      new VerifyDomainMsg(e.data)
-    );
-    //post msg back to proxyClient
-    //this.postMsg(res);
-    postMsg(e.data.id, res);
-  });
 };
