@@ -139,10 +139,14 @@ export async function closePopupTab() {
   console.log(openerTabId, "openerTabId");
 
   if (openerTabId) {
-    await browser.tabs.update(openerTabId, {
-      active: true,
-      highlighted: true,
-    });
+    try {
+      await browser.tabs.update(openerTabId, {
+        active: true,
+        highlighted: true,
+      });
+    } catch (error) {
+      console.log(error, "closePopupTab");
+    }
 
     browser.storage.local.set({
       _openerTab: "",

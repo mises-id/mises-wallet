@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode } from "react";
+import React, { FunctionComponent, ReactNode, useEffect } from "react";
 
 import { Header as CompHeader } from "../../components/header";
 
@@ -12,6 +12,8 @@ import { ChainList } from "./chain-list";
 import { Menu, useMenu, MenuButton } from "../menu";
 
 import { motion } from "framer-motion";
+import { KeyRingStatus } from "@keplr-wallet/background/src/keyring";
+import { useHistory } from "react-router";
 
 export interface Props {
   showChainName: boolean;
@@ -37,8 +39,15 @@ export const Header: FunctionComponent<Props & LocalProps> = observer(
     isMenuOpen,
     onBackButton,
   }) => {
-    const { chainStore } = useStore();
+    const { chainStore, keyRingStore } = useStore();
     const menu = useMenu();
+    const history = useHistory();
+    useEffect(() => {
+      if (keyRingStore.status === KeyRingStatus.LOCKED) {
+        history.replace("/");
+      }
+      // eslint-disable-next-line
+    }, [keyRingStore.status]);
 
     const chainInfoChangable =
       canChangeChainInfo &&

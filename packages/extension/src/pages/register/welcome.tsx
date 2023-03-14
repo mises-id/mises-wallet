@@ -29,7 +29,7 @@ export const WelcomePage: FunctionComponent = () => {
         type="submit"
         size="lg"
         onClick={async () => {
-          keyRingStore.changeKeyRing(keyRingStore.multiKeyStoreInfo.length - 1);
+          keyRingStore.changeKeyRing(0);
 
           if (typeof browser !== "undefined") {
             const tab = await browser.tabs.getCurrent();
