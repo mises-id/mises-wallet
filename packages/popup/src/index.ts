@@ -6,7 +6,6 @@ export const PopupSize = {
 const lastWindowIds: Record<string, number | undefined> = {};
 
 const lastTabIds: Record<string, number | undefined> = {};
-
 /**
  * Try open window if no previous window exists.
  * If, previous window exists, try to change the location of this window.
@@ -123,7 +122,7 @@ export async function openPopupTab(
       console.log(`Failed to update window focus: ${e.message}`);
     }
   }
-  browser.storage.local.set({
+  chrome.storage.local.set({
     lastTabId: lastTabIds[channel],
   });
 
@@ -148,14 +147,14 @@ export async function closePopupTab() {
       console.log(error, "closePopupTab");
     }
 
-    browser.storage.local.set({
+    chrome.storage.local.set({
       _openerTab: "",
       lastTabId: "",
     });
   }
 
   if (lastTabId) {
-    browser.tabs.remove(lastTabId);
+    chrome.tabs.remove(lastTabId);
   }
 }
 
@@ -173,10 +172,10 @@ export function fitPopupWindow() {
     height: window.outerHeight - window.innerHeight,
   };
 
-  if (browser.windows) {
-    browser.windows.getCurrent().then((window) => {
+  if (chrome.windows) {
+    chrome.windows.getCurrent((window) => {
       if (window?.id != null) {
-        browser.windows.update(window.id, {
+        chrome.windows.update(window.id, {
           width: PopupSize.width + gap.width,
           height: PopupSize.height + gap.height,
         });

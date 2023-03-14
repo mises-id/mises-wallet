@@ -10,6 +10,29 @@ import {
   isMobileStatus,
 } from "@keplr-wallet/popup";
 import { InExtensionMessageRequester } from "../requester";
+const getAllTabs = () => {
+  return new Promise<chrome.tabs.Tab[]>((resolve) => {
+    chrome.tabs.query(
+      {
+        discarded: false,
+        status: "complete",
+      },
+      resolve
+    );
+  });
+};
+
+const getTab = (id: number) => {
+  return new Promise<chrome.tabs.Tab>((resolve) => {
+    chrome.tabs.get(id, resolve);
+  });
+};
+
+const getWindow = (id: number) => {
+  return new Promise<chrome.windows.Window>((resolve) => {
+    chrome.windows.get(id, resolve);
+  });
+};
 
 class PromiseQueue {
   protected workingOnPromise: boolean = false;
@@ -78,8 +101,8 @@ export class ExtensionEnv {
   ): Env => {
     const isInternalMsg = ExtensionEnv.checkIsInternalMessage(
       sender,
-      browser.runtime.id,
-      browser.runtime.getURL("/")
+      chrome.runtime.id,
+      chrome.runtime.getURL("/")
     );
 
     // Add additional query string for letting the extension know it is for interaction.
@@ -90,7 +113,7 @@ export class ExtensionEnv {
         url = url.slice(1);
       }
 
-      url = browser.runtime.getURL("/popup.html#/" + url);
+      url = chrome.runtime.getURL("/popup.html#/" + url);
 
       url += `${url.includes("?") ? "&" : "?"}${queryString}`;
 
@@ -98,9 +121,7 @@ export class ExtensionEnv {
       const windowId = await openPopupWindow(url, options?.channel);
 
       if (!isMobileStatus()) {
-        const window = await browser.windows.get(windowId, {
-          populate: true,
-        });
+        const window = await getWindow(windowId);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         tabId = window.tabs![0].id!;
       } else {
@@ -109,14 +130,14 @@ export class ExtensionEnv {
 
       // Wait until that tab is loaded
       await (async () => {
-        const tab = await browser.tabs.get(tabId);
+        const tab = await getTab(tabId);
         if (tab.status === "complete") {
           console.log("openAndSendMsg-complete");
           return;
         }
 
         return new Promise<void>((resolve) => {
-          browser.tabs.onUpdated.addListener((_tabId, changeInfo) => {
+          chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
             if (tabId === _tabId && changeInfo.status === "complete") {
               console.log("openAndSendMsg");
               resolve();
@@ -154,7 +175,7 @@ export class ExtensionEnv {
           url = url.slice(1);
         }
 
-        url = browser.runtime.getURL("/popup.html#/" + url);
+        url = chrome.runtime.getURL("/popup.html#/" + url);
 
         if (url.includes("?")) {
           url += "&" + queryString;
@@ -162,51 +183,22 @@ export class ExtensionEnv {
           url += "?" + queryString;
         }
         if (sender.tab?.id) {
-          let tabs = await browser.tabs.query({
-            discarded: false,
-            status: "complete",
-          });
+          let tabs = await getAllTabs();
 
           tabs = tabs.filter(
-            (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
+            (val) => val.url && val.url.indexOf(chrome.runtime.id) > -1
           );
 
           if (tabs.length > 0) {
             for (const tab of tabs) {
               if (tab.id) {
-                browser.tabs.update(tab.id, {
+                chrome.tabs.update(tab.id, {
                   url,
                 });
               }
             }
           }
         }
-
-        // const backgroundPage = await browser.runtime.getBackgroundPage();
-        // const views = browser.extension
-        //   .getViews({
-        //     // Request only for the same tab as the requested frontend.
-        //     // But the browser popup itself has no information about tab.
-        //     // Also, if user has multiple windows on, we need another way to distinguish them.
-        //     // See the comment right below this part.
-        //     tabId: sender.tab?.id,
-        //   })
-        //   .filter((window) => {
-        //     // You need to request interaction with the frontend that requested the message.
-        //     // It is difficult to achieve this with the browser api alone.
-        //     // Check the router id under the window of each view
-        //     // and process only the view that has the same router id of the requested frontend.
-        //     return (
-        //       window.location.href !== backgroundPage.location.href &&
-        //       (routerMeta.routerId == null ||
-        //         routerMeta.routerId === window.keplrExtensionRouterId)
-        //     );
-        //   });
-        // if (views.length > 0) {
-        //   for (const view of views) {
-        //     view.location.href = url;
-        //   }
-        // }
 
         msg.routerMeta = {
           ...msg.routerMeta,

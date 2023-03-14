@@ -22,7 +22,7 @@ router.listen(WEBPAGE_PORT);
 const container = document.head || document.documentElement;
 const injectedScript = document.createElement("script");
 
-injectedScript.src = browser.runtime.getURL("injectedScript.bundle.js");
+injectedScript.src = chrome.runtime.getURL("injectedScript.bundle.js");
 injectedScript.type = "text/javascript";
 container.insertBefore(injectedScript, container.children[0]);
 injectedScript.remove();
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPostMsgClient();
   const body = document.body;
   const injectedMisesScript = document.createElement("script");
-  injectedMisesScript.src = browser.runtime.getURL(
+  injectedMisesScript.src = chrome.runtime.getURL(
     "safeInjectedScript.bundle.js"
   );
   injectedMisesScript.type = "text/javascript";

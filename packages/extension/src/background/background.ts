@@ -1,4 +1,3 @@
-importScripts("browser-polyfill.js");
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 import {
   ExtensionRouter,
@@ -58,10 +57,10 @@ const initBackground = async () => {
         title: string;
         message: string;
       }) => {
-        browser.notifications.create({
+        chrome.notifications.create({
           type: "basic",
           iconUrl: params.iconRelativeUrl
-            ? browser.runtime.getURL(params.iconRelativeUrl)
+            ? chrome.runtime.getURL(params.iconRelativeUrl)
             : undefined,
           title: params.title,
           message: params.message,

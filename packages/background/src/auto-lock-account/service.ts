@@ -29,14 +29,14 @@ export class AutoLockAccountService {
   }) {
     this.keyringService = keyringService;
 
-    browser.idle.onStateChanged.addListener((idle) => {
+    chrome.idle.onStateChanged.addListener((idle) => {
       this.stateChangedHandler(idle);
     });
 
     await this.loadDuration();
   }
 
-  private stateChangedHandler(newState: browser.idle.IdleState) {
+  private stateChangedHandler(newState: string) {
     if (this.autoLockDuration > 0) {
       if ((newState as any) === "locked") {
         this.stopAppStateCheckTimer();
@@ -61,17 +61,6 @@ export class AutoLockAccountService {
   }
 
   public checkAppIsActive(): boolean {
-    // const background = browser.extension.getBackgroundPage();
-    // const views = browser.extension.getViews();
-    // if (background) {
-    //   for (const view of views) {
-    //     if (background.location.href !== view.location.href) {
-    //       return true;
-    //     }
-    //   }
-    // } else if (views.length > 0) {
-    //   return true;
-    // }
     return false;
   }
 
@@ -101,16 +90,20 @@ export class AutoLockAccountService {
   public async lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
-      let tabs = await browser.tabs.query({
-        discarded: false,
-        status: "complete",
-      });
-      tabs = tabs.filter(
-        (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
+      await chrome.tabs.query(
+        {
+          discarded: false,
+          status: "complete",
+        },
+        (tabs) => {
+          tabs = tabs.filter(
+            (val) => val.url && val.url.indexOf(chrome.runtime.id) > -1
+          );
+          for (const tab of tabs) {
+            tab.id && chrome.tabs.reload(tab.id, {});
+          }
+        }
       );
-      for (const tab of tabs) {
-        browser.tabs.reload(tab.id);
-      }
     }
   }
 

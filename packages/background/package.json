@@ -21,7 +21,8 @@
     "@types/ledgerhq__hw-transport-webusb": "^4.70.1",
     "@types/secp256k1": "^4.0.1",
     "@types/w3c-web-hid": "^1.0.2",
-    "@types/w3c-web-usb": "^1.0.5"
+    "@types/w3c-web-usb": "^1.0.5",
+    "@types/pbkdf2": "^3.1.0"
   },
   "dependencies": {
     "@ethersproject/bytes": "^5.7.0",

@@ -27,7 +27,7 @@ export const CreditPage: FunctionComponent = () => {
           paragraph="Provided by ICF"
           onClick={(e) => {
             e.preventDefault();
-            browser.tabs.create({
+            chrome.tabs.create({
               url: "https://interchain.io",
             });
           }}
@@ -37,7 +37,7 @@ export const CreditPage: FunctionComponent = () => {
           paragraph="Provided by Coingecko API"
           onClick={(e) => {
             e.preventDefault();
-            browser.tabs.create({
+            chrome.tabs.create({
               url: "https://www.coingecko.com/",
             });
           }}
@@ -47,7 +47,7 @@ export const CreditPage: FunctionComponent = () => {
           paragraph="Provided by grant.fish"
           onClick={(e) => {
             e.preventDefault();
-            browser.tabs.create({
+            chrome.tabs.create({
               url: "https://stake.fish",
             });
           }}

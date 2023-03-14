@@ -110,7 +110,7 @@ const timeout = 5000;
 export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
-  keepAlivePort: browser.runtime.Port | null = null;
+  keepAlivePort: chrome.runtime.Port | null = null;
   queryClientStatus: boolean = false;
   queryClientTryMaxCount: number = 5;
   queryClientTryCount: number = 1;
@@ -201,7 +201,7 @@ export class MisesService {
 
     this.initKeepAlive();
 
-    browser.storage.local.set({
+    chrome.storage.local.set({
       setAccount: true,
     });
   }
@@ -685,8 +685,11 @@ export class MisesService {
   }
 
   async hasWalletAccount() {
-    const { setAccount } = await browser.storage.local.get("setAccount");
-    return !!setAccount;
+    return new Promise((resolve) => {
+      chrome.storage.local.get("setAccount", ({ setAccount }) => {
+        resolve(!!setAccount);
+      });
+    });
   }
 
   async staking(params: any) {
@@ -908,8 +911,8 @@ export class MisesService {
   }
 
   openWallet() {
-    browser.tabs.create({
-      url: browser.runtime.getURL("popup.html"),
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("popup.html"),
     });
   }
 
@@ -931,7 +934,7 @@ export class MisesService {
     if (this.keepAlivePort) {
       return;
     }
-    this.keepAlivePort = browser.runtime.connectNative("site.mises.browser");
+    this.keepAlivePort = chrome.runtime.connectNative("site.mises.browser");
 
     this.keepAlivePort.onMessage.addListener(this.handleMessage);
 

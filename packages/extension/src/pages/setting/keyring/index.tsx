@@ -57,10 +57,6 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
               onClick={(e) => {
                 e.preventDefault();
                 analyticsStore.logEvent("Add additional account started");
-
-                // browser.tabs.create({
-                //   url: "/popup.html#/register",
-                // });
                 history.push("/setting/keyring/CreateNamePage");
               }}
             >

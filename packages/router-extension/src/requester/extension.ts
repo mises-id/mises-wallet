@@ -18,7 +18,7 @@ export class InExtensionMessageRequester implements MessageRequester {
     msg["origin"] =
       typeof window !== "undefined"
         ? window.location.origin
-        : `chrome-extension://${browser.runtime.id}`;
+        : `chrome-extension://${chrome.runtime.id}`;
     msg.routerMeta = {
       ...msg.routerMeta,
       routerId: getKeplrExtensionRouterId(),
@@ -71,7 +71,7 @@ export class InExtensionMessageRequester implements MessageRequester {
     msg["origin"] =
       typeof window !== "undefined"
         ? window.location.origin
-        : `chrome-extension://${browser.runtime.id}`;
+        : `chrome-extension://${chrome.runtime.id}`;
     console.log(msg["origin"], "sendMessageToTab");
     msg.routerMeta = {
       ...msg.routerMeta,

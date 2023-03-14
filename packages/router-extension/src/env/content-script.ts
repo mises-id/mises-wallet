@@ -4,7 +4,7 @@ import { Env, MessageSender } from "@keplr-wallet/router";
 // And, doesn't support the request interaction.
 export class ContentScriptEnv {
   static readonly produceEnv = (sender: MessageSender): Env => {
-    const isInternalMsg = sender.id === browser.runtime.id;
+    const isInternalMsg = sender.id === chrome.runtime.id;
 
     return {
       isInternalMsg,

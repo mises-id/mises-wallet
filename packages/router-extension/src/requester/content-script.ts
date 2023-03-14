@@ -9,6 +9,17 @@ import { getKeplrExtensionRouterId } from "../utils";
 // This will send message to the tab with the content script.
 // And, this can't handle the result of the message sending.
 // TODO: Research to improve this requester.
+const getAllTabs = () => {
+  return new Promise<chrome.tabs.Tab[]>((resolve) => {
+    chrome.tabs.query(
+      {
+        discarded: false,
+        status: "complete",
+      },
+      resolve
+    );
+  });
+};
 export class ContentScriptMessageRequester implements MessageRequester {
   async sendMessage<M extends Message<unknown>>(
     port: string,
@@ -21,7 +32,7 @@ export class ContentScriptMessageRequester implements MessageRequester {
     msg["origin"] =
       typeof window !== "undefined"
         ? window.location.origin
-        : `chrome-extension://${browser.runtime.id}`;
+        : `chrome-extension://${chrome.runtime.id}`;
     msg.routerMeta = {
       ...msg.routerMeta,
       routerId: getKeplrExtensionRouterId(),
@@ -29,15 +40,12 @@ export class ContentScriptMessageRequester implements MessageRequester {
 
     const wrappedMsg = JSONUint8Array.wrap(msg);
 
-    const alltabs = await browser.tabs.query({
-      discarded: false,
-      status: "complete",
-    });
+    const alltabs = await getAllTabs();
 
     const tabs = alltabs.filter((tab) => {
       if (tab.url) {
         return (
-          (tab.url.indexOf(browser.runtime.id) > -1 &&
+          (tab.url.indexOf(chrome.runtime.id) > -1 &&
             tab.url.indexOf("interaction=true&interactionInternal=false") >
               -1) ||
           tab.url.indexOf("mises.site") > -1 ||
@@ -59,10 +67,10 @@ export class ContentScriptMessageRequester implements MessageRequester {
               msg: wrappedMsg,
             },
             (result) => {
-              console.log(result, "browser.tabs.sendMessage: success");
+              console.log(result, "chrome.tabs.sendMessage: success");
             }
           );
-          console.log(tabId, "browser.tabs.sendMessage");
+          console.log(tabId, "chrome.tabs.sendMessage");
           // Ignore the failure
         } catch (e) {
           console.log(e);

@@ -30,17 +30,13 @@ export const WelcomePage: FunctionComponent = () => {
         size="lg"
         onClick={async () => {
           keyRingStore.changeKeyRing(0);
-
-          if (typeof browser !== "undefined") {
-            const tab = await browser.tabs.getCurrent();
-            if (tab.id) {
-              browser.tabs.remove(tab.id);
+          chrome.tabs.getCurrent((tab) => {
+            if (tab && tab.id) {
+              chrome.tabs.remove(tab.id);
             } else {
               isMobileStatus() ? closePopupTab() : window.close();
             }
-          } else {
-            window.close();
-          }
+          });
         }}
         block
         style={{

@@ -8,16 +8,19 @@ export type keyringParmas = {
 export class Migrator {
   // run all pending migrations on meta in place
   async migrateData(): Promise<{ vault: string }> {
-    const { migrated } = await browser.storage.local.get();
-    if (migrated && migrated.data) {
-      const keyringStore = migrated.data.KeyringController || {
-        vault: "",
-      };
-      return keyringStore;
-    }
-    return {
-      vault: "",
-    };
+    return new Promise((resolve) => {
+      chrome.storage.local.get(({ migrated }) => {
+        if (migrated && migrated.data) {
+          const keyringStore = migrated.data.KeyringController || {
+            vault: "",
+          };
+          return resolve(keyringStore);
+        }
+        return resolve({
+          vault: "",
+        });
+      });
+    });
   }
 
   async enCodeValut(keyringStore: { vault: string }, password: string) {
@@ -36,8 +39,13 @@ export class Migrator {
 
   clearCache() {
     console.log("clear data");
-    return browser.storage.local.set({
-      migrated: "done",
+    return new Promise<void>((resolve) => {
+      chrome.storage.local.set(
+        {
+          migrated: "done",
+        },
+        resolve
+      );
     });
   }
 }
