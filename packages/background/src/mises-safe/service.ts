@@ -8,11 +8,15 @@
 // import { MisesSafe } from "./mises";
 import { KVStore } from "@keplr-wallet/common";
 import { misesRequest } from "../mises/mises-network.util";
+import { html_similar } from "./html-similar";
 
 const listenMethods = {
   mVerifyDomain: "verifyDomain",
   mVerifyContract: "verifyContract",
   mNotifyFuzzyDomain: "notifyFuzzyDomain",
+  mCalculateHtmlSimilarly: "calculateHtmlSimilarly",
+  mRecordVisitWeb3siteEvent: "recordVisitWeb3siteEvent",
+  mRecordUseContractEvent: "recordUseContractEvent",
 };
 
 const storageKey = {
@@ -42,11 +46,15 @@ const isShouldVerifyStateKey = "isShouldVerify";
 
 export type notifyPhishingDetectedParams = {
   notify_type: string;
-  address: string;
-  domain: string;
-  suggested_url: string;
-  notify_tag: string;
-  notify_level: string;
+  address?: string;
+  domain?: string;
+  suggested_url?: string;
+  notify_tag?: string;
+  notify_level?: string;
+};
+export type recordEventParams = {
+  event_type: string;
+  params: { key1: string; value1: string; key2?: string; value2?: string };
 };
 
 export type verifyDomainResult = {
@@ -151,7 +159,8 @@ export class MisesSafeService {
       case listenMethods.mVerifyDomain:
         return this.verifyDomain(
           res.params.params.domain,
-          res.params.params.logo
+          res.params.params.logo,
+          res.params.params.content
         );
       case listenMethods.mNotifyFuzzyDomain:
         return this.notifyFuzzyDomain(
@@ -163,14 +172,38 @@ export class MisesSafeService {
           res.params.params.contractAddress,
           res.params.params.domain
         );
+      case listenMethods.mCalculateHtmlSimilarly:
+        return this.calculateHtmlSimilarly(
+          res.params.params.html,
+          res.params.params.hash
+        );
+      case listenMethods.mRecordVisitWeb3siteEvent:
+        return this.recordVisitWeb3siteEvent(res.params.params.domain);
+      case listenMethods.mRecordUseContractEvent:
+        return this.recordUseContractEvent(
+          res.params.params.contractAddress,
+          res.params.params.domain
+        );
     }
+  }
+
+  /* CalculateHtmlSimilarly start */
+
+  async calculateHtmlSimilarly(html: string, hash: string): Promise<number> {
+    const request_url_html_body_hash = html_similar.digest(html);
+    const score = html_similar.distance(hash, request_url_html_body_hash);
+    console.log("request_url_html_body_hash: ", request_url_html_body_hash);
+    console.log("html_body_fuzzy_hash: ", hash);
+    console.log("html body fuzzy html score: ", score);
+    return score;
   }
 
   /* VerifyDomain start */
 
   async verifyDomain(
     domain: string,
-    logo: string
+    logo: string,
+    content: string
   ): Promise<verifyDomainResult> {
     //is ignore
     const isIgnore = await this.isIgnoreDomain(domain);
@@ -192,7 +225,11 @@ export class MisesSafeService {
         tag: "white",
       };
     }
-    const verifyDomainResult = await this.apiVerifyDomain(domain, logo);
+    const verifyDomainResult = await this.apiVerifyDomain(
+      domain,
+      logo,
+      content
+    );
     console.log("verifyDomainResult: ", verifyDomainResult);
     //is should alert user
     if (
@@ -205,13 +242,17 @@ export class MisesSafeService {
       setTimeout(() => {
         this.removeBlackNotifying(domain);
       }, 3000);
-      const userDecision = await this.notifyPhishingDetected(<
-        notifyPhishingDetectedParams
-      >{
+      const userDecision = await this.notifyPhishingDetected<{
+        notify_type: string;
+        domain: string;
+        suggested_url: string;
+        notify_tag: string;
+        notify_level: string;
+      }>({
         notify_type: "url",
         domain: domain,
         suggested_url: verifyDomainResult.suggested_url || "",
-        notify_tag: "black",
+        notify_tag: "fuzzy",
         notify_level: "danger",
       });
       console.log("verifyDomain notifyPhishingDetected result: ", userDecision);
@@ -241,9 +282,7 @@ export class MisesSafeService {
       domain,
       suggested_url
     );
-    const userDecision = await this.notifyPhishingDetected(<
-      notifyPhishingDetectedParams
-    >{
+    const userDecision = await this.notifyPhishingDetected({
       notify_type: "url",
       notify_tag: "fuzzy",
       domain: domain,
@@ -256,21 +295,24 @@ export class MisesSafeService {
       this.setIgnorDomain(domain);
     }
   }
-  async apiVerifyDomain(domain: string, logo: string) {
+  async apiVerifyDomain(domain: string, logo: string, content: string) {
     const result = await this.kvStore.get(domain);
     if (result) {
       return result;
     }
     const res = await misesRequest({
+      method: "POST",
       url: "/phishing_site/check",
       data: {
         domain: domain,
         logo: logo,
+        content: content,
       },
     });
     if (
       res &&
-      (res.level !== domainLevel.Black || res.level !== domainLevel.Fuzzy)
+      res.level !== domainLevel.Black &&
+      res.level !== domainLevel.Fuzzy
     ) {
       this.kvStore.set(domain, res);
     }
@@ -336,9 +378,10 @@ export class MisesSafeService {
         this.removeBlackNotifying(contractAddress);
       }, 3000);
       console.log("notifyPhishingDetected start: ", contractAddress);
-      const userDecision = await this.notifyPhishingDetected(<
-        notifyPhishingDetectedParams
-      >{ address: contractAddress, notify_type: "address" });
+      const userDecision = await this.notifyPhishingDetected({
+        address: contractAddress,
+        notify_type: "address",
+      });
       console.log("notifyPhishingDetected result: ", userDecision);
       if (userDecision === userAction.Ignore) {
         console.log("notifyPhishingDetected set: ", userDecision);
@@ -381,8 +424,8 @@ export class MisesSafeService {
 
   /* verifyContract end */
 
-  notifyPhishingDetected(
-    params: notifyPhishingDetectedParams
+  notifyPhishingDetected<T = notifyPhishingDetectedParams>(
+    params: T
   ): Promise<string> {
     return new Promise((resolve) => {
       if (
@@ -396,6 +439,43 @@ export class MisesSafeService {
         return;
       }
       resolve("mises");
+    });
+  }
+  //recordVisitWeb3siteEvent
+  async recordVisitWeb3siteEvent(domain: string) {
+    console.log("recordVisitWeb3siteEvent", domain);
+    const params = { key1: "domain", value1: domain };
+    this.recordEvent({
+      event_type: "visit_web3site",
+      params: params,
+    });
+  }
+  //recordUseContractEvent
+  async recordUseContractEvent(contractAddress: string, domain: string) {
+    console.log("recordUseContractEvent", domain, contractAddress);
+    const params = {
+      key1: "domain",
+      value1: domain,
+      key2: "contract",
+      value2: contractAddress,
+    };
+    this.recordEvent({
+      event_type: "use_contract",
+      params: params,
+    });
+  }
+  //recordEvent
+  recordEvent<T = recordEventParams>(params: T) {
+    console.log("recordEvent", params);
+    console.log("recordEvent", JSON.stringify(params));
+    return new Promise(() => {
+      if (
+        (browser as any).misesPrivate &&
+        (browser as any).misesPrivate.recordEvent
+      ) {
+        (browser as any).misesPrivate.recordEvent(JSON.stringify(params));
+        return;
+      }
     });
   }
 }

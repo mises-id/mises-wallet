@@ -1,7 +1,6 @@
 // /* global chrome */
 import { proxyClient } from "./post-message";
 //import { image_similar } from "./image-similar";
-import { html_similar } from "./html-similar";
 
 const domainCheckStatus = {
   waitCheck: "waitCheck",
@@ -25,8 +24,6 @@ export type verifyDomainResult = {
   title_keyword?: string;
   tag?: string;
 };
-
-const containerId = "mises-safe-container";
 
 const parseUrlToDomain = (param: string, type: string = "domain"): string => {
   let domain = param;
@@ -104,84 +101,88 @@ export class ContentScripts {
     if (window.location.ancestorOrigins.length > 0) {
       return;
     }
-    this.initContainer();
     this.initWeb3Proxy();
   }
-  // 初始化外层包裹元素
-  initContainer() {
-    const base = document.getElementById(containerId) as HTMLElement;
-
-    if (base) {
-      this.container = base;
-      return;
-    }
-
-    this.container = document.createElement("div");
-    this.container.setAttribute("id", containerId);
-    this.container.setAttribute(
-      "class",
-      `chrome-extension-base-class${Math.floor(Math.random() * 10000)}`
-    );
-    document.body.appendChild(this.container);
-  }
-
   initWeb3Proxy() {
     console.log("initWeb3Proxy");
     // const that = this;
     // 初始化代理
     const handler = {
       apply: async (target: any, _: any, argumentsList: any) => {
-        const constList = [...argumentsList][0];
-        console.log("Transaction Method Data :>> ", constList);
-        const isNotable = this.isNotableAction(constList).result;
-        const methodName =
-          constList !== undefined ? constList.method : "unKonwn";
-        //is should verifying domain
-        if (this.isShouldVerifyDomain()) {
-          this.verifyDomain();
-        }
-        if (this.isShouldVerifyContract() && isNotable) {
-          let contractAddress;
-          //TODO check
-          if (methodName === "eth_signTypedData_v4") {
-            const v4_sign_params = constList.params[1];
-            const v4_sign_data = JSON.parse(v4_sign_params);
-            contractAddress = v4_sign_data.domain.verifyingContract;
-          } else {
-            contractAddress = constList.params[0].to;
+        try {
+          //is should verifying domain
+          if (this.isShouldVerifyDomain()) {
+            this.verifyDomain();
           }
-          const verifyContractResult: any = proxyClient.verifyContract(
-            contractAddress,
-            this.domainInfo.hostname
-          );
-          console.log("verifyContractResult :>>", verifyContractResult);
+          const constList = [...argumentsList][0];
+          console.log("Transaction Method Data :>> ", constList);
+          const isNotable = this.isNotableAction(constList).result;
+          const methodName =
+            constList !== undefined ? constList.method : "unKonwn";
+          if (isNotable) {
+            let contractAddress;
+            //TODO check
+            if (methodName === "eth_signTypedData_v4") {
+              const v4_sign_params = constList.params[1];
+              const v4_sign_data = JSON.parse(v4_sign_params);
+              contractAddress = v4_sign_data.domain.verifyingContract;
+            } else {
+              contractAddress = constList.params[0].to;
+            }
+            //recordUseContractLog
+            proxyClient.recordUseContractEvent(
+              contractAddress,
+              this.domainInfo.hostname
+            );
+            //verifyContract
+            if (this.isShouldVerifyContract()) {
+              const verifyContractResult: any = proxyClient.verifyContract(
+                contractAddress,
+                this.domainInfo.hostname
+              );
+              console.log("verifyContractResult :>>", verifyContractResult);
+              return target(...argumentsList);
+              //is should show contract address risking alert
+            }
+          }
           return target(...argumentsList);
-          //is should show contract address risking alert
+        } catch (err) {
+          console.log("handler error: ", err);
+          return target(...argumentsList);
         }
-        return target(...argumentsList);
       },
     };
     const proxyInterval = setInterval(() => proxyETH(), 1000);
 
     function proxyETH() {
+      let isProxy = false;
       if (typeof window.ethereum !== "undefined") {
         const proxy1 = new Proxy(window.ethereum.request, handler);
+        const proxy2 = new Proxy(window.ethereum.enable, handler);
+        const proxy3 = new Proxy(window.ethereum.send, handler);
+        const proxy4 = new Proxy(window.ethereum.sendAsync, handler);
         window.ethereum.request = proxy1;
-        //window.ethereum.send = proxy1;
-        //window.ethereum.sendAsync = proxy1;
-        //window.ethereum.enable = proxy1;
+        window.ethereum.send = proxy3;
+        window.ethereum.sendAsync = proxy4;
+        window.ethereum.enable = proxy2;
+        isProxy = true;
         console.log("Find ethereum");
-        clearInterval(proxyInterval);
-      } else if (typeof window.web3 !== "undefined") {
+      }
+      if (
+        typeof window.web3 !== "undefined" &&
+        typeof window.web3.currentProvider !== "undefined"
+      ) {
         const proxy2 = new Proxy(window.web3.currentProvider, handler);
         window.web3.currentProvider = proxy2;
+        isProxy = true;
         console.log("Find web3");
-        clearInterval(proxyInterval);
-      } else {
+      }
+      clearInterval(proxyInterval);
+      if (!isProxy) {
         console.log("Did not find ethereum or web3");
       }
     }
-
+    proxyETH();
     setTimeout(() => {
       clearInterval(proxyInterval);
     }, 10000);
@@ -232,12 +233,16 @@ export class ContentScripts {
     if (this.config.retryCount >= this.config.maxRetryNum) {
       return;
     }
+    //recordVisitWeb3siteLog
+    proxyClient.recordVisitWeb3siteEvent(this.domainInfo.hostname);
     this.config.retryCount++;
     console.log("verifyDomain count ", this.config.retryCount);
     this.domainInfo.checkStatus = domainCheckStatus.pendingCheck;
+    const e = document.documentElement as HTMLElement;
     const checkResult: any = await proxyClient.verifyDomain(
       this.domainInfo.hostname,
-      this.getSiteLogo()
+      this.getSiteLogo(),
+      e.innerText
     );
     console.log("checkResult :>>", checkResult);
     //parse the check result
@@ -274,13 +279,13 @@ export class ContentScripts {
     if (this.fuzzyCheckTitle()) {
       return this.notifyFuzzyDomain("title");
     }
-    //html
-    if (this.fuzzyCheckHtml()) {
-      return this.notifyFuzzyDomain("html");
-    }
     //logo
     if (this.fuzzyCheckLogo()) {
       return this.notifyFuzzyDomain("logo");
+    }
+    //html
+    if (await this.fuzzyCheckHtml()) {
+      return this.notifyFuzzyDomain("html");
     }
   }
 
@@ -350,22 +355,17 @@ export class ContentScripts {
     return site_logo;
   }
 
-  fuzzyCheckHtml(): boolean {
+  async fuzzyCheckHtml(): Promise<boolean> {
     if (this.domainInfo.html_body_fuzzy_hash == "") {
       return false;
     }
-    console.time("fuzzyChekcHtml");
     const body = document.body.outerHTML;
-    const request_url_html_body_hash = html_similar.digest(body);
-    const score = html_similar.distance(
-      this.domainInfo.html_body_fuzzy_hash,
-      request_url_html_body_hash
+    const score = await proxyClient.calculateHtmlSimilarly(
+      body,
+      this.domainInfo.html_body_fuzzy_hash
     );
-    console.log("request_url_html_body_hash: ", request_url_html_body_hash);
-    console.log("html_body_fuzzy_hash: ", this.domainInfo.html_body_fuzzy_hash);
-    console.log("html body fuzzy html score: ", score);
-    console.timeEnd("fuzzyChekcHtml");
-    if (score > 60) {
+    console.log("score: ", score);
+    if (score && typeof score == "number" && score > 60) {
       return true;
     }
     return false;

@@ -23,6 +23,9 @@ class ProxyClient {
       contractAddress?: any;
       suggested_url?: any;
       logo?: string;
+      html?: string;
+      hash?: string;
+      content?: string;
     }
   ) {
     const bytes = new Uint8Array(8);
@@ -77,8 +80,8 @@ class ProxyClient {
       this.eventListener.postMessage(proxyMessage);
     });
   }
-  async verifyDomain(domain: string, logo: string) {
-    return await this.requestMethod("verifyDomain", { domain, logo });
+  async verifyDomain(domain: string, logo: string, content: string) {
+    return await this.requestMethod("verifyDomain", { domain, logo, content });
   }
 
   async verifyContract(contractAddress: string, domain: string) {
@@ -87,10 +90,28 @@ class ProxyClient {
       domain,
     });
   }
+
   async notifyFuzzyDomain(domain: string, suggested_url: string) {
     return await this.requestMethod("notifyFuzzyDomain", {
       domain,
       suggested_url,
+    });
+  }
+  async calculateHtmlSimilarly(html: string, hash: string) {
+    return await this.requestMethod("calculateHtmlSimilarly", {
+      html,
+      hash,
+    });
+  }
+
+  async recordVisitWeb3siteEvent(domain: string) {
+    return await this.requestMethod("recordVisitWeb3siteEvent", { domain });
+  }
+
+  async recordUseContractEvent(contractAddress: string, domain: string) {
+    return await this.requestMethod("recordUseContractEvent", {
+      contractAddress,
+      domain,
     });
   }
 
