@@ -200,10 +200,6 @@ export class MisesService {
     this.storeUserInfo(userInfo);
 
     this.initKeepAlive();
-
-    browser.storage.local.set({
-      setAccount: true,
-    });
   }
 
   async misesUserInfo() {
@@ -685,8 +681,9 @@ export class MisesService {
   }
 
   async hasWalletAccount() {
-    const { setAccount } = await browser.storage.local.get("setAccount");
-    return !!setAccount;
+    const items = await browser.storage.local.get("keyring/key-multi-store");
+    const list = items["keyring/key-multi-store"] || [];
+    return list.length > 0;
   }
 
   async staking(params: any) {

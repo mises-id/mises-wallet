@@ -239,6 +239,7 @@ export class KeyRing {
     status: KeyRingStatus;
     multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
   }> {
+    await this.checkKeyStoreStatus();
     if (![KeyRingStatus.EMPTY, KeyRingStatus.MIGRATOR].includes(this.status)) {
       throw new KeplrError(
         "keyring",
