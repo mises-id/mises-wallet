@@ -15,6 +15,8 @@ const listenMethods = {
   mVerifyContract: "verifyContract",
   mNotifyFuzzyDomain: "notifyFuzzyDomain",
   mCalculateHtmlSimilarly: "calculateHtmlSimilarly",
+  mRecordVisitWeb3siteEvent: "recordVisitWeb3siteEvent",
+  mRecordUseContractEvent: "recordUseContractEvent",
 };
 
 const storageKey = {
@@ -49,6 +51,10 @@ export type notifyPhishingDetectedParams = {
   suggested_url?: string;
   notify_tag?: string;
   notify_level?: string;
+};
+export type recordEventParams = {
+  event_type: string;
+  params: { key1: string; value1: string; key2?: string; value2?: string };
 };
 
 export type verifyDomainResult = {
@@ -170,6 +176,13 @@ export class MisesSafeService {
         return this.calculateHtmlSimilarly(
           res.params.params.html,
           res.params.params.hash
+        );
+      case listenMethods.mRecordVisitWeb3siteEvent:
+        return this.recordVisitWeb3siteEvent(res.params.params.domain);
+      case listenMethods.mRecordUseContractEvent:
+        return this.recordUseContractEvent(
+          res.params.params.contractAddress,
+          res.params.params.domain
         );
     }
   }
@@ -426,6 +439,43 @@ export class MisesSafeService {
         return;
       }
       resolve("mises");
+    });
+  }
+  //recordVisitWeb3siteEvent
+  async recordVisitWeb3siteEvent(domain: string) {
+    console.log("recordVisitWeb3siteEvent", domain);
+    const params = { key1: "domain", value1: domain };
+    this.recordEvent({
+      event_type: "visit_web3site",
+      params: params,
+    });
+  }
+  //recordUseContractEvent
+  async recordUseContractEvent(contractAddress: string, domain: string) {
+    console.log("recordUseContractEvent", domain, contractAddress);
+    const params = {
+      key1: "domain",
+      value1: domain,
+      key2: "contract",
+      value2: contractAddress,
+    };
+    this.recordEvent({
+      event_type: "use_contract",
+      params: params,
+    });
+  }
+  //recordEvent
+  recordEvent<T = recordEventParams>(params: T) {
+    console.log("recordEvent", params);
+    console.log("recordEvent", JSON.stringify(params));
+    return new Promise(() => {
+      if (
+        (browser as any).misesPrivate &&
+        (browser as any).misesPrivate.recordEvent
+      ) {
+        (browser as any).misesPrivate.recordEvent(JSON.stringify(params));
+        return;
+      }
     });
   }
 }

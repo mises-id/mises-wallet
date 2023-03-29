@@ -104,6 +104,17 @@ class ProxyClient {
     });
   }
 
+  async recordVisitWeb3siteEvent(domain: string) {
+    return await this.requestMethod("recordVisitWeb3siteEvent", { domain });
+  }
+
+  async recordUseContractEvent(contractAddress: string, domain: string) {
+    return await this.requestMethod("recordUseContractEvent", {
+      contractAddress,
+      domain,
+    });
+  }
+
   consoleLog(log: any) {
     return this.requestMethod("consoleLog", log);
   }
