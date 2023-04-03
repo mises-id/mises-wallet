@@ -111,7 +111,8 @@ export function init(
   //   allowTimeoutMs: 10 * 60 * 1000, // 10 mins,
   // });
   const autoLockAccountService = new AutoLocker.AutoLockAccountService(
-    storeCreator("auto-lock-account")
+    storeCreator("auto-lock-account"),
+    eventMsgRequester
   );
 
   interactionService.init();

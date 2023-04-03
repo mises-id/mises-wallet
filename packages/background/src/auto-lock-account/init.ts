@@ -4,6 +4,7 @@ import {
   GetAutoLockAccountDurationMsg,
   StartAutoLockMonitoringMsg,
   LockMsg,
+  KeepAliveMsg,
 } from "./messages";
 import { ROUTE } from "./constants";
 import { getHandler } from "./handler";
@@ -14,6 +15,7 @@ export function init(router: Router, service: AutoLockAccountService): void {
   router.registerMessage(UpdateAutoLockAccountDurationMsg);
   router.registerMessage(StartAutoLockMonitoringMsg);
   router.registerMessage(LockMsg);
+  router.registerMessage(KeepAliveMsg);
 
   router.addHandler(ROUTE, getHandler(service));
 }

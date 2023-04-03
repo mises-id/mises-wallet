@@ -1,5 +1,7 @@
 import { KVStore } from "@keplr-wallet/common";
 import { KeyRingStatus } from "../keyring";
+import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
+import { KeepAliveMsg } from "./messages";
 
 export class AutoLockAccountService {
   protected keyringService!: {
@@ -10,12 +12,18 @@ export class AutoLockAccountService {
   // Unit: ms
   protected autoLockDuration: number = 15 * 60 * 1000;
 
+  // Unit: ms
+  protected keepAliveDuration: number = 15 * 1000;
+
   protected appStateCheckTimer: NodeJS.Timeout | null = null;
 
   protected autoLockTimer: NodeJS.Timeout | null = null;
 
+  protected keepAliveTimer: NodeJS.Timeout | null = null;
+
   constructor(
     protected readonly kvStore: KVStore,
+    protected readonly eventMsgRequester: MessageRequester,
     protected readonly opts: {
       readonly monitoringInterval: number;
     } = {
@@ -144,6 +152,26 @@ export class AutoLockAccountService {
       this.autoLockDuration = 15 * 60 * 1000;
     } else {
       this.autoLockDuration = duration;
+    }
+  }
+
+  public keepAlive() {
+    this.clearKeepAliveTimer();
+    if (this.keyRingIsUnlocked) {
+      this.keepAliveTimer = setTimeout(() => {
+        const msg = new KeepAliveMsg();
+        this.eventMsgRequester.sendMessage(BACKGROUND_PORT, msg).finally(() => {
+          console.log("keepAlive");
+          this.keepAlive();
+        });
+      }, this.keepAliveDuration);
+    }
+  }
+
+  private clearKeepAliveTimer() {
+    if (this.keepAliveTimer) {
+      clearTimeout(this.keepAliveTimer);
+      this.keepAliveTimer = null;
     }
   }
 }

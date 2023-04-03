@@ -26,6 +26,7 @@ import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
 import { ModalBody, Modal } from "reactstrap";
 import { closePopupTab, isMobileStatus } from "@keplr-wallet/popup";
+import { KeepAliveMsg } from "@keplr-wallet/background/src/auto-lock-account";
 
 interface FormData {
   password: string;
@@ -76,9 +77,11 @@ export const LockPage: FunctionComponent = observer(() => {
             await keyRingStore.unlock(data.password);
 
             const msg = new StartAutoLockMonitoringMsg();
+            const keepAliveMsg = new KeepAliveMsg();
             const requester = new InExtensionMessageRequester();
             // Make sure to notify that auto lock service to start check locking after duration.
             await requester.sendMessage(BACKGROUND_PORT, msg);
+            await requester.sendMessage(BACKGROUND_PORT, keepAliveMsg);
 
             if (interactionInfo.interaction) {
               if (!interactionInfo.interactionInternal) {

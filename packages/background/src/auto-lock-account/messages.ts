@@ -94,3 +94,25 @@ export class LockMsg extends Message<void> {
     return LockMsg.type();
   }
 }
+
+export class KeepAliveMsg extends Message<void> {
+  public static type() {
+    return "keepAlive-msg";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return KeepAliveMsg.type();
+  }
+}

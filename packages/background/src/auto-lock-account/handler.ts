@@ -10,6 +10,7 @@ import {
   UpdateAutoLockAccountDurationMsg,
   StartAutoLockMonitoringMsg,
   LockMsg,
+  KeepAliveMsg,
 } from "./messages";
 import { AutoLockAccountService } from "./service";
 
@@ -35,6 +36,8 @@ export const getHandler: (service: AutoLockAccountService) => Handler = (
         );
       case LockMsg:
         return handleLockMsg(service)(env, msg as LockMsg);
+      case KeepAliveMsg:
+        return handleKeepAliveMsg(service)(env, msg as KeepAliveMsg);
       default:
         throw new KeplrError("auto-lock-account", 100, "Unknown msg type");
     }
@@ -74,5 +77,14 @@ const handleLockMsg: (
 ) => InternalHandler<LockMsg> = (service) => {
   return () => {
     return service.lock();
+  };
+};
+
+const handleKeepAliveMsg: (
+  service: AutoLockAccountService
+) => InternalHandler<KeepAliveMsg> = (service) => {
+  return () => {
+    console.log("keepAlive start");
+    return service.keepAlive();
   };
 };

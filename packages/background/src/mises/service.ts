@@ -199,7 +199,7 @@ export class MisesService {
 
     this.storeUserInfo(userInfo);
 
-    this.initKeepAlive();
+    // this.initKeepAlive();
   }
 
   async misesUserInfo() {
@@ -259,7 +259,7 @@ export class MisesService {
 
     this.activeUser = undefined as any;
 
-    this.disconnectKeepAlive();
+    // this.disconnectKeepAlive();
     // this.setToMisesPrivate(defaultUserInfo);
   }
 
