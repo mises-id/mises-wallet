@@ -87,6 +87,10 @@ export class KeyRingService {
   }
 
   async enable(env: Env): Promise<KeyRingStatus> {
+    if (this.keyRing.status === KeyRingStatus.NOTLOADED) {
+      await this.keyRing.restore();
+    }
+
     if (this.keyRing.status === KeyRingStatus.EMPTY) {
       await this.interactionService.waitApprove(
         env,
@@ -95,10 +99,6 @@ export class KeyRingService {
         {}
       );
       return this.keyRing.status;
-    }
-
-    if (this.keyRing.status === KeyRingStatus.NOTLOADED) {
-      await this.keyRing.restore();
     }
 
     if (
