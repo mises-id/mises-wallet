@@ -75,10 +75,12 @@ export class ContentScripts {
     maxRetryNum: number;
     retryCount: number;
   };
+  blackNotifyingMap: Map<string, string> = new Map();
+  isRecordVisitDomain: boolean = false;
   constructor() {
     this.container = null;
     this.config = {
-      maxRetryNum: 1,
+      maxRetryNum: 5,
       retryCount: 0,
     };
     this.domainInfo = {
@@ -110,15 +112,17 @@ export class ContentScripts {
     const handler = {
       apply: async (target: any, _: any, argumentsList: any) => {
         try {
-          //is should verifying domain
-          if (this.isShouldVerifyDomain()) {
-            this.verifyDomain();
-          }
           const constList = [...argumentsList][0];
           console.log("Transaction Method Data :>> ", constList);
           const isNotable = this.isNotableAction(constList).result;
           const methodName =
             constList !== undefined ? constList.method : "unKonwn";
+          //record visit web3site
+          this.recordVisitWeb3site();
+          //is should verifying domain
+          if (this.isShouldVerifyDomain()) {
+            this.verifyDomain(methodName);
+          }
           if (isNotable) {
             let contractAddress;
             //TODO check
@@ -130,20 +134,31 @@ export class ContentScripts {
               contractAddress = constList.params[0].to;
             }
             //recordUseContractLog
-            proxyClient.recordUseContractEvent(
-              contractAddress,
-              this.domainInfo.hostname
-            );
+            this.recordUseContract(contractAddress);
             //verifyContract
             if (this.isShouldVerifyContract()) {
-              const verifyContractResult: any = proxyClient.verifyContract(
-                contractAddress,
-                this.domainInfo.hostname
-              );
-              console.log("verifyContractResult :>>", verifyContractResult);
+              this.verifyContract(contractAddress);
               return target(...argumentsList);
               //is should show contract address risking alert
             }
+          }
+          return target(...argumentsList);
+        } catch (err) {
+          console.log("handler error: ", err);
+          return target(...argumentsList);
+        }
+      },
+    };
+    const handlerEnable = {
+      apply: async (target: any, _: any, argumentsList: any) => {
+        try {
+          const constList = [...argumentsList][0];
+          console.log("Transaction Method Data :>> ", constList);
+          //record visit web3site
+          this.recordVisitWeb3site();
+          //is should verifying domain
+          if (this.isShouldVerifyDomain()) {
+            this.verifyDomain("eth_requestAccounts");
           }
           return target(...argumentsList);
         } catch (err) {
@@ -158,7 +173,7 @@ export class ContentScripts {
       let isProxy = false;
       if (typeof window.ethereum !== "undefined") {
         const proxy1 = new Proxy(window.ethereum.request, handler);
-        const proxy2 = new Proxy(window.ethereum.enable, handler);
+        const proxy2 = new Proxy(window.ethereum.enable, handlerEnable);
         const proxy3 = new Proxy(window.ethereum.send, handler);
         const proxy4 = new Proxy(window.ethereum.sendAsync, handler);
         window.ethereum.request = proxy1;
@@ -225,19 +240,80 @@ export class ContentScripts {
     //ignore list
     return this.domainInfo.checkStatus !== domainCheckStatus.finshedCheck;
   }
-  //verifyDomain
-  async verifyDomain() {
-    if (this.domainInfo.checkStatus === domainCheckStatus.finshedCheck) {
-      return true;
-    }
-    if (this.config.retryCount >= this.config.maxRetryNum) {
+  //record use contract
+  async recordUseContract(contractAddress: string) {
+    proxyClient.recordUseContractEvent(
+      contractAddress,
+      this.domainInfo.hostname
+    );
+  }
+  //record visit web3site
+  async recordVisitWeb3site() {
+    if (this.isRecordVisitDomain) {
       return;
     }
-    //recordVisitWeb3siteLog
+    this.isRecordVisitDomain = true;
     proxyClient.recordVisitWeb3siteEvent(this.domainInfo.hostname);
+  }
+  //verify contract
+  async verifyContract(contractAddress: string) {
+    if (this.hasBlackNotifying(contractAddress)) {
+      console.log("verifyContract hasBlackNotifying: ", contractAddress);
+      return;
+    }
+    this.addBlackNotifying(contractAddress);
+    setTimeout(() => {
+      this.removeBlackNotifying(contractAddress);
+    }, 1000 * 60 * 1);
+    const verifyContractResult: any = await proxyClient.verifyContract(
+      contractAddress,
+      this.domainInfo.hostname
+    );
+    console.log("verifyContractResult :>>", verifyContractResult);
+    //if verify contract failed
+    if (!verifyContractResult || !verifyContractResult.level) {
+      this.removeBlackNotifying(contractAddress);
+    }
+  }
+
+  hasBlackNotifying(key: string): boolean {
+    return key !== "" && this.blackNotifyingMap.has(key);
+  }
+
+  removeBlackNotifying(key: string) {
+    this.blackNotifyingMap.delete(key);
+  }
+
+  addBlackNotifying(key: string) {
+    this.blackNotifyingMap.set(key, "1");
+  }
+
+  //verifyDomain
+  async verifyDomain(methodName: string) {
+    if (this.config.retryCount >= this.config.maxRetryNum) {
+      console.log("verifyDomain maxRetryNum  ", this.config.maxRetryNum);
+      return;
+    }
+    const domain = this.domainInfo.hostname;
+    if (this.config.retryCount > 0 && methodName != "eth_requestAccounts") {
+      console.log(
+        "verifyDomain not eth_requestAccounts >> ",
+        domain,
+        methodName
+      );
+      return;
+    }
+    if (this.hasBlackNotifying(domain)) {
+      console.log("verifyDomain hasBlackNotifying: ", domain);
+      return;
+    }
+    this.addBlackNotifying(domain);
+    setTimeout(() => {
+      this.removeBlackNotifying(domain);
+    }, 1000 * 5);
+
     this.config.retryCount++;
     console.log("verifyDomain count ", this.config.retryCount);
-    this.domainInfo.checkStatus = domainCheckStatus.pendingCheck;
     const e = document.documentElement as HTMLElement;
     const checkResult: any = await proxyClient.verifyDomain(
       this.domainInfo.hostname,
@@ -246,12 +322,7 @@ export class ContentScripts {
     );
     console.log("checkResult :>>", checkResult);
     //parse the check result
-    if (
-      checkResult &&
-      checkResult.level &&
-      this.domainInfo.checkStatus != domainCheckStatus.finshedCheck
-    ) {
-      this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
+    if (checkResult && checkResult.level) {
       this.domainInfo.domainSafeLevel = checkResult.level;
       this.domainInfo.suggested_url = checkResult.suggested_url;
       this.domainInfo.html_body_fuzzy_hash =
@@ -263,8 +334,8 @@ export class ContentScripts {
         this.doFuzzyCheck();
       }
     }
-    if (this.config.retryCount >= this.config.maxRetryNum) {
-      this.domainInfo.checkStatus = domainCheckStatus.finshedCheck;
+    if (!checkResult || !checkResult.level) {
+      this.removeBlackNotifying(domain);
       return;
     }
   }
