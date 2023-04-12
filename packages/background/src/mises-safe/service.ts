@@ -376,7 +376,7 @@ export class MisesSafeService {
       this.addBlackNotifying(contractAddress);
       setTimeout(() => {
         this.removeBlackNotifying(contractAddress);
-      }, 3000);
+      }, 25000);
       console.log("notifyPhishingDetected start: ", contractAddress);
       const userDecision = await this.notifyPhishingDetected({
         address: contractAddress,
