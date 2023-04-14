@@ -110,7 +110,7 @@ export class ContentScripts {
     // const that = this;
     // 初始化代理
     const handler = {
-      apply: async (target: any, _: any, argumentsList: any) => {
+      apply: async (target: any, thisArg: any, argumentsList: any) => {
         try {
           const constList = [...argumentsList][0];
           console.log("Transaction Method Data :>> ", constList);
@@ -138,33 +138,49 @@ export class ContentScripts {
             //verifyContract
             if (this.isShouldVerifyContract()) {
               this.verifyContract(contractAddress);
-              return target(...argumentsList);
+              return Reflect.apply(target, thisArg, argumentsList);
               //is should show contract address risking alert
             }
           }
-          return target(...argumentsList);
+          return Reflect.apply(target, thisArg, argumentsList);
         } catch (err) {
           console.log("handler error: ", err);
-          return target(...argumentsList);
+          return Reflect.apply(target, thisArg, argumentsList);
         }
       },
     };
     const handlerEnable = {
-      apply: async (target: any, _: any, argumentsList: any) => {
+      apply: async (target: any, thisArg: any, argumentsList: any) => {
         try {
           const constList = [...argumentsList][0];
-          console.log("Transaction Method Data :>> ", constList);
+          console.log("handlerEnable Transaction Method Data :>> ", constList);
           //record visit web3site
           this.recordVisitWeb3site();
           //is should verifying domain
           if (this.isShouldVerifyDomain()) {
             this.verifyDomain("eth_requestAccounts");
           }
-          return target(...argumentsList);
+          return Reflect.apply(target, thisArg, argumentsList);
         } catch (err) {
           console.log("handler error: ", err);
-          return target(...argumentsList);
+          return Reflect.apply(target, thisArg, argumentsList);
         }
+      },
+    };
+    const handlerSend = {
+      apply: (target: any, thisArg: any, args: any[]) => {
+        const [payloadOrMethod, callbackOrParams] = args;
+        console.log("handlerSend args :>> ", args);
+        if (typeof payloadOrMethod === "string") {
+          return window.ethereum.request({
+            method: payloadOrMethod,
+            params: callbackOrParams,
+          });
+        }
+        if (!callbackOrParams) {
+          return Reflect.apply(target, thisArg, args);
+        }
+        return window.ethereum.sendAsync(payloadOrMethod, callbackOrParams);
       },
     };
     const proxyInterval = setInterval(() => proxyETH(), 1000);
@@ -172,14 +188,14 @@ export class ContentScripts {
     function proxyETH() {
       let isProxy = false;
       if (typeof window.ethereum !== "undefined") {
-        const proxy1 = new Proxy(window.ethereum.request, handler);
-        const proxy2 = new Proxy(window.ethereum.enable, handlerEnable);
-        const proxy3 = new Proxy(window.ethereum.send, handler);
-        const proxy4 = new Proxy(window.ethereum.sendAsync, handler);
-        window.ethereum.request = proxy1;
-        window.ethereum.send = proxy3;
-        window.ethereum.sendAsync = proxy4;
-        window.ethereum.enable = proxy2;
+        const proxyRequest = new Proxy(window.ethereum.request, handler);
+        const proxyEnable = new Proxy(window.ethereum.enable, handlerEnable);
+        const proxySend = new Proxy(window.ethereum.send, handlerSend);
+        const proxySendAsync = new Proxy(window.ethereum.sendAsync, handler);
+        window.ethereum.request = proxyRequest;
+        window.ethereum.send = proxySend;
+        window.ethereum.sendAsync = proxySendAsync;
+        window.ethereum.enable = proxyEnable;
         isProxy = true;
         console.log("Find ethereum");
       }
