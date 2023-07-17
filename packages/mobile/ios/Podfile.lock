@@ -3,18 +3,18 @@ PODS:
   - amplitude-react-native (2.7.0):
     - Amplitude (= 8.7.1)
     - React-Core
-  - appcenter-analytics (4.1.0):
+  - appcenter-analytics (4.4.5):
     - AppCenter/Analytics (~> 4.0)
     - AppCenterReactNativeShared (~> 4.0)
     - React-Core
-  - appcenter-core (4.1.0):
+  - appcenter-core (4.4.5):
     - AppCenterReactNativeShared (~> 4.0)
     - React-Core
-  - AppCenter/Analytics (4.1.1):
+  - AppCenter/Analytics (4.4.3):
     - AppCenter/Core
-  - AppCenter/Core (4.1.1)
-  - AppCenterReactNativeShared (4.1.0):
-    - AppCenter/Core (= 4.1.1)
+  - AppCenter/Core (4.4.3)
+  - AppCenterReactNativeShared (4.4.5):
+    - AppCenter/Core (= 4.4.3)
   - Base64 (1.1.2)
   - boost-for-react-native (1.63.0)
   - BugsnagReactNative (7.16.1):
@@ -71,17 +71,17 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
-  - JWT (3.0.0-beta.12):
+  - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
-  - libwebp (1.2.0):
-    - libwebp/demux (= 1.2.0)
-    - libwebp/mux (= 1.2.0)
-    - libwebp/webp (= 1.2.0)
-  - libwebp/demux (1.2.0):
+  - libwebp (1.2.4):
+    - libwebp/demux (= 1.2.4)
+    - libwebp/mux (= 1.2.4)
+    - libwebp/webp (= 1.2.4)
+  - libwebp/demux (1.2.4):
     - libwebp/webp
-  - libwebp/mux (1.2.0):
+  - libwebp/mux (1.2.4):
     - libwebp/demux
-  - libwebp/webp (1.2.0)
+  - libwebp/webp (1.2.4)
   - lottie-ios (3.2.3)
   - lottie-react-native (4.0.3):
     - lottie-ios (~> 3.2.3)
@@ -354,9 +354,9 @@ PODS:
     - React
   - RNSVG (12.1.1):
     - React
-  - SDWebImage (5.11.1):
-    - SDWebImage/Core (= 5.11.1)
-  - SDWebImage/Core (5.11.1)
+  - SDWebImage (5.17.0):
+    - SDWebImage/Core (= 5.17.0)
+  - SDWebImage/Core (5.17.0)
   - SDWebImageWebPCoder (0.6.1):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.7)
@@ -373,8 +373,8 @@ PODS:
 
 DEPENDENCIES:
   - "amplitude-react-native (from `../node_modules/@amplitude/react-native`)"
-  - appcenter-analytics (from `../../../node_modules/appcenter-analytics/ios`)
-  - appcenter-core (from `../../../node_modules/appcenter/ios`)
+  - appcenter-analytics (from `../../../node_modules/appcenter-analytics`)
+  - appcenter-core (from `../../../node_modules/appcenter`)
   - "BugsnagReactNative (from `../node_modules/@bugsnag/react-native`)"
   - CodePush (from `../node_modules/react-native-code-push`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -454,9 +454,9 @@ EXTERNAL SOURCES:
   amplitude-react-native:
     :path: "../node_modules/@amplitude/react-native"
   appcenter-analytics:
-    :path: "../../../node_modules/appcenter-analytics/ios"
+    :path: "../../../node_modules/appcenter-analytics"
   appcenter-core:
-    :path: "../../../node_modules/appcenter/ios"
+    :path: "../../../node_modules/appcenter"
   BugsnagReactNative:
     :path: "../node_modules/@bugsnag/react-native"
   CodePush:
@@ -579,10 +579,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Amplitude: 834c7332dfb9640a751e21c13efb22a07c0c12d4
   amplitude-react-native: 0ed8cab759aafaa94961b82122bf56297da607ad
-  AppCenter: cd53e3ed3563cc720bcb806c9731a12389b40d44
-  appcenter-analytics: aa074250b2cb182d6f7d67d9c236dd4606673ab5
-  appcenter-core: c97920e79eba2321a262d3733cb2a6f1097db539
-  AppCenterReactNativeShared: 2d5a53b6cbd2fe7f63f0033e9f0a40757a4eacf5
+  AppCenter: 3fd04aa1b166e16fdb03ec81dabe488aece83fbd
+  appcenter-analytics: 1aea9ada8922d2e2df3e069a28eda21157c9d30d
+  appcenter-core: c593b2e4ac28d6a21b6a217c4a5e6b3de7b0b00f
+  AppCenterReactNativeShared: f395caeabde0dc3a11609dbcb737d0f14cd40e79
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BugsnagReactNative: bd1c905fb868fae8448a913b87356dbf2b02dc80
@@ -600,8 +600,8 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
-  JWT: 9b5c05abbcc1a0e69c3c91e1655b3387fc7e581d
-  libwebp: e90b9c01d99205d03b6bb8f2c8c415e5a4ef66f0
+  JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
+  libwebp: f62cb61d0a484ba548448a4bd52aabf150ff6eef
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: 96361a9891cf651534ea35c4f85f33d4cf14ed13
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
@@ -641,7 +641,7 @@ SPEC CHECKSUMS:
   RNScreens: f7ad633b2e0190b77b6a7aab7f914fad6f198d8d
   RNScrypt: 95fdef077b482e9fdf8a761120cb69d129ef4016
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
-  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImage: 750adf017a315a280c60fde706ab1e552a3ae4e9
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   UMAppLoader: 21af63390e55c82e037fb9752d93114a80ecf16e
