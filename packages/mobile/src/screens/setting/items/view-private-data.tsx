@@ -34,9 +34,9 @@ export const SettingViewPrivateDataItem: FunctionComponent<{
           );
 
           if (index >= 0) {
-            const privateData = await keyRingStore.showKeyRing(index, password);
+            const privateData = await keyRingStore.exportKeyRingDatas(password);
             smartNavigation.navigateSmart("Setting.ViewPrivateData", {
-              privateData,
+              privateData: privateData[0].key,
               privateDataType: keyRingStore.keyRingType,
             });
           }

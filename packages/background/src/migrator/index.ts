@@ -8,6 +8,10 @@ export type keyringParmas = {
 export class Migrator {
   // run all pending migrations on meta in place
   async migrateData(): Promise<{ vault: string }> {
+    if (!browser)
+      return {
+        vault: "",
+      };
     const { migrated } = await browser.storage.local.get();
     if (migrated && migrated.data) {
       const keyringStore = migrated.data.KeyringController || {
@@ -36,6 +40,7 @@ export class Migrator {
 
   clearCache() {
     console.log("clear data");
+    if (!browser) return;
     return browser.storage.local.set({
       migrated: "done",
     });

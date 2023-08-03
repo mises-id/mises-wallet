@@ -561,7 +561,7 @@ export class KeyRing {
           this.mnemonicMasterSeed = undefined;
           this.privateKey = undefined;
           this.ledgerPublicKeyCache = undefined;
-          this.misesService.lockAll();
+          // this.misesService.lockAll();
         }
 
         keyStoreChanged = true;

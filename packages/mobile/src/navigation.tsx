@@ -46,6 +46,7 @@ import {
   NewMnemonicScreen,
   RecoverMnemonicScreen,
   VerifyMnemonicScreen,
+  AddAccountScreen,
 } from "./screens/register/mnemonic";
 import { RegisterEndScreen } from "./screens/register/end";
 import { RegisterNewUserScreen } from "./screens/register/new-user";
@@ -56,6 +57,7 @@ import {
   IMemoConfig,
   IRecipientConfig,
   RegisterConfig,
+  useRegisterConfig,
 } from "@keplr-wallet/hooks";
 import {
   DelegateScreen,
@@ -63,7 +65,7 @@ import {
   ValidatorDetailsScreen,
   ValidatorListScreen,
 } from "./screens/stake";
-import { OpenDrawerIcon, ScanIcon } from "./components/icon";
+import { ScanIcon } from "./components/icon";
 import {
   AddAddressBookScreen,
   AddressBookScreen,
@@ -132,6 +134,9 @@ const {
       upperScreenName: "Register",
     },
     "Register.NotNewUser": {
+      upperScreenName: "Register",
+    },
+    "Register.AddAccount": {
       upperScreenName: "Register",
     },
     "Register.NewMnemonic": {
@@ -351,21 +356,17 @@ const HomeScreenHeaderLeft: FunctionComponent = observer(() => {
 
   const style = useStyle();
 
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
   return (
-    <HeaderLeftButton
-      onPress={() => {
-        navigation.dispatch(DrawerActions.toggleDrawer());
-      }}
-    >
+    <HeaderLeftButton>
       <View style={style.flatten(["flex-row", "items-center"])}>
-        <OpenDrawerIcon
+        {/* <OpenDrawerIcon
           size={28}
           color={
             style.flatten(["color-blue-400", "dark:color-platinum-300"]).color
           }
-        />
+        /> */}
         <Text style={style.flatten(["h4", "color-text-high", "margin-left-4"])}>
           {chainStore.current.chainName}
         </Text>
@@ -478,6 +479,14 @@ export const RegisterNavigation: FunctionComponent = () => {
         }}
         name="Register.NotNewUser"
         component={RegisterNotNewUserScreen}
+      />
+      <Stack.Screen
+        options={{
+          ...TransparentHeaderOptionsPreset,
+          title: "Create New Account",
+        }}
+        name="Register.AddAccount"
+        component={AddAccountScreen}
       />
       <Stack.Screen
         options={{
@@ -720,7 +729,9 @@ export const SettingStackScreen: FunctionComponent = () => {
 
   const navigation = useNavigation();
 
-  const { analyticsStore } = useStore();
+  const { analyticsStore, keyRingStore } = useStore();
+
+  const registerConfig = useRegisterConfig(keyRingStore, []);
 
   return (
     <Stack.Navigator
@@ -744,18 +755,23 @@ export const SettingStackScreen: FunctionComponent = () => {
         options={{
           ...HeaderOnSecondaryScreenOptionsPreset,
           title: "Select Account",
-          headerRight: () => (
-            <HeaderRightButton
-              onPress={() => {
-                analyticsStore.logEvent("Add additional account started");
-                navigation.navigate("Register", {
-                  screen: "Register.Intro",
-                });
-              }}
-            >
-              <HeaderAddIcon />
-            </HeaderRightButton>
-          ),
+          // headerRight: () => (
+          //   <HeaderRightButton
+          //     onPress={() => {
+          //       analyticsStore.logEvent("Import account started", {
+          //         registerType: "seed",
+          //       });
+          //       navigation.navigate("Register", {
+          //         screen: "Register.RecoverMnemonic",
+          //         params: {
+          //           registerConfig,
+          //         },
+          //       });
+          //     }}
+          //   >
+          //     <HeaderAddIcon />
+          //   </HeaderRightButton>
+          // ),
         }}
         component={SettingSelectAccountScreen}
       />

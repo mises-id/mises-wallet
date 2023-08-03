@@ -36,10 +36,11 @@ export class AutoLockAccountService {
     readonly keyRingStatus: KeyRingStatus;
   }) {
     this.keyringService = keyringService;
-
-    browser.idle.onStateChanged.addListener((idle) => {
-      this.stateChangedHandler(idle);
-    });
+    if (browser) {
+      browser.idle.onStateChanged.addListener((idle) => {
+        this.stateChangedHandler(idle);
+      });
+    }
 
     await this.loadDuration();
   }
@@ -109,15 +110,17 @@ export class AutoLockAccountService {
   public async lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
-      let tabs = await browser.tabs.query({
-        discarded: false,
-        status: "complete",
-      });
-      tabs = tabs.filter(
-        (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
-      );
-      for (const tab of tabs) {
-        browser.tabs.reload(tab.id);
+      if (browser) {
+        let tabs = await browser.tabs.query({
+          discarded: false,
+          status: "complete",
+        });
+        tabs = tabs.filter(
+          (val) => val.url && val.url.indexOf(browser.runtime.id) > -1
+        );
+        for (const tab of tabs) {
+          browser.tabs.reload(tab.id);
+        }
       }
     }
   }

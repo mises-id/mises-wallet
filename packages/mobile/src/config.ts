@@ -17,6 +17,42 @@ export interface AppChainInfo extends ChainInfo {
 
 export const EmbedChainInfos: AppChainInfo[] = [
   {
+    rpc: "https://rpc.gw.mises.site/",
+    rest: "https://rest.gw.mises.site",
+    chainId: "mainnet",
+    chainName: "Mises Network",
+    stakeCurrency: {
+      coinDenom: "MIS",
+      coinMinimalDenom: "umis",
+      coinDecimals: 6,
+      coinGeckoId: "mises",
+    },
+    walletUrl: "https://portal.mises.site/",
+    walletUrlForStaking: "https://portal.mises.site/",
+    bip44: {
+      coinType: 60,
+    },
+    bech32Config: Bech32Address.defaultBech32Config("mises"),
+    currencies: [
+      {
+        coinDenom: "MIS",
+        coinMinimalDenom: "umis",
+        coinDecimals: 6,
+        coinGeckoId: "mises",
+      },
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: "MIS",
+        coinMinimalDenom: "umis",
+        coinDecimals: 6,
+        coinGeckoId: "mises",
+      },
+    ],
+    coinType: 60,
+    features: ["ibc-transfer", "ibc-go"],
+  },
+  {
     rpc: "https://rpc-cosmoshub.keplr.app",
     rest: "https://lcd-cosmoshub.keplr.app",
     chainId: "cosmoshub-4",

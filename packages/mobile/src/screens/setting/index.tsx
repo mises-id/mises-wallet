@@ -68,14 +68,14 @@ export const SettingScreen: FunctionComponent = observer(() => {
           topBorder={!canShowPrivateData(keyRingStore.keyRingType)}
         />
       ) : null}
-      <SettingSectionTitle title="Others" />
+      {/* <SettingSectionTitle title="Others" />
       <SettingItem
         label="Keplr version"
         topBorder={true}
         onPress={() => {
           smartNavigation.navigateSmart("Setting.Version", {});
         }}
-      />
+      /> */}
       <SettingRemoveAccountItem topBorder={true} />
       {/* Mock element for padding bottom */}
       <View style={style.get("height-16")} />

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from "react";
+import React, { FunctionComponent, useMemo, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../../../stores";
 import { PageWithScrollViewInBottomTabView } from "../../../../components/page";
@@ -12,6 +12,9 @@ import {
 } from "@keplr-wallet/background";
 import { View } from "react-native";
 import { useSmartNavigation } from "../../../../navigation";
+import { Button } from "../../../../components/button";
+import { SelectorModal } from "../../../../components/input";
+import { useRegisterConfig } from "@keplr-wallet/hooks";
 
 const CheckIcon: FunctionComponent<{
   color: string;
@@ -152,11 +155,11 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
               return (
                 <KeyStoreItem
                   key={i.toString()}
-                  label={keyStore.meta?.name || "Keplr Account"}
-                  paragraph={getKeyStoreParagraph(keyStore)}
+                  label={keyStore.meta?.name || "Mises Account"}
+                  // paragraph={getKeyStoreParagraph(keyStore)}
                   topBorder={i === 0}
                   bottomBorder={keyStores.length - 1 !== i}
-                  right={
+                  left={
                     keyStore.selected ? (
                       <CheckIcon
                         color={style.get("color-blue-400").color}
@@ -177,8 +180,52 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
     );
   };
 
+  const addAccount = () => {
+    smartNavigation.navigateSmart("Register.AddAccount", {});
+  };
+
+  const registerConfig = useRegisterConfig(keyRingStore, []);
+
+  const importAccount = () => {
+    analyticsStore.logEvent("Import account started", {
+      registerType: "seed",
+    });
+    smartNavigation.navigateSmart("Register.RecoverMnemonic", {
+      registerConfig,
+    });
+  };
+
+  const [isOpenModal, setIsOpenModal] = useState(false);
+
+  const addAcountItems = useMemo(() => {
+    return [
+      {
+        key: "import",
+        label: "Import account",
+      },
+      {
+        key: "add",
+        label: "Add account",
+      },
+    ];
+  }, []);
+
   return (
     <PageWithScrollViewInBottomTabView backgroundMode="secondary">
+      <View
+        style={style.flatten([
+          "flex",
+          "flex-row",
+          "justify-end",
+          "margin-top-12",
+          "margin-right-12",
+        ])}
+      >
+        <View style={style.flatten(["margin-right-12"])}>
+          <Button text="Add" size="small" onPress={addAccount} />
+        </View>
+        <Button text="Import" size="small" onPress={importAccount} />
+      </View>
       {renderKeyStores("apple id", appleTorusKeyStores)}
       {renderKeyStores("google account", googleTorusKeyStores)}
       {renderKeyStores("mnemonic seed", mnemonicKeyStores)}
@@ -186,6 +233,23 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
       {renderKeyStores("private key", privateKeyStores)}
       {/* Margin bottom for last */}
       <View style={style.get("height-16")} />
+      <SelectorModal
+        selectedKey="import"
+        isOpen={isOpenModal}
+        close={() => setIsOpenModal(false)}
+        maxItemsToShow={4}
+        setSelectedKey={(key) => {
+          switch (key) {
+            case "import":
+              addAccount();
+              break;
+            case "add":
+              addAccount();
+              break;
+          }
+        }}
+        items={addAcountItems}
+      />
     </PageWithScrollViewInBottomTabView>
   );
 });

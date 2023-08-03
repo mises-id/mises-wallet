@@ -58,6 +58,7 @@ const initBackground = async () => {
         title: string;
         message: string;
       }) => {
+        if (typeof browser === "undefined") return
         browser.notifications.create({
           type: "basic",
           iconUrl: params.iconRelativeUrl

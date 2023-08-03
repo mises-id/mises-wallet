@@ -1,11 +1,5 @@
-import { MSdk as MisesSdk } from "mises-js-sdk";
-import {
-  MAppMgr,
-  MUserMgr,
-  MisesCoin,
-  MisesConfig,
-  MsgReader,
-} from "mises-js-sdk";
+import MisesSdk from "mises-js-sdk";
+// const MisesSdk = require("mises-js-sdk");
 import { MISES_POINT } from "./mises-network.util";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import {
@@ -25,40 +19,42 @@ import { QueryClient as QueryFetchClient } from "react-query";
 import { fetchConfig } from "./service";
 import { HttpClient } from "./http-client";
 export class Mises {
-  config: MisesConfig;
+  // config: MisesConfig;
 
-  coinDefine: MisesCoin;
+  // coinDefine: MisesCoin;
 
-  msgReader: MsgReader;
+  // msgReader: MsgReader;
 
-  misesSdk: MisesSdk;
+  // misesSdk: MisesSdk;
 
-  misesUser: MUserMgr;
+  // misesUser: MUserMgr;
 
-  misesAppMgr: MAppMgr;
+  // misesAppMgr: MAppMgr;
 
   stargateClient!: StargateClient;
 
   queryFetchClient: QueryFetchClient;
 
   constructor() {
-    this.config = MisesSdk.newConfig();
+    // console.log(MisesSdk);
+    // this.config = MisesSdk.newConfig();
 
-    this.coinDefine = MisesSdk.newCoinDefine();
+    // this.coinDefine = MisesSdk.newCoinDefine();
 
-    this.msgReader = MisesSdk.newMsgReader();
+    // this.msgReader = MisesSdk.newMsgReader();
 
-    this.coinDefine.load();
+    // this.coinDefine.load();
 
-    this.config.setLCDEndpoint(MISES_POINT);
+    // this.config.setLCDEndpoint(MISES_POINT);
 
-    this.misesSdk = MisesSdk.newSdk(this.config);
+    // this.misesSdk = MisesSdk.newSdk(this.config);
 
-    this.misesUser = this.misesSdk.userMgr();
+    // this.misesUser = this.misesSdk.userMgr();
 
-    this.misesAppMgr = this.misesSdk.appMgr();
+    // this.misesAppMgr = this.misesSdk.appMgr();
 
     this.queryFetchClient = new QueryFetchClient();
+    console.log(this.queryFetchClient);
   }
 
   async queryFetchClientInit() {

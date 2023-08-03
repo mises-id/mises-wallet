@@ -15,7 +15,7 @@ import {
 import { useStore } from "../../stores";
 import { StakingInfoCard } from "./staking-info-card";
 import { useStyle } from "../../styles";
-import { GovernanceCard } from "./governance-card";
+// import { GovernanceCard } from "./governance-card";
 import { observer } from "mobx-react-lite";
 import { MyRewardCard } from "./my-reward-card";
 import { TokensCard } from "./tokens-card";
@@ -139,9 +139,9 @@ export const HomeScreen: FunctionComponent = observer(() => {
       <StakingInfoCard
         containerStyle={style.flatten(["margin-bottom-card-gap"])}
       />
-      <GovernanceCard
+      {/* <GovernanceCard
         containerStyle={style.flatten(["margin-bottom-card-gap"])}
-      />
+      /> */}
     </PageWithScrollViewInBottomTabView>
   );
 });
