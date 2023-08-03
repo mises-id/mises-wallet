@@ -11,7 +11,7 @@ import { StyleSheet, View } from "react-native";
 import { Button } from "../../../components/button";
 import Clipboard from "expo-clipboard";
 import { useStore } from "../../../stores";
-import { BIP44AdvancedButton, useBIP44Option } from "../bip44";
+import { useBIP44Option } from "../bip44";
 import { Buffer } from "buffer/";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -247,7 +247,7 @@ export const RecoverMnemonicScreen: FunctionComponent = observer(() => {
         name="name"
         defaultValue=""
       />
-      <BIP44AdvancedButton bip44Option={bip44Option} />
+      {/* <BIP44AdvancedButton bip44Option={bip44Option} /> */}
       {mode === "create" ? (
         <React.Fragment>
           <Controller

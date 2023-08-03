@@ -275,6 +275,7 @@ export class MisesService {
   }
   // set mises browser userinfo
   setToMisesPrivate(params: userInfo): Promise<void> {
+    if (!browser) return Promise.resolve();
     if ((browser as any).misesPrivate) {
       (browser as any).misesPrivate.setMisesId(JSON.stringify(params));
     }
@@ -331,6 +332,7 @@ export class MisesService {
   }
 
   getinstallreferrer(): Promise<string> {
+    if (!browser) return Promise.resolve("");
     return new Promise((resolve) => {
       if (
         (browser as any).misesPrivate &&
@@ -681,6 +683,7 @@ export class MisesService {
   }
 
   async hasWalletAccount() {
+    if (!browser) return false;
     const items = await browser.storage.local.get("keyring/key-multi-store");
     const list = items["keyring/key-multi-store"] || [];
     return list.length > 0;
@@ -905,9 +908,11 @@ export class MisesService {
   }
 
   openWallet() {
-    browser.tabs.create({
-      url: browser.runtime.getURL("popup.html"),
-    });
+    if (browser) {
+      browser.tabs.create({
+        url: browser.runtime.getURL("popup.html"),
+      });
+    }
   }
 
   handleMessage(msg: any) {
@@ -925,7 +930,7 @@ export class MisesService {
 
   initKeepAlive() {
     console.log("connectNative");
-    if (this.keepAlivePort) {
+    if (this.keepAlivePort || !browser) {
       return;
     }
     this.keepAlivePort = browser.runtime.connectNative("site.mises.browser");

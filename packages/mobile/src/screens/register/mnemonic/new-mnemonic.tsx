@@ -14,7 +14,7 @@ import { TextInput } from "../../../components/input";
 import { Controller, useForm } from "react-hook-form";
 import { useSmartNavigation } from "../../../navigation";
 import { useSimpleTimer } from "../../../hooks";
-import { BIP44AdvancedButton, useBIP44Option } from "../bip44";
+import { useBIP44Option } from "../bip44";
 
 interface FormData {
   name: string;
@@ -114,7 +114,7 @@ export const NewMnemonicScreen: FunctionComponent = observer(() => {
         name="name"
         defaultValue=""
       />
-      <BIP44AdvancedButton bip44Option={bip44Option} />
+      {/* <BIP44AdvancedButton bip44Option={bip44Option} /> */}
       {mode === "create" ? (
         <React.Fragment>
           <Controller

@@ -20,7 +20,8 @@
       "**/@react-native-async-storage/async-storage",
       "**/@ledgerhq/react-native-hw-transport-ble",
       "**/jetifier",
-      "**/@bugsnag/**"
+      "**/@bugsnag/**",
+      "**/react-query"
     ]
   },
   "scripts": {
@@ -38,7 +39,8 @@
     "ci-lint": "yarn install --frozen-lockfile && yarn lint-test",
     "pre-commit": "lint-staged",
     "version": "zx ./scripts/lerna-lifecyle-check-version.mjs",
-    "fixbuild": "lerna run lint-fix && lerna run build"
+    "fixbuild": "lerna run lint-fix && lerna run build",
+    "ios": "cd ./packages/mobile && yarn ios"
   },
   "pre-commit": [
     "pre-commit"

@@ -13,10 +13,10 @@ import {
   CosmosAccount,
   CosmwasmAccount,
   SecretAccount,
-  LedgerInitStore,
   IBCCurrencyRegsitrar,
   PermissionStore,
   ChainSuggestStore,
+  MisesStore,
 } from "@keplr-wallet/stores";
 import { AsyncKVStore } from "../common";
 import { APP_PORT } from "@keplr-wallet/router";
@@ -44,7 +44,6 @@ export class RootStore {
 
   protected readonly interactionStore: InteractionStore;
   public readonly permissionStore: PermissionStore;
-  public readonly ledgerInitStore: LedgerInitStore;
   public readonly signInteractionStore: SignInteractionStore;
   public readonly chainSuggestStore: ChainSuggestStore;
 
@@ -100,10 +99,6 @@ export class RootStore {
       this.interactionStore,
       new RNMessageRequesterInternal()
     );
-    this.ledgerInitStore = new LedgerInitStore(
-      this.interactionStore,
-      new RNMessageRequesterInternal()
-    );
     this.signInteractionStore = new SignInteractionStore(this.interactionStore);
     this.chainSuggestStore = new ChainSuggestStore(this.interactionStore);
 
@@ -134,7 +129,7 @@ export class RootStore {
       // https://github.com/chainapsis/keplr-wallet/issues/318
       new AsyncKVStore("store_queries_fix3"),
       this.chainStore,
-      CosmosQueries.use(),
+      CosmosQueries.use(new MisesStore(new RNMessageRequesterInternal())),
       CosmwasmQueries.use(),
       SecretQueries.use({
         apiGetter: async () => {
@@ -202,6 +197,7 @@ export class RootStore {
             };
           }
         },
+        misesStore: new MisesStore(new RNMessageRequesterInternal()),
       }),
       CosmwasmAccount.use({
         queriesStore: this.queriesStore,

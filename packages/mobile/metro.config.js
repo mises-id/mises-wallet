@@ -35,7 +35,7 @@ module.exports = (async () => {
     resolver: {
       // For react-native-svg-transformer
       assetExts: assetExts.filter((ext) => ext !== "svg"),
-      sourceExts: [...sourceExts, "svg"],
+      sourceExts: [...sourceExts, "svg", 'cjs'],
       // To prevent that multiple react instances exist,
       // add the react in this package to the blacklist,
       // and use the only react in the root project.
@@ -55,6 +55,12 @@ module.exports = (async () => {
         http: path.resolve(__dirname, "../../node_modules/http-browserify"),
         https: path.resolve(__dirname, "../../node_modules/https-browserify"),
         os: path.resolve(__dirname, "../../node_modules/os-browserify"),
+        fs: path.resolve(__dirname, "./node_modules/react-native-fs"),
+        tty: path.resolve(__dirname, "../../node_modules/tty-browserify"),
+        zlib: path.resolve(__dirname, "../../node_modules/browserify-zlib"),
+        tls: path.resolve(__dirname, "./node_modules/react-native-tcp-socket"),
+        net: path.resolve(__dirname, "./node_modules/react-native-tcp-socket"),
+        timers: path.resolve(__dirname, "../../node_modules/timers-browserify"),
       },
     },
     transformer: {

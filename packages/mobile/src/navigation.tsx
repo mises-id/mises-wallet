@@ -918,15 +918,15 @@ export const MainTabNavigation: FunctionComponent = () => {
                   />
                 </Svg>
               );
-            case "Web":
-              return (
-                <Svg width={size} height={size} fill="none" viewBox="0 0 24 24">
-                  <Path
-                    fill={color}
-                    d="M12 2C8.741 2 5.849 3.577 4.021 6H4v.027A9.931 9.931 0 002 12c0 5.511 4.489 10 10 10s10-4.489 10-10S17.511 2 12 2zm3 2.584A7.98 7.98 0 0120 12c0 2.088-.8 3.978-2.102 5.4A1.993 1.993 0 0016 16a1 1 0 01-1-1v-2a1 1 0 00-1-1h-4a1 1 0 010-2 1 1 0 001-1V8a1 1 0 011-1h1a2 2 0 002-2v-.416zM4.207 10.207L9 15v1a2 2 0 002 2v1.932a7.979 7.979 0 01-6.793-9.725z"
-                  />
-                </Svg>
-              );
+            // case "Web":
+            //   return (
+            //     <Svg width={size} height={size} fill="none" viewBox="0 0 24 24">
+            //       <Path
+            //         fill={color}
+            //         d="M12 2C8.741 2 5.849 3.577 4.021 6H4v.027A9.931 9.931 0 002 12c0 5.511 4.489 10 10 10s10-4.489 10-10S17.511 2 12 2zm3 2.584A7.98 7.98 0 0120 12c0 2.088-.8 3.978-2.102 5.4A1.993 1.993 0 0016 16a1 1 0 01-1-1v-2a1 1 0 00-1-1h-4a1 1 0 010-2 1 1 0 001-1V8a1 1 0 011-1h1a2 2 0 002-2v-.416zM4.207 10.207L9 15v1a2 2 0 002 2v1.932a7.979 7.979 0 01-6.793-9.725z"
+            //       />
+            //     </Svg>
+            //   );
             case "Settings":
               return (
                 <Svg width={size} height={size} fill="none" viewBox="0 0 24 24">
