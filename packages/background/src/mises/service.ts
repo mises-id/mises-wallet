@@ -110,7 +110,7 @@ const timeout = 5000;
 export class MisesService {
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
-  keepAlivePort: browser.runtime.Port | null = null;
+  keepAlivePort: any;
   queryClientStatus: boolean = false;
   queryClientTryMaxCount: number = 5;
   queryClientTryCount: number = 1;
@@ -193,7 +193,7 @@ export class MisesService {
       priKey.replace("0x", "")
     );
 
-    console.log("activateUser", this.activeUser);
+    // console.log("activateUser", this.activeUser);
 
     const userInfo = await this.misesUserInfo();
 
@@ -332,7 +332,7 @@ export class MisesService {
   }
 
   getinstallreferrer(): Promise<string> {
-    if (!browser) return Promise.resolve("");
+    if (typeof browser === "undefined") return Promise.resolve("");
     return new Promise((resolve) => {
       if (
         (browser as any).misesPrivate &&
@@ -455,6 +455,7 @@ export class MisesService {
     }
 
     const balance = await this.activeUser?.getBalanceUMIS();
+    console.log(balance, "2132132");
     const toCoinUMIS = this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
     this.userInfo.balance = toCoinUMIS;
     this.save();
@@ -683,7 +684,7 @@ export class MisesService {
   }
 
   async hasWalletAccount() {
-    if (!browser) return false;
+    if (typeof browser === "undefined") return false;
     const items = await browser.storage.local.get("keyring/key-multi-store");
     const list = items["keyring/key-multi-store"] || [];
     return list.length > 0;
@@ -908,6 +909,7 @@ export class MisesService {
   }
 
   openWallet() {
+    if (typeof browser === "undefined") return false;
     if (browser) {
       browser.tabs.create({
         url: browser.runtime.getURL("popup.html"),
@@ -930,6 +932,7 @@ export class MisesService {
 
   initKeepAlive() {
     console.log("connectNative");
+    if (typeof browser === "undefined") return false;
     if (this.keepAlivePort || !browser) {
       return;
     }

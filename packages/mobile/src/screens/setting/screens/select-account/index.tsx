@@ -3,7 +3,6 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "../../../../stores";
 import { PageWithScrollViewInBottomTabView } from "../../../../components/page";
 import { KeyStoreItem, KeyStoreSectionTitle } from "../../components";
-import Svg, { Path } from "react-native-svg";
 import { useStyle } from "../../../../styles";
 import { useLoadingScreen } from "../../../../providers/loading-screen";
 import {
@@ -13,32 +12,12 @@ import {
 import { View } from "react-native";
 import { useSmartNavigation } from "../../../../navigation";
 import { Button } from "../../../../components/button";
-import { SelectorModal } from "../../../../components/input";
 import { useRegisterConfig } from "@keplr-wallet/hooks";
-
-const CheckIcon: FunctionComponent<{
-  color: string;
-  height: number;
-}> = ({ color, height }) => {
-  return (
-    <Svg
-      fill="none"
-      viewBox="0 0 19 17"
-      style={{
-        height,
-        aspectRatio: 19 / 17,
-      }}
-    >
-      <Path
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="3"
-        d="M18 1L7.448 16 1 7.923"
-      />
-    </Svg>
-  );
-};
+import { MoreIcon } from "../../../../components/icon";
+import { RectButton } from "../../../../components/rect-button";
+import { AccontSettingModal } from "../../../../modals/account";
+import { PasswordInputModal } from "../../../../modals/password-input/modal";
+import { getPrivateDataTitle } from "../view-private-data";
 
 export const getKeyStoreParagraph = (keyStore: MultiKeyStoreInfoElem) => {
   const bip44HDPath = keyStore.bip44HDPath
@@ -156,16 +135,29 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
                 <KeyStoreItem
                   key={i.toString()}
                   label={keyStore.meta?.name || "Mises Account"}
-                  // paragraph={getKeyStoreParagraph(keyStore)}
+                  secondLabel={keyStore.selected ? "(selected)" : ""}
+                  paragraph={getKeyStoreParagraph(keyStore)}
                   topBorder={i === 0}
                   bottomBorder={keyStores.length - 1 !== i}
-                  left={
-                    keyStore.selected ? (
-                      <CheckIcon
-                        color={style.get("color-blue-400").color}
-                        height={16}
+                  right={
+                    <RectButton
+                      style={style.flatten([
+                        "height-full",
+                        "width-40",
+                        "items-center",
+                        "justify-center",
+                      ])}
+                      hitSlop={{ top: 50, bottom: 50 }}
+                      onPress={() => {
+                        setselectKeyRingStore(keyStore);
+                        setIsOpenModal(true);
+                      }}
+                    >
+                      <MoreIcon
+                        color={style.get("color-text-low").color}
+                        size={24}
                       />
-                    ) : undefined
+                    </RectButton>
                   }
                   onPress={async () => {
                     analyticsStore.logEvent("Account changed");
@@ -196,20 +188,47 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
   };
 
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [
+    selectKeyRingStore,
+    setselectKeyRingStore,
+  ] = useState<MultiKeyStoreInfoElem>();
 
-  const addAcountItems = useMemo(() => {
-    return [
+  const selectOptions = useMemo(() => {
+    const options = [
       {
-        key: "import",
-        label: "Import account",
+        key: "viewPrivateKey",
+        label: "View private key",
       },
       {
-        key: "add",
-        label: "Add account",
+        key: "changeName",
+        label: "Change account name",
       },
     ];
-  }, []);
+    if (selectKeyRingStore?.type === "privateKey") {
+      options.push({
+        key: "delete",
+        label: "Delete account",
+      });
+    }
+    return options;
+  }, [selectKeyRingStore]);
+  const [showPrivatePop, setshowPrivatePop] = useState(false);
+  const [showDeletePop, setshowDeletePop] = useState(false);
 
+  const itemClick = (key: string) => {
+    if (key === "viewPrivateKey") {
+      setshowPrivatePop(true);
+    }
+    if (key === "changeName") {
+      smartNavigation.navigateSmart("Setting.RenameAccount", {
+        keyRingStore: selectKeyRingStore,
+      });
+    }
+    if (key === "delete") {
+      setshowDeletePop(true);
+    }
+    setIsOpenModal(false);
+  };
   return (
     <PageWithScrollViewInBottomTabView backgroundMode="secondary">
       <View
@@ -233,22 +252,56 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
       {renderKeyStores("private key", privateKeyStores)}
       {/* Margin bottom for last */}
       <View style={style.get("height-16")} />
-      <SelectorModal
-        selectedKey="import"
+      <AccontSettingModal
+        options={selectOptions}
+        itemClick={itemClick}
         isOpen={isOpenModal}
-        close={() => setIsOpenModal(false)}
-        maxItemsToShow={4}
-        setSelectedKey={(key) => {
-          switch (key) {
-            case "import":
-              addAccount();
-              break;
-            case "add":
-              addAccount();
-              break;
+        close={() => {
+          setselectKeyRingStore(undefined);
+          setIsOpenModal(false);
+        }}
+      />
+      <PasswordInputModal
+        isOpen={showPrivatePop}
+        close={() => {
+          setselectKeyRingStore(undefined);
+          setshowPrivatePop(false);
+        }}
+        title={getPrivateDataTitle("privateKey", true)}
+        onEnterPassword={async (password) => {
+          const index = keyRingStore.multiKeyStoreInfo.findIndex(
+            (keyStore) =>
+              JSON.stringify(keyStore) === JSON.stringify(selectKeyRingStore)
+          );
+
+          if (index >= 0) {
+            const privateData = await keyRingStore.showKeyRing(index, password);
+            smartNavigation.navigateSmart("Setting.ViewPrivateData", {
+              privateData: privateData,
+              privateDataType: keyRingStore.keyRingType,
+            });
+            setselectKeyRingStore(undefined);
           }
         }}
-        items={addAcountItems}
+      />
+      <PasswordInputModal
+        isOpen={showDeletePop}
+        close={() => {
+          setselectKeyRingStore(undefined);
+          setshowDeletePop(false);
+        }}
+        title={getPrivateDataTitle("privateKey", true)}
+        onEnterPassword={async (password) => {
+          const index = keyRingStore.multiKeyStoreInfo.findIndex(
+            (keyStore) =>
+              JSON.stringify(keyStore) === JSON.stringify(selectKeyRingStore)
+          );
+
+          if (index >= 0) {
+            await keyRingStore.deleteKeyRing(index, password);
+            setselectKeyRingStore(undefined);
+          }
+        }}
       />
     </PageWithScrollViewInBottomTabView>
   );

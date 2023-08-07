@@ -39,16 +39,13 @@ import {
 import { ObservableQueryDistributionParams } from "./distribution";
 import { ObservableQueryRPCStatus } from "./status";
 import { ObservableQueryJunoAnnualProvisions } from "./supply/juno";
-import { MisesStore } from "../../core";
 
 export interface CosmosQueries {
   cosmos: CosmosQueriesImpl;
 }
 
 export const CosmosQueries = {
-  use(
-    misesStore: MisesStore
-  ): (
+  use(): (
     queriesSetBase: QueriesSetBase,
     kvStore: KVStore,
     chainId: string,
@@ -65,8 +62,7 @@ export const CosmosQueries = {
           queriesSetBase,
           kvStore,
           chainId,
-          chainGetter,
-          misesStore
+          chainGetter
         ),
       };
     };
@@ -101,8 +97,7 @@ export class CosmosQueriesImpl {
     base: QueriesSetBase,
     kvStore: KVStore,
     chainId: string,
-    chainGetter: ChainGetter,
-    misesStore: MisesStore
+    chainGetter: ChainGetter
   ) {
     this.queryRPCStatus = new ObservableQueryRPCStatus(
       kvStore,
@@ -116,7 +111,7 @@ export class CosmosQueriesImpl {
     );
 
     base.queryBalances.addBalanceRegistry(
-      new ObservableQueryCosmosBalanceRegistry(kvStore, misesStore)
+      new ObservableQueryCosmosBalanceRegistry(kvStore)
     );
 
     this.queryAccount = new ObservableQueryAccount(
@@ -184,20 +179,17 @@ export class CosmosQueriesImpl {
     this.queryRewards = new ObservableQueryRewards(
       kvStore,
       chainId,
-      chainGetter,
-      misesStore
+      chainGetter
     );
     this.queryDelegations = new ObservableQueryDelegations(
       kvStore,
       chainId,
-      chainGetter,
-      misesStore
+      chainGetter
     );
     this.queryUnbondingDelegations = new ObservableQueryUnbondingDelegations(
       kvStore,
       chainId,
-      chainGetter,
-      misesStore
+      chainGetter
     );
     this.queryValidators = new ObservableQueryValidators(
       kvStore,

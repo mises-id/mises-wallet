@@ -35,7 +35,7 @@ export const SettingScreen: FunctionComponent = observer(() => {
     <PageWithScrollViewInBottomTabView backgroundMode="secondary">
       <SettingSelectAccountItem />
       <SettingSectionTitle title="General" />
-      <SettingFiatCurrencyItem topBorder={true} />
+      {/* <SettingFiatCurrencyItem topBorder={true} /> */}
       <SettingItem
         label="Address book"
         right={<RightArrow />}

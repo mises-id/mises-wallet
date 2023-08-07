@@ -107,7 +107,7 @@ export const CardHeaderFullButton: FunctionComponent<{
         style.flatten([
           "padding-x-card-horizontal",
           "padding-top-card-vertical",
-          "padding-bottom-card-vertical-half",
+          "padding-bottom-card-vertical",
         ]),
         containerStyle,
       ])}

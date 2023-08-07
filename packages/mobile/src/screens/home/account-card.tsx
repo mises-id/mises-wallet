@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useMemo } from "react";
 import { observer } from "mobx-react-lite";
 import { Card, CardBody } from "../../components/card";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -59,6 +59,9 @@ export const AccountCard: FunctionComponent<{
       ]
     : undefined;
 
+  const totalBalance = queryStakable.response
+    ? stakable.add(stakedSum)
+    : undefined;
   return (
     <Card style={containerStyle}>
       <CardBody style={style.flatten(["padding-bottom-0"])}>
@@ -88,9 +91,9 @@ export const AccountCard: FunctionComponent<{
                 Total Balance
               </Text>
               <Text style={style.flatten(["h3", "color-text-high"])}>
-                {totalPrice
-                  ? totalPrice.toString()
-                  : total.shrink(true).maxDecimals(6).toString()}
+                {totalBalance
+                  ? totalBalance.shrink(true).maxDecimals(4).toString()
+                  : "0 MIS"}
               </Text>
               {queryStakable.isFetching ? (
                 <View

@@ -23,6 +23,7 @@ import { usePrevious } from "../../hooks";
 import { BIP44Selectable } from "./bip44-selectable";
 import { useFocusEffect } from "@react-navigation/native";
 import { ChainUpdaterService } from "@keplr-wallet/background";
+import { TransactionListCard } from "./transaction-list-card";
 
 export const HomeScreen: FunctionComponent = observer(() => {
   const [refreshing, setRefreshing] = React.useState(false);
@@ -139,6 +140,11 @@ export const HomeScreen: FunctionComponent = observer(() => {
       <StakingInfoCard
         containerStyle={style.flatten(["margin-bottom-card-gap"])}
       />
+      {chainStore.current.bip44.coinType === 60 && (
+        <TransactionListCard
+          containerStyle={style.flatten(["margin-bottom-card-gap"])}
+        />
+      )}
       {/* <GovernanceCard
         containerStyle={style.flatten(["margin-bottom-card-gap"])}
       /> */}

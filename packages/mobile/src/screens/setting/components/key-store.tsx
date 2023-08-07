@@ -59,6 +59,7 @@ export const KeyStoreItem: FunctionComponent<{
   defaultRightWalletIconStyle?: ViewStyle;
 
   label: string;
+  secondLabel?: string;
   paragraph?: string;
   left?: React.ReactElement;
   right?: React.ReactElement;
@@ -73,6 +74,7 @@ export const KeyStoreItem: FunctionComponent<{
   paragraphStyle,
   defaultRightWalletIconStyle,
   label,
+  secondLabel,
   paragraph,
   left,
   right,
@@ -101,14 +103,24 @@ export const KeyStoreItem: FunctionComponent<{
           </View>
         )}
         <View>
-          <Text
-            style={StyleSheet.flatten([
-              style.flatten(["h5", "color-text-high"]),
-              labelStyle,
-            ])}
-          >
-            {label}
-          </Text>
+          <View style={style.flatten(["flex-row", "items-center"])}>
+            <Text
+              style={StyleSheet.flatten([
+                style.flatten(["h5", "color-text-high"]),
+                labelStyle,
+              ])}
+            >
+              {label}
+            </Text>
+            <Text
+              style={StyleSheet.flatten([
+                style.flatten(["subtitle3", "color-text-low"]),
+                labelStyle,
+              ])}
+            >
+              {secondLabel}
+            </Text>
+          </View>
           {paragraph ? (
             <Text
               style={StyleSheet.flatten([

@@ -20,7 +20,7 @@ export const EmbedChainInfos: AppChainInfo[] = [
     rpc: "https://rpc.gw.mises.site/",
     rest: "https://rest.gw.mises.site",
     chainId: "mainnet",
-    chainName: "Mises Network",
+    chainName: "Mises",
     stakeCurrency: {
       coinDenom: "MIS",
       coinMinimalDenom: "umis",

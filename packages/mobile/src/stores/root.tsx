@@ -41,6 +41,7 @@ import {
 export class RootStore {
   public readonly chainStore: ChainStore;
   public readonly keyRingStore: KeyRingStore;
+  public readonly misesStore: MisesStore;
 
   protected readonly interactionStore: InteractionStore;
   public readonly permissionStore: PermissionStore;
@@ -120,6 +121,8 @@ export class RootStore {
       this.interactionStore
     );
 
+    this.misesStore = new MisesStore(new RNMessageRequesterInternal());
+
     this.queriesStore = new QueriesStore(
       // Fix prefix key because there was a problem with storage being corrupted.
       // In the case of storage where the prefix key is "store_queries" or "store_queries_fix", "store_queries_fix2",
@@ -129,7 +132,7 @@ export class RootStore {
       // https://github.com/chainapsis/keplr-wallet/issues/318
       new AsyncKVStore("store_queries_fix3"),
       this.chainStore,
-      CosmosQueries.use(new MisesStore(new RNMessageRequesterInternal())),
+      CosmosQueries.use(this.misesStore),
       CosmwasmQueries.use(),
       SecretQueries.use({
         apiGetter: async () => {
@@ -197,7 +200,7 @@ export class RootStore {
             };
           }
         },
-        misesStore: new MisesStore(new RNMessageRequesterInternal()),
+        misesStore: this.misesStore,
       }),
       CosmwasmAccount.use({
         queriesStore: this.queriesStore,

@@ -6,8 +6,6 @@ import { StoreUtils } from "../../../common";
 import { BalanceRegistry, ObservableQueryBalanceInner } from "../../balances";
 import { ObservableChainQuery } from "../../chain-query";
 import { Balances } from "./types";
-import { MisesStore } from "../../../core";
-import { QueryClient } from "react-query";
 
 export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
   constructor(
@@ -68,18 +66,13 @@ export class ObservableQueryBalanceNative extends ObservableQueryBalanceInner {
 export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances> {
   protected bech32Address: string;
 
-  protected duplicatedFetchCheck: boolean = true;
-
-  protected misesStore: MisesStore;
-
-  QueryClient: QueryClient;
+  protected duplicatedFetchCheck: boolean = false;
 
   constructor(
     kvStore: KVStore,
     chainId: string,
     chainGetter: ChainGetter,
-    bech32Address: string,
-    misesStore: MisesStore
+    bech32Address: string
   ) {
     super(
       kvStore,
@@ -88,11 +81,8 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
       `/cosmos/bank/v1beta1/balances/${bech32Address}?pagination.limit=1000`
     );
 
-    this.QueryClient = new QueryClient();
-
     this.bech32Address = bech32Address;
 
-    this.misesStore = misesStore;
     makeObservable(this);
   }
 
@@ -103,44 +93,26 @@ export class ObservableQueryCosmosBalances extends ObservableChainQuery<Balances
 
   @override
   *fetch() {
-    this._isFetching = true;
-    this.QueryClient?.fetchQuery(
-      "getMisesBalance",
-      () => this.getMisesBalance(),
-      this.fetchConfig
-    )
-      .then((result) => {
-        this._isFetching = false;
-        this.setResponse(result);
-      })
-      .catch((error) => {
-        this._isFetching = false;
-        this.setError(error);
-      });
-  }
+    if (!this.duplicatedFetchCheck) {
+      // Because the native "bank" module's balance shares the querying result,
+      // it is inefficient to fetching duplicately in the same loop.
+      // So, if the fetching requests are in the same tick, this prevent to refetch the result and use the prior fetching.
+      this.duplicatedFetchCheck = true;
+      setTimeout(() => {
+        this.duplicatedFetchCheck = false;
+      }, 1);
 
-  async getMisesBalance() {
-    const balance = await this.misesStore?.getBalanceUMIS();
-
-    const result: QueryResponse<Balances> = {
-      status: 200,
-      data: {
-        balances: [balance],
-      },
-      staled: true,
-      timestamp: new Date().getTime(),
-    };
-
-    return result;
+      yield super.fetch();
+    }
   }
 
   protected setResponse(response: Readonly<QueryResponse<Balances>>) {
     super.setResponse(response);
 
     const chainInfo = this.chainGetter.getChain(this.chainId);
-    // Attempt to register denom in the returned response.
-    // If it's already registered anyway, it's okay because the method below doesn't do anything.
-    // Better to set it all at once as an array to reduce computation.
+    // 반환된 response 안의 denom을 등록하도록 시도한다.
+    // 어차피 이미 등록되어 있으면 밑의 메소드가 아무 행동도 안하기 때문에 괜찮다.
+    // computed를 줄이기 위해서 배열로 한번에 설정하는게 낫다.
     const denoms = response.data.balances.map((coin) => coin.denom);
     chainInfo.addUnknownCurrencies(...denoms);
   }
@@ -152,10 +124,7 @@ export class ObservableQueryCosmosBalanceRegistry implements BalanceRegistry {
     ObservableQueryCosmosBalances
   > = new Map();
 
-  constructor(
-    protected readonly kvStore: KVStore,
-    protected readonly misesStore: MisesStore
-  ) {}
+  constructor(protected readonly kvStore: KVStore) {}
 
   getBalanceInner(
     chainId: string,
@@ -177,8 +146,7 @@ export class ObservableQueryCosmosBalanceRegistry implements BalanceRegistry {
           this.kvStore,
           chainId,
           chainGetter,
-          bech32Address,
-          this.misesStore
+          bech32Address
         )
       );
     }

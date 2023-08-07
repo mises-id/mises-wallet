@@ -36,7 +36,7 @@ export class AutoLockAccountService {
     readonly keyRingStatus: KeyRingStatus;
   }) {
     this.keyringService = keyringService;
-    if (browser) {
+    if (typeof browser !== "undefined") {
       browser.idle.onStateChanged.addListener((idle) => {
         this.stateChangedHandler(idle);
       });
@@ -45,7 +45,7 @@ export class AutoLockAccountService {
     await this.loadDuration();
   }
 
-  private stateChangedHandler(newState: browser.idle.IdleState) {
+  private stateChangedHandler(newState: any) {
     if (this.autoLockDuration > 0) {
       if ((newState as any) === "locked") {
         this.stopAppStateCheckTimer();
@@ -110,7 +110,7 @@ export class AutoLockAccountService {
   public async lock() {
     if (this.keyRingIsUnlocked) {
       this.keyringService.lock();
-      if (browser) {
+      if (typeof browser !== "undefined") {
         let tabs = await browser.tabs.query({
           discarded: false,
           status: "complete",

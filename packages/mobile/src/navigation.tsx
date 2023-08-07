@@ -5,6 +5,7 @@ import {
   BIP44HDPath,
   ExportKeyRingData,
   KeyRingStatus,
+  MultiKeyStoreInfoElem,
 } from "@keplr-wallet/background";
 import {
   DrawerActions,
@@ -57,7 +58,6 @@ import {
   IMemoConfig,
   IRecipientConfig,
   RegisterConfig,
-  useRegisterConfig,
 } from "@keplr-wallet/hooks";
 import {
   DelegateScreen,
@@ -65,7 +65,7 @@ import {
   ValidatorDetailsScreen,
   ValidatorListScreen,
 } from "./screens/stake";
-import { ScanIcon } from "./components/icon";
+import { OpenDrawerIcon, ScanIcon } from "./components/icon";
 import {
   AddAddressBookScreen,
   AddressBookScreen,
@@ -121,6 +121,8 @@ import {
 } from "./screens/web/webpages";
 import { WebpageScreenScreenOptionsPreset } from "./screens/web/components/webpage-screen";
 import Bugsnag from "@bugsnag/react-native";
+import { TransactionDashboardScreen } from "./screens/Transaction";
+import { RenameAccountScreen } from "./screens/register/mnemonic/rename-account";
 
 const {
   SmartNavigatorProvider,
@@ -134,9 +136,6 @@ const {
       upperScreenName: "Register",
     },
     "Register.NotNewUser": {
-      upperScreenName: "Register",
-    },
-    "Register.AddAccount": {
       upperScreenName: "Register",
     },
     "Register.NewMnemonic": {
@@ -184,6 +183,9 @@ const {
     "Staking.Dashboard": {
       upperScreenName: "Others",
     },
+    "Transaction.Dashboard": {
+      upperScreenName: "Others",
+    },
     "Validator.Details": {
       upperScreenName: "Others",
     },
@@ -211,8 +213,14 @@ const {
     SettingSelectAccount: {
       upperScreenName: "Settings",
     },
+    "Register.AddAccount": {
+      upperScreenName: "Register",
+    },
     "Setting.ViewPrivateData": {
       upperScreenName: "Settings",
+    },
+    "Setting.RenameAccount": {
+      upperScreenName: "Others",
     },
     "Setting.Version": {
       upperScreenName: "Settings",
@@ -322,6 +330,9 @@ const {
       privateData: string;
       privateDataType: string;
     };
+    "Setting.RenameAccount": {
+      keyRingStore: MultiKeyStoreInfoElem | undefined;
+    };
     AddressBook: {
       recipientConfig?: IRecipientConfig;
       memoConfig?: IMemoConfig;
@@ -356,17 +367,21 @@ const HomeScreenHeaderLeft: FunctionComponent = observer(() => {
 
   const style = useStyle();
 
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
 
   return (
-    <HeaderLeftButton>
+    <HeaderLeftButton
+      onPress={() => {
+        navigation.dispatch(DrawerActions.toggleDrawer());
+      }}
+    >
       <View style={style.flatten(["flex-row", "items-center"])}>
-        {/* <OpenDrawerIcon
+        <OpenDrawerIcon
           size={28}
           color={
             style.flatten(["color-blue-400", "dark:color-platinum-300"]).color
           }
-        /> */}
+        />
         <Text style={style.flatten(["h4", "color-text-high", "margin-left-4"])}>
           {chainStore.current.chainName}
         </Text>
@@ -634,6 +649,14 @@ export const OtherNavigation: FunctionComponent = () => {
       <Stack.Screen
         options={{
           ...HeaderOnGradientScreenOptionsPreset,
+          title: "Transaction",
+        }}
+        name="Transaction.Dashboard"
+        component={TransactionDashboardScreen}
+      />
+      <Stack.Screen
+        options={{
+          ...HeaderOnGradientScreenOptionsPreset,
           title: "Validator Details",
         }}
         name="Validator.Details"
@@ -720,6 +743,15 @@ export const OtherNavigation: FunctionComponent = () => {
         name="Setting.ManageTokens"
         component={SettingManageTokensScreen}
       />
+
+      <Stack.Screen
+        name="Setting.RenameAccount"
+        options={{
+          ...HeaderAtSecondaryScreenOptionsPreset,
+          title: "Change account name",
+        }}
+        component={RenameAccountScreen}
+      />
     </Stack.Navigator>
   );
 };
@@ -727,11 +759,11 @@ export const OtherNavigation: FunctionComponent = () => {
 export const SettingStackScreen: FunctionComponent = () => {
   const style = useStyle();
 
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
-  const { analyticsStore, keyRingStore } = useStore();
+  // const { analyticsStore, keyRingStore } = useStore();
 
-  const registerConfig = useRegisterConfig(keyRingStore, []);
+  // const registerConfig = useRegisterConfig(keyRingStore, []);
 
   return (
     <Stack.Navigator
@@ -1003,7 +1035,7 @@ export const MainTabNavigation: FunctionComponent = () => {
       )}
     >
       <Tab.Screen name="Main" component={MainNavigation} />
-      <Tab.Screen name="Web" component={WebNavigation} />
+      {/* <Tab.Screen name="Web" component={WebNavigation} /> */}
       <Tab.Screen
         name="Settings"
         component={SettingStackScreen}

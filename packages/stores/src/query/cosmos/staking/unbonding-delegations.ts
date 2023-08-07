@@ -6,22 +6,16 @@ import { UnbondingDelegation, UnbondingDelegations } from "./types";
 import { KVStore } from "@keplr-wallet/common";
 import { ChainGetter } from "../../../common";
 import { CoinPretty, Int } from "@keplr-wallet/unit";
-import { computed, makeObservable, override } from "mobx";
-import { MisesStore } from "../../../core";
-import { QueryClient } from "react-query";
+import { computed, makeObservable } from "mobx";
 
 export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQuery<UnbondingDelegations> {
   protected bech32Address: string;
-  misesStore: MisesStore;
-  duplicatedFetchCheck: boolean = true;
-  QueryClient: QueryClient;
 
   constructor(
     kvStore: KVStore,
     chainId: string,
     chainGetter: ChainGetter,
-    bech32Address: string,
-    misesStore: MisesStore
+    bech32Address: string
   ) {
     super(
       kvStore,
@@ -29,19 +23,14 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       chainGetter,
       `/cosmos/staking/v1beta1/delegators/${bech32Address}/unbonding_delegations?pagination.limit=1000`
     );
-
-    this.QueryClient = new QueryClient();
-
     makeObservable(this);
 
     this.bech32Address = bech32Address;
-
-    this.misesStore = misesStore;
   }
 
   protected canFetch(): boolean {
     // If bech32 address is empty, it will always fail, so don't need to fetch it.
-    return this.bech32Address?.length > 0;
+    return this.bech32Address.length > 0;
   }
 
   @computed
@@ -53,7 +42,7 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
     }
 
     let totalBalance = new Int(0);
-    for (const unbondingDelegation of this.unbondings) {
+    for (const unbondingDelegation of this.response.data.unbonding_responses) {
       for (const entry of unbondingDelegation.entries) {
         totalBalance = totalBalance.add(new Int(entry.balance));
       }
@@ -80,14 +69,14 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       const entries = [];
       for (const entry of unbonding.entries) {
         entries.push({
-          creationHeight: new Int(entry.creationHeight),
-          completionTime: entry.completionTime,
+          creationHeight: new Int(entry.creation_height),
+          completionTime: entry.completion_time,
           balance: new CoinPretty(stakeCurrency, new Int(entry.balance)),
         });
       }
 
       result.push({
-        validatorAddress: unbonding.validatorAddress,
+        validatorAddress: unbonding.validator_address,
         entries,
       });
     }
@@ -101,33 +90,7 @@ export class ObservableQueryUnbondingDelegationsInner extends ObservableChainQue
       return [];
     }
 
-    return this.response.data?.unbondingResponses || [];
-  }
-
-  @override
-  *fetch() {
-    if (!this.bech32Address) {
-      return;
-    }
-    this._isFetching = true;
-    this.QueryClient?.fetchQuery(
-      "unbondingDelegations",
-      () => this.misesStore.unbondingDelegations(this.bech32Address),
-      this.fetchConfig
-    )
-      .then((res) => {
-        this._isFetching = false;
-        this.setResponse({
-          data: res,
-          status: 200,
-          staled: true,
-          timestamp: new Date().getTime(),
-        });
-      })
-      .catch((err) => {
-        this._isFetching = false;
-        this.setError(err);
-      });
+    return this.response.data.unbonding_responses;
   }
 }
 
@@ -135,16 +98,14 @@ export class ObservableQueryUnbondingDelegations extends ObservableChainQueryMap
   constructor(
     protected readonly kvStore: KVStore,
     protected readonly chainId: string,
-    protected readonly chainGetter: ChainGetter,
-    protected readonly misesStore: MisesStore
+    protected readonly chainGetter: ChainGetter
   ) {
     super(kvStore, chainId, chainGetter, (bech32Address: string) => {
       return new ObservableQueryUnbondingDelegationsInner(
         this.kvStore,
         this.chainId,
         this.chainGetter,
-        bech32Address,
-        misesStore
+        bech32Address
       );
     });
   }

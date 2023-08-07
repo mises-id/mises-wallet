@@ -257,7 +257,7 @@ export const UnlockScreen: FunctionComponent = observer(() => {
               onSubmitEditing={tryUnlock}
             />
             <Button
-              text="Sign in"
+              text="Unlock"
               size="large"
               loading={isLoading}
               onPress={tryUnlock}

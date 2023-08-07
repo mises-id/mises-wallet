@@ -163,7 +163,7 @@ export class RootStore {
     this.queriesStore = new QueriesStore(
       new ExtensionKVStore("store_queries"),
       this.chainStore,
-      CosmosQueries.use(this.misesStore),
+      CosmosQueries.use(),
       CosmwasmQueries.use(),
       SecretQueries.use({
         apiGetter: getKeplrFromWindow,
@@ -186,7 +186,6 @@ export class RootStore {
       },
       CosmosAccount.use({
         queriesStore: this.queriesStore,
-        misesStore: this.misesStore,
         msgOptsCreator: (chainId) => {
           // In certik, change the msg type of the MsgSend to "bank/MsgSend"
           if (chainId.startsWith("shentu-")) {

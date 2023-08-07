@@ -8,7 +8,7 @@ export type keyringParmas = {
 export class Migrator {
   // run all pending migrations on meta in place
   async migrateData(): Promise<{ vault: string }> {
-    if (!browser)
+    if (typeof browser === "undefined")
       return {
         vault: "",
       };
