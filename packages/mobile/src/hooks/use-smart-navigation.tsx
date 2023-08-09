@@ -1,4 +1,5 @@
 import {
+  NavigationProp,
   StackActions,
   useNavigation,
   useRoute,
@@ -25,7 +26,7 @@ export class SmartNavigator<
 
   navigateSmart<ScreenName extends keyof Config>(
     route: ReturnType<typeof useRoute>,
-    navigation: ReturnType<typeof useNavigation>,
+    navigation: NavigationProp<ReactNavigation.RootParamList>,
     screenName: ScreenName,
     params: Params[ScreenName] extends void ? undefined : Params[ScreenName]
   ): void {
@@ -53,7 +54,7 @@ export class SmartNavigator<
 
   pushSmart<ScreenName extends keyof Config>(
     route: ReturnType<typeof useRoute>,
-    navigation: ReturnType<typeof useNavigation>,
+    navigation: NavigationProp<ReactNavigation.RootParamList>,
     screenName: ScreenName,
     params: Params[ScreenName] extends void ? undefined : Params[ScreenName]
   ): void {
@@ -85,7 +86,7 @@ export class SmartNavigator<
 
   replaceSmart<ScreenName extends keyof Config>(
     route: ReturnType<typeof useRoute>,
-    navigation: ReturnType<typeof useNavigation>,
+    navigation: NavigationProp<ReactNavigation.RootParamList>,
     screenName: ScreenName,
     params: Params[ScreenName] extends void ? undefined : Params[ScreenName]
   ): void {

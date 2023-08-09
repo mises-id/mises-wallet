@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { FunctionComponent, useEffect, useRef } from "react";
+import React, { FunctionComponent, useEffect, useMemo, useRef } from "react";
 import { Text, View } from "react-native";
 import {
   BIP44HDPath,
@@ -14,6 +14,7 @@ import {
   useNavigation,
   DefaultTheme,
   DarkTheme,
+  ParamListBase,
 } from "@react-navigation/native";
 import { useStore } from "./stores";
 import { observer } from "mobx-react-lite";
@@ -21,6 +22,7 @@ import { HomeScreen } from "./screens/home";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   createStackNavigator,
+  StackNavigationProp,
   TransitionPresets,
 } from "@react-navigation/stack";
 import { SendScreen } from "./screens/send";
@@ -30,7 +32,7 @@ import {
 } from "./screens/governance";
 import {
   createDrawerNavigator,
-  useIsDrawerOpen,
+  useDrawerStatus,
 } from "@react-navigation/drawer";
 import { DrawerContent } from "./components/drawer";
 import { useStyle } from "./styles";
@@ -367,7 +369,7 @@ const HomeScreenHeaderLeft: FunctionComponent = observer(() => {
 
   const style = useStyle();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
 
   return (
     <HeaderLeftButton
@@ -395,7 +397,7 @@ const HomeScreenHeaderRight: FunctionComponent = observer(() => {
 
   const style = useStyle();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
 
   return (
     <React.Fragment>
@@ -573,7 +575,7 @@ export const RegisterNavigation: FunctionComponent = () => {
 export const OtherNavigation: FunctionComponent = () => {
   const style = useStyle();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
 
   return (
     <Stack.Navigator
@@ -909,10 +911,13 @@ export const WebNavigation: FunctionComponent = () => {
 export const MainTabNavigation: FunctionComponent = () => {
   const style = useStyle();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
 
   const focusedScreen = useFocusedScreen();
-  const isDrawerOpen = useIsDrawerOpen();
+  const drawerStatus = useDrawerStatus();
+  const isDrawerOpen = useMemo(() => {
+    return drawerStatus === "open";
+  }, [drawerStatus]);
 
   useEffect(() => {
     // When the focused screen is not "Home" screen and the drawer is open,
@@ -1030,7 +1035,7 @@ export const MainTabNavigation: FunctionComponent = () => {
         },
         showLabel: false,
       }}
-      tabBar={(props) => (
+      tabBar={(props: any) => (
         <BlurredBottomTabBar {...props} enabledScreens={["Home"]} />
       )}
     >

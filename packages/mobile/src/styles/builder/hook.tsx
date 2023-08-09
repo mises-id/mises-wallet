@@ -167,12 +167,12 @@ export const createStyleProvider = <
           AppState.addEventListener("focus", listener);
         }
 
-        return () => {
-          Appearance.removeChangeListener(listener);
-          if (Platform.OS === "android") {
-            AppState.removeEventListener("focus", listener);
-          }
-        };
+        // return () => {
+        //   Appearance.removeChangeListener(listener);
+        //   if (Platform.OS === "android") {
+        //     AppState.removeEventListener("focus", listener);
+        //   }
+        // };
       }, [isInitializing, isAutomatic]);
 
       const setTheme = useCallback(

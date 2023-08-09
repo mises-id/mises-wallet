@@ -2,7 +2,7 @@ import { createStyleProvider } from "./builder";
 import { EnumTextTransform, EnumTextDecorationLine } from "./builder/types";
 import { PixelRatio, Platform, StatusBarStyle } from "react-native";
 import { getPlatformFontWeight } from "./builder/utils";
-import { BlurViewProperties } from "@react-native-community/blur";
+import { BlurViewProps as BlurViewProperties } from "@react-native-community/blur";
 
 function handleImageHighRes(image: any, highResImage: any): any {
   if (PixelRatio.get() >= 2) {

@@ -26,6 +26,7 @@ export * from "./tokens";
 export * from "./interaction";
 export * from "./permission";
 export * from "./auto-lock-account";
+export * from "./mises/mises-network.util";
 
 import { KVStore } from "@keplr-wallet/common";
 import { ChainInfo } from "@keplr-wallet/types";

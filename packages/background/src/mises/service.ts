@@ -167,25 +167,26 @@ export class MisesService {
   }
 
   async queryClientAwait() {
-    const queryClientStatus = await this.initQueryClient();
-    return new Promise<void>((resolve, reject) => {
-      if (this.queryClientTryCount === this.queryClientTryMaxCount) {
-        this.queryClientTryCount = 1; // reset
-        reject("queryClientAwait timeout");
-        return;
-      }
+    return Promise.resolve();
+    // const queryClientStatus = await this.initQueryClient();
+    // return new Promise<void>((resolve, reject) => {
+    //   if (this.queryClientTryCount === this.queryClientTryMaxCount) {
+    //     this.queryClientTryCount = 1; // reset
+    //     reject("queryClientAwait timeout");
+    //     return;
+    //   }
 
-      if (queryClientStatus === "await") {
-        setTimeout(async () => {
-          this.queryClientTryCount++;
-          await this.queryClientAwait();
-          resolve();
-        }, 500 * this.queryClientTryCount);
-      } else {
-        this.queryClientTryCount = 1;
-        resolve();
-      }
-    });
+    //   if (queryClientStatus === "await") {
+    //     setTimeout(async () => {
+    //       this.queryClientTryCount++;
+    //       await this.queryClientAwait();
+    //       resolve();
+    //     }, 500 * this.queryClientTryCount);
+    //   } else {
+    //     this.queryClientTryCount = 1;
+    //     resolve();
+    //   }
+    // });
   }
 
   async activateUser(priKey: string): Promise<void> {

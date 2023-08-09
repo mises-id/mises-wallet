@@ -66,7 +66,7 @@ export const HomeScreen: FunctionComponent = observer(() => {
     AppState.addEventListener("change", appStateHandler);
 
     return () => {
-      AppState.removeEventListener("change", appStateHandler);
+      // AppState.removeEventListener("change", appStateHandler);
     };
   }, [checkAndUpdateChainInfo]);
 

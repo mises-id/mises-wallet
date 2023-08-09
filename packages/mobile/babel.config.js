@@ -5,6 +5,7 @@ module.exports = {
     ["@babel/plugin-proposal-decorators", { legacy: true }],
     ["@babel/plugin-proposal-class-properties"],
     ["@babel/plugin-syntax-class-properties"],
+    "react-native-reanimated/plugin",
   ],
   overrides: [
     {

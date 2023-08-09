@@ -2,6 +2,7 @@
   "name": "mises-wallet",
   "description": "Mises Wallet is a browser extension wallet for the Inter blockchain ecosystem.",
   "private": true,
+  "version": "0.11.17",
   "workspaces": {
     "packages": [
       "packages/*"

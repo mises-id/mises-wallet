@@ -9,9 +9,8 @@ import { useHistory } from "react-router";
 import { useIntl } from "react-intl";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
-import { IndexTx } from "@keplr-wallet/background/src/mises";
+import { IndexTx, shortenAddress } from "@keplr-wallet/background";
 import style from "./style.module.scss";
-import { shortenAddress } from "@keplr-wallet/background/src/mises/mises-network.util";
 import { categoryTypes, TransactionIcon } from "./icon/transaction-icon";
 import { QueryClient } from "react-query";
 import { fetchConfig } from "@keplr-wallet/background";
@@ -41,7 +40,7 @@ export const TransferPage: FunctionComponent = observer(() => {
         () => misesStore.recentTransactions(),
         fetchConfig
       )
-      .then(async (list) => {
+      .then(async (list: any) => {
         const userinfo = await misesStore.activeUser();
         settranstions([...list, ...userinfo.transtions]);
         setloadingStatus("success");
@@ -56,6 +55,7 @@ export const TransferPage: FunctionComponent = observer(() => {
           setloadingStatus("default");
         }, 1500);
       });
+    // eslint-disable-next-line
   }, []);
 
   const Transtion = (props: IndexTx) => {
