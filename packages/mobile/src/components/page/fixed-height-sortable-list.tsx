@@ -33,7 +33,7 @@ export function PageWithFixedHeightSortableList<Item extends { key: string }>(
     <React.Fragment>
       <ScreenBackground backgroundMode={backgroundMode} />
       <ContainerElement style={style.get("flex-1")}>
-        <FixedHeightSortableList
+        {/* <FixedHeightSortableList
           style={StyleSheet.flatten([
             style.flatten(["flex-1", "padding-0", "overflow-visible"]),
             propStyle,
@@ -47,7 +47,7 @@ export function PageWithFixedHeightSortableList<Item extends { key: string }>(
             { useNativeDriver: true, listener: onScroll }
           )}
           {...restProps}
-        />
+        /> */}
       </ContainerElement>
     </React.Fragment>
   );

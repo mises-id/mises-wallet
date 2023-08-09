@@ -10,12 +10,13 @@ import {
   ClipPath,
   Defs,
   LinearGradient,
+  NumberProp,
   Path,
   Stop,
   Svg,
   Use,
 } from "react-native-svg";
-import Animated, { Easing } from "react-native-reanimated";
+import Animated, { EasingNode } from "react-native-reanimated";
 import { useStyle } from "../../styles";
 
 // Convert to cartesian coordinates from polar coordinates.
@@ -146,7 +147,7 @@ const useAnimated = (
     return {
       duration: new Animated.Value(0),
       toValue,
-      easing: Easing.out(Easing.cubic),
+      easing: EasingNode.out(EasingNode.cubic),
     };
   }, [toValue]);
 
@@ -245,7 +246,7 @@ export const DoubleDoughnutChart: FunctionComponent<{
           valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
 
           debouncer.current = undefined;
-        }, 250);
+        }, 250) as any;
       } else {
         debouncer.current = setTimeout(() => {
           targetFirstRatio.setValue(firstRatio);
@@ -253,7 +254,7 @@ export const DoubleDoughnutChart: FunctionComponent<{
           valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
 
           debouncer.current = undefined;
-        }, 100);
+        }, 100) as any;
       }
     } else {
       if (debouncer.current != null) {
@@ -266,7 +267,7 @@ export const DoubleDoughnutChart: FunctionComponent<{
         valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
 
         debouncer.current = undefined;
-      }, 500);
+      }, 500) as any;
     }
   }, [
     firstData,
@@ -516,7 +517,7 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
           }
           strokeWidth="14"
           fill="transparent"
-          opacity={backRingOpacity ? backRingOpacity : 0}
+          opacity={(backRingOpacity ? backRingOpacity : 0) as NumberProp}
         />
         <Defs>
           <LinearGradient id="grad1" x1="1" y1="0" x2="0" y2="0">
@@ -545,8 +546,8 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={firstStartCapPosition.x}
-              cy={firstStartCapPosition.y}
+              cx={firstStartCapPosition.x as NumberProp}
+              cy={firstStartCapPosition.y as NumberProp}
               r={Animated.cond(
                 Animated.greaterThan(hideFirstArcCaps, 0),
                 0,
@@ -555,8 +556,8 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={firstEndCapPosition.x}
-              cy={firstEndCapPosition.y}
+              cx={firstEndCapPosition.x as NumberProp}
+              cy={firstEndCapPosition.y as NumberProp}
               r={Animated.cond(
                 Animated.greaterThan(hideFirstArcCaps, 0),
                 0,
@@ -577,8 +578,8 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={secondStartCapPosition.x}
-              cy={secondStartCapPosition.y}
+              cx={secondStartCapPosition.x as NumberProp}
+              cy={secondStartCapPosition.y as NumberProp}
               r={
                 hideSecondArcCaps
                   ? Animated.cond(
@@ -591,8 +592,8 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={secondEndCapPosition.x}
-              cy={secondEndCapPosition.y}
+              cx={secondEndCapPosition.x as NumberProp}
+              cy={secondEndCapPosition.y as NumberProp}
               r={
                 hideSecondArcCaps
                   ? Animated.cond(

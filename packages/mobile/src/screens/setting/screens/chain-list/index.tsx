@@ -45,7 +45,7 @@ export const SettingChainListScreen: FunctionComponent = observer(() => {
         return (
           <SettingChainListScreenElement
             {...item}
-            isDragging={anims.isDragging}
+            // isDragging={anims.isDragging}
             onGestureEvent={anims.onGestureEvent}
           />
         );
@@ -56,22 +56,22 @@ export const SettingChainListScreen: FunctionComponent = observer(() => {
   );
 });
 
-const usePreviousDiff = (initialValue: number) => {
-  const [previous] = useState(() => new Animated.Value<number>(initialValue));
+// const usePreviousDiff = (initialValue: number) => {
+//   const [previous] = useState(() => new Animated.Value<number>(initialValue));
 
-  return useMemo(() => {
-    return {
-      set: (value: Animated.Adaptable<number>) => Animated.set(previous, value),
-      diff: (value: Animated.Adaptable<number>) =>
-        Animated.cond(
-          Animated.defined(previous),
-          Animated.sub(value, previous),
-          value
-        ),
-      previous,
-    };
-  }, [previous]);
-};
+//   return useMemo(() => {
+//     return {
+//       set: (value: Animated.Adaptable<number>) => Animated.set(previous, value),
+//       diff: (value: Animated.Adaptable<number>) =>
+//         Animated.cond(
+//           Animated.defined(previous),
+//           Animated.sub(value, previous),
+//           value
+//         ),
+//       previous,
+//     };
+//   }, [previous]);
+// };
 
 export const SettingChainListScreenElement: FunctionComponent<{
   isFirst: boolean;
@@ -82,7 +82,7 @@ export const SettingChainListScreenElement: FunctionComponent<{
   chainSymbolImageUrl: string | undefined;
   disabled: boolean;
 
-  isDragging: Animated.Value<number>;
+  // isDragging: Animated.Value<number>;
   onGestureEvent: (...args: any[]) => void;
 }> = observer(
   ({
@@ -91,54 +91,54 @@ export const SettingChainListScreenElement: FunctionComponent<{
     chainName,
     chainSymbolImageUrl,
     disabled,
-    isDragging,
+    // isDragging,
     onGestureEvent,
   }) => {
     const { chainStore } = useStore();
 
     const style = useStyle();
 
-    const [animatedState] = useState(() => {
-      return {
-        clock: new Animated.Clock(),
-        finished: new Animated.Value(0),
-        position: new Animated.Value(0),
-        time: new Animated.Value(0),
-        frameTime: new Animated.Value(0),
-      };
-    });
-    const isDraggingDiff = usePreviousDiff(0);
+    // const [animatedState] = useState(() => {
+    //   return {
+    //     clock: new Animated.Clock(),
+    //     finished: new Animated.Value(0),
+    //     position: new Animated.Value(0),
+    //     time: new Animated.Value(0),
+    //     frameTime: new Animated.Value(0),
+    //   };
+    // });
+    // const isDraggingDiff = usePreviousDiff(0);
 
-    const animIsDragging = useMemo(() => {
-      return Animated.block([
-        Animated.cond(
-          Animated.not(Animated.eq(isDraggingDiff.diff(isDragging), 0)),
-          [
-            Animated.set(animatedState.finished, 0),
-            Animated.set(animatedState.time, 0),
-            Animated.set(animatedState.frameTime, 0),
-            Animated.cond(
-              Animated.not(Animated.clockRunning(animatedState.clock)),
-              Animated.startClock(animatedState.clock)
-            ),
-          ]
-        ),
+    // const animIsDragging = useMemo(() => {
+    //   return Animated.block([
+    //     Animated.cond(
+    //       Animated.not(Animated.eq(isDraggingDiff.diff(isDragging), 0)),
+    //       [
+    //         Animated.set(animatedState.finished, 0),
+    //         Animated.set(animatedState.time, 0),
+    //         Animated.set(animatedState.frameTime, 0),
+    //         Animated.cond(
+    //           Animated.not(Animated.clockRunning(animatedState.clock)),
+    //           Animated.startClock(animatedState.clock)
+    //         ),
+    //       ]
+    //     ),
 
-        Animated.timing(animatedState.clock, animatedState, {
-          duration: 140,
-          toValue: isDragging,
-          easing: Easing.out(Easing.cubic),
-        }),
+    //     Animated.timing(animatedState.clock, animatedState, {
+    //       duration: 140,
+    //       toValue: isDragging,
+    //       easing: Easing.out(Easing.cubic),
+    //     }),
 
-        Animated.cond(animatedState.finished, [
-          Animated.stopClock(animatedState.clock),
-        ]),
+    //     Animated.cond(animatedState.finished, [
+    //       Animated.stopClock(animatedState.clock),
+    //     ]),
 
-        isDraggingDiff.set(isDragging),
+    //     isDraggingDiff.set(isDragging),
 
-        animatedState.position,
-      ]);
-    }, [animatedState, isDragging, isDraggingDiff]);
+    //     animatedState.position,
+    //   ]);
+    // }, [animatedState, isDragging, isDraggingDiff]);
 
     return (
       <View
@@ -159,17 +159,17 @@ export const SettingChainListScreenElement: FunctionComponent<{
               "background-color-white",
               "dark:background-color-platinum-600",
             ]),
-            {
-              backgroundColor: Animated.interpolateColors(animIsDragging, {
-                inputRange: [0, 1],
-                outputColorRange: [
-                  style.flatten(["color-white", "dark:color-platinum-600"])
-                    .color,
-                  style.flatten(["color-gray-50", "dark:color-platinum-400"])
-                    .color,
-                ],
-              }) as Animated.Node<string>,
-            },
+            // {
+            //   backgroundColor: Animated.interpolateColors(animIsDragging, {
+            //     inputRange: [0, 1],
+            //     outputColorRange: [
+            //       style.flatten(["color-white", "dark:color-platinum-600"])
+            //         .color,
+            //       style.flatten(["color-gray-50", "dark:color-platinum-400"])
+            //         .color,
+            //     ],
+            //   }) as Animated.Node<string>,
+            // },
           ])}
         />
         <PanGestureHandler

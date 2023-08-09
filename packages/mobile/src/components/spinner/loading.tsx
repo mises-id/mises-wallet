@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
 import Svg, { Circle } from "react-native-svg";
 import Animated from "react-native-reanimated";
-import { useSpinAnimated } from "./hooks";
+// import { useSpinAnimated } from "./hooks";
 
 export const SVGLoadingIcon: FunctionComponent<{
   color: string;
@@ -61,18 +61,18 @@ export const LoadingSpinner: FunctionComponent<{
 
   enabled?: boolean;
 }> = ({ color, size, enabled }) => {
-  const spinAnimated = useSpinAnimated(enabled ?? true);
+  // const spinAnimated = useSpinAnimated(enabled ?? true);
 
   return (
     <Animated.View
       style={{
         width: size,
         height: size,
-        transform: [
-          {
-            rotate: spinAnimated,
-          },
-        ],
+        // transform: [
+        //   {
+        //     rotate: spinAnimated,
+        //   },
+        // ],
       }}
     >
       <SVGLoadingIcon color={color} size={size} />

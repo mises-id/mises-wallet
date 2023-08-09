@@ -6,7 +6,17 @@ import React, {
   useState,
 } from "react";
 import { Dimensions, Image, StatusBar, StyleSheet, View } from "react-native";
-import Animated, { Easing } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  cancelAnimation,
+  interpolate,
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { observer } from "mobx-react-lite";
 import { useStyle, useStyleThemeController } from "../../styles";
 import * as SplashScreen from "expo-splash-screen";
@@ -108,9 +118,20 @@ export const UnlockScreen: FunctionComponent = observer(() => {
 
   const [isSplashEnd, setIsSplashEnd] = useState(false);
 
-  const [animatedContinuityEffectOpacity] = useState(
-    () => new Animated.Value(1)
-  );
+  const animatedContinuityEffectOpacityValue = useSharedValue(1);
+
+  const animatedContinuityEffectOpacity = useAnimatedStyle(() => {
+    return {
+      opacity: animatedContinuityEffectOpacityValue.value,
+    };
+  });
+
+  const startAnimation = useCallback(() => {
+    animatedContinuityEffectOpacityValue.value = withTiming(0, {
+      duration: 600,
+      easing: Easing.ease,
+    });
+  }, [animatedContinuityEffectOpacityValue.value]);
 
   const navigateToHomeOnce = useRef(false);
   const navigateToHome = useCallback(async () => {
@@ -143,11 +164,7 @@ export const UnlockScreen: FunctionComponent = observer(() => {
         autoBiometryStatus === AutoBiomtricStatus.FAILED)
     ) {
       setTimeout(() => {
-        Animated.timing(animatedContinuityEffectOpacity, {
-          toValue: 0,
-          duration: 600,
-          easing: Easing.ease,
-        }).start();
+        startAnimation();
       }, 700);
     }
   }, [
@@ -278,9 +295,7 @@ export const UnlockScreen: FunctionComponent = observer(() => {
       <Animated.View
         style={StyleSheet.flatten([
           style.flatten(["absolute-fill"]),
-          {
-            opacity: animatedContinuityEffectOpacity,
-          },
+          animatedContinuityEffectOpacity,
         ])}
         pointerEvents={isSplashEnd ? "none" : "auto"}
       >
@@ -295,16 +310,22 @@ export const UnlockScreen: FunctionComponent = observer(() => {
 });
 
 const useAnimationState = () => {
-  return useState(() => {
-    return {
-      finished: new Animated.Value<number>(0),
-      position: new Animated.Value<number>(0),
-      time: new Animated.Value<number>(0),
-      frameTime: new Animated.Value<number>(0),
-    };
-  })[0];
-};
+  const finished = useSharedValue(0);
+  const position = useSharedValue(0);
+  const time = useSharedValue(0);
+  const frameTime = useSharedValue(0);
 
+  const [state] = useState(() => {
+    return {
+      finished,
+      position,
+      time,
+      frameTime,
+    };
+  });
+
+  return state;
+};
 export const SplashContinuityEffectView: FunctionComponent<{
   onAnimationEnd: () => void;
 }> = ({ onAnimationEnd }) => {
@@ -321,16 +342,63 @@ export const SplashContinuityEffectView: FunctionComponent<{
         height: number;
       }
     | undefined
-  >();
+  >({
+    width: 100,
+    height: 100,
+  });
+
+  const isStarted = useSharedValue(0);
+  const backgroundDone = useSharedValue(0);
+  const backgroundClippingDone = useSharedValue(0);
+  const backgroundClockValue = useSharedValue(0);
+  const backgroundClock = useDerivedValue(() => {
+    let isRunning = false;
+    const value = backgroundClockValue;
+
+    const start = () => {
+      value.value = withTiming(1, {
+        duration: backgroundAnimationDuration,
+        easing: Easing.out(Easing.quad),
+      });
+      isRunning = true;
+    };
+
+    const stop = () => {
+      cancelAnimation(value);
+      runOnJS(onAnimationEnd)();
+      isRunning = false;
+    };
+
+    return { value, start, stop, isRunning };
+  });
+
+  const backgroundClippingClockValue = useSharedValue(0);
+  const backgroundClippingClock = useDerivedValue(() => {
+    let isRunning = false;
+    const value = backgroundClippingClockValue;
+
+    const start = () => {
+      value.value = withTiming(1, {
+        duration: backgroundClippingAnimationDuration,
+        easing: Easing.out(Easing.quad),
+      });
+      isRunning = true;
+    };
+
+    const stop = () => {
+      cancelAnimation(value);
+      isRunning = false;
+    };
+    return { value, start, stop, isRunning };
+  });
 
   const [animation] = useState(() => {
     return {
-      isStarted: new Animated.Value<number>(0),
-      backgroundClock: new Animated.Clock(),
-      backgroundClippingClock: new Animated.Clock(),
-
-      backgroundDone: new Animated.Value(0),
-      backgroundClippingDone: new Animated.Value(0),
+      isStarted,
+      backgroundDone,
+      backgroundClippingDone,
+      backgroundClock,
+      backgroundClippingClock,
     };
   });
 
@@ -349,7 +417,7 @@ export const SplashContinuityEffectView: FunctionComponent<{
       (async () => {
         await hideSplashScreen();
 
-        animation.isStarted.setValue(1);
+        animation.isStarted.value = 1;
       })();
     }
   }, [
@@ -369,146 +437,83 @@ export const SplashContinuityEffectView: FunctionComponent<{
 
   const expectedBorderRadius = expectedLogoSize / 4.45;
 
-  Animated.useCode(() => {
-    return [
-      Animated.cond(
-        Animated.and(
-          Animated.greaterThan(animation.isStarted, 0),
-          Animated.eq(animation.backgroundClippingDone, 0)
-        ),
-        [
-          Animated.cond(
-            Animated.not(
-              Animated.clockRunning(animation.backgroundClippingClock)
-            ),
-            [Animated.startClock(animation.backgroundClippingClock)],
-            [
-              Animated.timing(
-                animation.backgroundClippingClock,
-                backgroundClippingWidth,
-                {
-                  duration: backgroundClippingAnimationDuration,
-                  easing: Easing.out(Easing.cubic),
-                  toValue: 1,
-                }
-              ),
-              Animated.timing(
-                animation.backgroundClippingClock,
-                backgroundClippingHeight,
-                {
-                  duration: backgroundClippingAnimationDuration,
-                  easing: Easing.out(Easing.cubic),
-                  toValue: 1,
-                }
-              ),
-              Animated.timing(
-                animation.backgroundClippingClock,
-                backgroundClippingRadius,
-                {
-                  duration: backgroundClippingAnimationDuration,
-                  easing: Easing.out(Easing.cubic),
-                  toValue: 1,
-                }
-              ),
-              Animated.cond(
-                Animated.and(
-                  backgroundClippingWidth.finished,
-                  backgroundClippingHeight.finished,
-                  backgroundClippingRadius.finished
-                ),
-                [
-                  Animated.set(animation.backgroundClippingDone, 1),
-                  Animated.debug(
-                    "Background clipping animation is done",
-                    Animated.stopClock(animation.backgroundClippingClock)
-                  ),
-                ]
-              ),
-            ]
-          ),
-        ]
-      ),
-    ];
-  }, [
-    animation.backgroundClippingClock,
-    animation.backgroundClippingDone,
-    animation.isStarted,
-    backgroundClippingHeight,
-    backgroundClippingRadius,
-    backgroundClippingWidth,
-  ]);
+  useAnimatedReaction(
+    () => {
+      if (
+        animation.isStarted.value > 0 &&
+        animation.backgroundClippingDone.value === 0
+      ) {
+        if (!animation.backgroundClippingClock.value.isRunning) {
+          animation.backgroundClippingClock.value.start();
+        }
 
-  Animated.useCode(() => {
-    return [
-      Animated.cond(
-        Animated.and(
-          Animated.greaterThan(animation.isStarted, 0),
-          Animated.eq(animation.backgroundDone, 0)
-        ),
-        [
-          Animated.cond(
-            Animated.not(Animated.clockRunning(animation.backgroundClock)),
-            [Animated.startClock(animation.backgroundClock)],
-            [
-              Animated.cond(
-                backgroundDelay.finished,
-                [
-                  Animated.timing(animation.backgroundClock, backgroundWidth, {
-                    duration: backgroundAnimationDuration,
-                    easing: Easing.out(Easing.quad),
-                    toValue: 1,
-                  }),
-                  Animated.timing(animation.backgroundClock, backgroundHeight, {
-                    duration: backgroundAnimationDuration,
-                    easing: Easing.out(Easing.quad),
-                    toValue: 1,
-                  }),
-                  Animated.cond(
-                    Animated.and(
-                      backgroundWidth.finished,
-                      backgroundHeight.finished
-                    ),
-                    [
-                      Animated.set(animation.backgroundDone, 1),
-                      Animated.debug(
-                        "Background animation is done",
-                        Animated.stopClock(animation.backgroundClock)
-                      ),
-                      Animated.call([], () => {
-                        onAnimationEndRef.current();
-                      }),
-                    ]
-                  ),
-                ],
-                [
-                  // `backgroundDelay` is actually not used for animation,
-                  // it is for the delay.
-                  Animated.timing(animation.backgroundClock, backgroundDelay, {
-                    duration: backgroundAnimationDelay,
-                    easing: Easing.ease,
-                    toValue: 1,
-                  }),
-                  Animated.cond(backgroundDelay.finished, [
-                    Animated.debug(
-                      "Delay for background animation is reached",
-                      backgroundDelay.finished
-                    ),
-                  ]),
-                ]
-              ),
-            ]
-          ),
-        ]
-      ),
-    ];
-  }, [
-    animation.isStarted,
-    animation.backgroundDone,
-    animation.backgroundClock,
-    backgroundDelay,
-    backgroundWidth,
-    backgroundHeight,
-  ]);
+        if (
+          backgroundClippingWidth.finished &&
+          backgroundClippingHeight.finished &&
+          backgroundClippingRadius.finished
+        ) {
+          animation.backgroundClippingDone.value = 1;
+          console.debug("Background clipping animation is done");
+          animation.backgroundClippingClock.value.stop();
+          cancelAnimation(animation.backgroundClippingClock.value);
+        } else {
+          animation.backgroundClippingClock.value.start();
+
+          console.debug("Background clipping animation is in progress");
+        }
+      }
+    },
+    () => {},
+    [
+      animation.isStarted.value,
+      animation.backgroundClippingDone.value,
+      animation.backgroundClippingClock,
+      backgroundClippingWidth.finished,
+      backgroundClippingHeight.finished,
+      backgroundClippingRadius.finished,
+    ]
+  );
+
+  useAnimatedReaction(
+    () => {
+      if (
+        animation.isStarted.value > 0 &&
+        animation.backgroundDone.value === 0
+      ) {
+        if (!animation.backgroundClock.value.isRunning) {
+          animation.backgroundClock.value.start();
+        }
+
+        if (backgroundDelay.finished) {
+          animation.backgroundClock.value.start();
+
+          if (backgroundWidth.finished && backgroundHeight.finished) {
+            animation.backgroundDone.value = 1;
+            console.debug("Background animation is done");
+            animation.backgroundClock.value.stop();
+            // onAnimationEndRef.current();
+          }
+        } else {
+          animation.backgroundClock.value.start();
+          // animation.backgroundClock.value.value = withTiming(1, {
+          //   duration: backgroundAnimationDelay,
+          //   easing: Easing.ease,
+          // });
+
+          console.debug("Delay for background animation is reached");
+        }
+      }
+    },
+    () => {},
+    [
+      animation.isStarted.value,
+      animation.backgroundDone.value,
+      animation.backgroundClock,
+      backgroundDelay.finished,
+      backgroundWidth.finished,
+      backgroundHeight.finished,
+    ]
+  );
 
   return (
     <React.Fragment>
@@ -530,22 +535,41 @@ export const SplashContinuityEffectView: FunctionComponent<{
               "justify-center",
             ]),
             {
-              width: backgroundClippingWidth.position.interpolate({
-                inputRange: [0, 1],
-                outputRange: [Dimensions.get("window").width, expectedLogoSize],
-              }),
-              height: backgroundClippingHeight.position.interpolate({
-                inputRange: [0, 1],
-                outputRange: [
+              width: interpolate(
+                backgroundClippingWidth.position.value,
+                [0, 1],
+                [Dimensions.get("window").width, expectedLogoSize]
+              ),
+              height: interpolate(
+                backgroundClippingHeight.position.value,
+                [0, 1],
+                [
                   Dimensions.get("window").height +
                     (StatusBar.currentHeight ?? 0),
                   expectedLogoSize,
-                ],
-              }),
-              borderRadius: backgroundClippingRadius.position.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, expectedBorderRadius],
-              }),
+                ]
+              ),
+              borderRadius: interpolate(
+                backgroundClippingRadius.position.value,
+                [0, 1],
+                [0, expectedBorderRadius]
+              ),
+              // width: backgroundClippingWidth.position.interpolate({
+              //   inputRange: [0, 1],
+              //   outputRange: [Dimensions.get("window").width, expectedLogoSize],
+              // }),
+              // height: backgroundClippingHeight.position.interpolate({
+              //   inputRange: [0, 1],
+              //   outputRange: [
+              //     Dimensions.get("window").height +
+              //       (StatusBar.currentHeight ?? 0),
+              //     expectedLogoSize,
+              //   ],
+              // }),
+              // borderRadius: backgroundClippingRadius.position.interpolate({
+              //   inputRange: [0, 1],
+              //   outputRange: [0, expectedBorderRadius],
+              // }),
             },
           ])}
         >
@@ -553,21 +577,20 @@ export const SplashContinuityEffectView: FunctionComponent<{
             style={StyleSheet.flatten([
               style.flatten(["width-full", "height-full"]),
               {
-                width: backgroundWidth.position.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [
-                    Dimensions.get("window").width,
-                    expectedLogoSize,
-                  ],
-                }),
-                height: backgroundHeight.position.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [
+                width: interpolate(
+                  backgroundWidth.position.value,
+                  [0, 1],
+                  [Dimensions.get("window").width, expectedLogoSize]
+                ),
+                height: interpolate(
+                  backgroundHeight.position.value,
+                  [0, 1],
+                  [
                     Dimensions.get("window").height +
                       (StatusBar.currentHeight ?? 0),
                     expectedLogoSize,
-                  ],
-                }),
+                  ]
+                ),
               },
             ])}
             source={require("../../assets/logo/splash-screen-only-background.png")}
@@ -592,6 +615,7 @@ export const SplashContinuityEffectView: FunctionComponent<{
           resizeMode="contain"
           fadeDuration={0}
           onLoad={(e) => {
+            console.log(e.nativeEvent.source, "1232132");
             setLogoSize(e.nativeEvent.source);
           }}
         />
