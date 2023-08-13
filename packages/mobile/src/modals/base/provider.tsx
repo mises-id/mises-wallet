@@ -1,21 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from "react";
-import {
-  AppState,
-  BackHandler,
-  Platform,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-  ViewStyle,
-} from "react-native";
+import { AppState, BackHandler, Text, View, ViewStyle } from "react-native";
 import { action, makeObservable, observable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { ModalBase } from "./base";
-import { ModalContext, useModalState } from "./hooks";
-import { useStyle } from "../../styles";
-import Animated, { FadeIn } from "react-native-reanimated";
+import { ModalContext } from "./hooks";
 import { ModalTransisionProvider } from "./transition";
-import { BlurView } from "@react-native-community/blur";
 
 export interface ModalOptions {
   readonly align?: "top" | "center" | "bottom";
@@ -205,7 +194,6 @@ export const ModalRenderer: FunctionComponent<{
   modal: Modal;
 }> = observer(({ modal }) => {
   const [isOpenTransitioning, setIsOpenTransitioning] = useState(true);
-
   return (
     <ModalContext.Provider
       value={useMemo(() => {
@@ -246,7 +234,7 @@ export const ModalRenderer: FunctionComponent<{
       ])}
     >
       <ModalTransisionProvider>
-        <ModalBackdrop />
+        {/* <ModalBackdrop /> */}
         <ModalBase
           align={modal.options.align}
           isOpen={modal.isOpen}
@@ -257,12 +245,7 @@ export const ModalRenderer: FunctionComponent<{
             globalModalRendererState.removeModal(modal.key);
             modal.onCloseTransitionEnd();
           }}
-          transitionVelocity={modal.options.transitionVelocity}
-          openTransitionVelocity={modal.options.openTransitionVelocity}
-          closeTransitionVelocity={modal.options.closeTransitionVelocity}
-          transitionAcceleration={modal.options.transitionAcceleration}
           containerStyle={modal.options.containerStyle}
-          disableSafeArea={modal.options.disableSafeArea}
         >
           {React.createElement(modal.element, modal.props)}
         </ModalBase>
@@ -270,100 +253,3 @@ export const ModalRenderer: FunctionComponent<{
     </ModalContext.Provider>
   );
 });
-
-const ModalBackdrop: FunctionComponent = () => {
-  const style = useStyle();
-
-  const modal = useModalState();
-  // const modalTransition = useModalTransision();
-
-  // const opacityValue = useSharedValue(0);
-
-  // const opacity = useAnimatedStyle(() => {
-  //   if (modal.transparentBackdrop) {
-  //     return {
-  //       opacity: 0,
-  //     };
-  //   }
-
-  // });
-  // const opacity = useMemo(() => {
-  //   if (modal.transparentBackdrop) {
-  //     return 0;
-  //   }
-
-  //   const maxOpacity =
-  //     modal.backdropMaxOpacity == null ? 1 : modal.backdropMaxOpacity;
-
-  //   return Animated.block([
-  //     Animated.cond(
-  //       Animated.and(
-  //         modalTransition.isInitialized,
-  //         Animated.greaterThan(Animated.abs(modalTransition.startY), 0)
-  //       ),
-  //       [
-  //         Animated.multiply(
-  //           Animated.min(
-  //             Animated.multiply(
-  //               Animated.sub(
-  //                 1,
-  //                 Animated.divide(
-  //                   Animated.abs(modalTransition.translateY),
-  //                   Animated.abs(modalTransition.startY)
-  //                 )
-  //               ),
-  //               6 / 5
-  //             ),
-  //             1
-  //           ),
-  //           maxOpacity
-  //         ),
-  //       ],
-  //       new Animated.Value(0)
-  //     ),
-  //   ]);
-  // }, [
-  //   modal.backdropMaxOpacity,
-  //   modal.transparentBackdrop,
-  //   modalTransition.isInitialized,
-  //   modalTransition.startY,
-  //   modalTransition.translateY,
-  // ]);
-
-  const blurBackdropOnIOS = modal.blurBackdropOnIOS && Platform.OS === "ios";
-
-  return (
-    <React.Fragment>
-      {!modal.disableBackdrop ? (
-        <TouchableWithoutFeedback
-          disabled={modal.disableClosingOnBackdropPress}
-          onPress={() => {
-            modal.close();
-          }}
-        >
-          <Animated.View
-            entering={FadeIn}
-            style={StyleSheet.flatten([
-              style.flatten(
-                ["absolute-fill"],
-                [
-                  !blurBackdropOnIOS && "background-color-gray-700@50%",
-                  !blurBackdropOnIOS && "dark:background-color-gray-700@75%",
-                ]
-              ),
-            ])}
-          >
-            {blurBackdropOnIOS ? (
-              <BlurView
-                style={style.flatten(["absolute-fill"])}
-                blurType="dark"
-                blurAmount={style.theme === "dark" ? 25 : 10}
-                reducedTransparencyFallbackColor="black"
-              />
-            ) : null}
-          </Animated.View>
-        </TouchableWithoutFeedback>
-      ) : null}
-    </React.Fragment>
-  );
-};

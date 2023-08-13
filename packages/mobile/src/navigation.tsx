@@ -125,6 +125,7 @@ import { WebpageScreenScreenOptionsPreset } from "./screens/web/components/webpa
 import Bugsnag from "@bugsnag/react-native";
 import { TransactionDashboardScreen } from "./screens/Transaction";
 import { RenameAccountScreen } from "./screens/register/mnemonic/rename-account";
+import { RecoverPrivateScreen } from "./screens/register/mnemonic/recover-private";
 
 const {
   SmartNavigatorProvider,
@@ -147,6 +148,9 @@ const {
       upperScreenName: "Register",
     },
     "Register.RecoverMnemonic": {
+      upperScreenName: "Register",
+    },
+    "Register.RecoverPrivateKey": {
       upperScreenName: "Register",
     },
     "Register.NewLedger": {
@@ -282,6 +286,9 @@ const {
       bip44HDPath: BIP44HDPath;
     };
     "Register.RecoverMnemonic": {
+      registerConfig: RegisterConfig;
+    };
+    "Register.RecoverPrivateKey": {
       registerConfig: RegisterConfig;
     };
     "Register.NewLedger": {
@@ -528,6 +535,14 @@ export const RegisterNavigation: FunctionComponent = () => {
         }}
         name="Register.RecoverMnemonic"
         component={RecoverMnemonicScreen}
+      />
+      <Stack.Screen
+        options={{
+          ...HeaderOnTertiaryScreenOptionsPreset,
+          title: "Import PrivateKey Wallet",
+        }}
+        name="Register.RecoverPrivateKey"
+        component={RecoverPrivateScreen}
       />
       <Stack.Screen
         options={{
@@ -1065,7 +1080,8 @@ export const MainTabNavigationWithDrawer: FunctionComponent = () => {
         // If the focused screen is not "Home" screen,
         // disable the gesture to open drawer.
         swipeEnabled: focused.name === "Home",
-        gestureEnabled: focused.name === "Home",
+        gestureEnabled: (focused.name === "Home") as any,
+        headerShown: false,
       }}
       overlayColor={
         style.flatten(["color-gray-700@50%", "dark:color-gray-700@75%"]).color

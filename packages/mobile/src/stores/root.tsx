@@ -28,9 +28,7 @@ import { Keplr } from "@keplr-wallet/provider";
 import { KeychainStore } from "./keychain";
 import { WalletConnectStore } from "./wallet-connect";
 import { FeeType } from "@keplr-wallet/hooks";
-import { AmplitudeApiKey } from "../config";
 import { AnalyticsStore, NoopAnalyticsClient } from "@keplr-wallet/analytics";
-import { Amplitude } from "@amplitude/react-native";
 import { ChainIdHelper } from "@keplr-wallet/cosmos";
 import {
   AxelarEVMBridgeCurrencyRegistrar,
@@ -132,7 +130,7 @@ export class RootStore {
       // https://github.com/chainapsis/keplr-wallet/issues/318
       new AsyncKVStore("store_queries_fix3"),
       this.chainStore,
-      CosmosQueries.use(this.misesStore),
+      CosmosQueries.use(),
       CosmwasmQueries.use(),
       SecretQueries.use({
         apiGetter: async () => {
@@ -200,7 +198,6 @@ export class RootStore {
             };
           }
         },
-        misesStore: this.misesStore,
       }),
       CosmwasmAccount.use({
         queriesStore: this.queriesStore,
@@ -327,14 +324,7 @@ export class RootStore {
 
     this.analyticsStore = new AnalyticsStore(
       (() => {
-        if (!AmplitudeApiKey) {
-          return new NoopAnalyticsClient();
-        } else {
-          const amplitudeClient = Amplitude.getInstance();
-          amplitudeClient.init(AmplitudeApiKey);
-
-          return amplitudeClient;
-        }
+        return new NoopAnalyticsClient();
       })(),
       {
         logEvent: (eventName, eventProperties) => {

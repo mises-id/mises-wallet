@@ -9,13 +9,19 @@ import { VectorCharacter } from "../../../../components/vector-character";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Svg, { Path } from "react-native-svg";
 import { PageWithFixedHeightSortableList } from "../../../../components/page/fixed-height-sortable-list";
-import Animated, { Easing } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  SharedValue,
+  interpolateColor,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 export const SettingChainListScreen: FunctionComponent = observer(() => {
   const { chainStore } = useStore();
 
   const style = useStyle();
-
   return (
     <PageWithFixedHeightSortableList
       backgroundMode="secondary"
@@ -45,7 +51,7 @@ export const SettingChainListScreen: FunctionComponent = observer(() => {
         return (
           <SettingChainListScreenElement
             {...item}
-            // isDragging={anims.isDragging}
+            isDragging={anims.isDragging}
             onGestureEvent={anims.onGestureEvent}
           />
         );
@@ -56,22 +62,23 @@ export const SettingChainListScreen: FunctionComponent = observer(() => {
   );
 });
 
-// const usePreviousDiff = (initialValue: number) => {
-//   const [previous] = useState(() => new Animated.Value<number>(initialValue));
+const usePreviousDiff = (initialValue: number) => {
+  const previous = useSharedValue(initialValue);
 
-//   return useMemo(() => {
-//     return {
-//       set: (value: Animated.Adaptable<number>) => Animated.set(previous, value),
-//       diff: (value: Animated.Adaptable<number>) =>
-//         Animated.cond(
-//           Animated.defined(previous),
-//           Animated.sub(value, previous),
-//           value
-//         ),
-//       previous,
-//     };
-//   }, [previous]);
-// };
+  const set = (value: number) => {
+    previous.value = value;
+  };
+
+  const diff = (value: number) => {
+    return previous.value !== undefined ? value - previous.value : value;
+  };
+
+  return {
+    set,
+    diff,
+    previous,
+  };
+};
 
 export const SettingChainListScreenElement: FunctionComponent<{
   isFirst: boolean;
@@ -82,7 +89,7 @@ export const SettingChainListScreenElement: FunctionComponent<{
   chainSymbolImageUrl: string | undefined;
   disabled: boolean;
 
-  // isDragging: Animated.Value<number>;
+  isDragging: SharedValue<number>;
   onGestureEvent: (...args: any[]) => void;
 }> = observer(
   ({
@@ -91,54 +98,50 @@ export const SettingChainListScreenElement: FunctionComponent<{
     chainName,
     chainSymbolImageUrl,
     disabled,
-    // isDragging,
+    isDragging,
     onGestureEvent,
   }) => {
     const { chainStore } = useStore();
 
     const style = useStyle();
 
-    // const [animatedState] = useState(() => {
-    //   return {
-    //     clock: new Animated.Clock(),
-    //     finished: new Animated.Value(0),
-    //     position: new Animated.Value(0),
-    //     time: new Animated.Value(0),
-    //     frameTime: new Animated.Value(0),
-    //   };
-    // });
-    // const isDraggingDiff = usePreviousDiff(0);
+    const animatedState = {
+      clockIsRunning: useSharedValue(0),
+      clock: useSharedValue(0),
+      finished: useSharedValue(0),
+      position: useSharedValue(0),
+      time: useSharedValue(0),
+      frameTime: useSharedValue(0),
+    };
+    const isDraggingDiff = usePreviousDiff(0);
 
-    // const animIsDragging = useMemo(() => {
-    //   return Animated.block([
-    //     Animated.cond(
-    //       Animated.not(Animated.eq(isDraggingDiff.diff(isDragging), 0)),
-    //       [
-    //         Animated.set(animatedState.finished, 0),
-    //         Animated.set(animatedState.time, 0),
-    //         Animated.set(animatedState.frameTime, 0),
-    //         Animated.cond(
-    //           Animated.not(Animated.clockRunning(animatedState.clock)),
-    //           Animated.startClock(animatedState.clock)
-    //         ),
-    //       ]
-    //     ),
+    const animIsDragging = useDerivedValue(() => {
+      if (isDraggingDiff.previous.value !== 0) {
+        animatedState.finished.value = 0;
+        animatedState.time.value = 0;
+        animatedState.frameTime.value = 0;
 
-    //     Animated.timing(animatedState.clock, animatedState, {
-    //       duration: 140,
-    //       toValue: isDragging,
-    //       easing: Easing.out(Easing.cubic),
-    //     }),
+        if (!animatedState.clockIsRunning.value) {
+          animatedState.clockIsRunning.value = 1;
+          animatedState.clock.value = withTiming(
+            isDragging.value,
+            {
+              duration: 140,
+              easing: Easing.out(Easing.cubic),
+            },
+            (isFinished) => {
+              if (isFinished) {
+                animatedState.clockIsRunning.value = 0;
+              }
+            }
+          );
+        }
+      }
 
-    //     Animated.cond(animatedState.finished, [
-    //       Animated.stopClock(animatedState.clock),
-    //     ]),
+      isDraggingDiff.previous.value = isDragging.value;
 
-    //     isDraggingDiff.set(isDragging),
-
-    //     animatedState.position,
-    //   ]);
-    // }, [animatedState, isDragging, isDraggingDiff]);
+      return animatedState.position.value;
+    }, [animatedState, isDragging, isDraggingDiff]);
 
     return (
       <View
@@ -159,17 +162,18 @@ export const SettingChainListScreenElement: FunctionComponent<{
               "background-color-white",
               "dark:background-color-platinum-600",
             ]),
-            // {
-            //   backgroundColor: Animated.interpolateColors(animIsDragging, {
-            //     inputRange: [0, 1],
-            //     outputColorRange: [
-            //       style.flatten(["color-white", "dark:color-platinum-600"])
-            //         .color,
-            //       style.flatten(["color-gray-50", "dark:color-platinum-400"])
-            //         .color,
-            //     ],
-            //   }) as Animated.Node<string>,
-            // },
+            {
+              backgroundColor: interpolateColor(
+                animIsDragging.value,
+                [0, 1],
+                [
+                  style.flatten(["color-white", "dark:color-platinum-600"])
+                    .color,
+                  style.flatten(["color-gray-50", "dark:color-platinum-400"])
+                    .color,
+                ]
+              ),
+            },
           ])}
         />
         <PanGestureHandler

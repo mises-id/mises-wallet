@@ -1,48 +1,36 @@
-import React, {
-  FunctionComponent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { FunctionComponent, useEffect, useMemo, useRef } from "react";
 import {
   Circle,
   ClipPath,
   Defs,
   LinearGradient,
-  NumberProp,
   Path,
   Stop,
   Svg,
   Use,
 } from "react-native-svg";
-import Animated, { EasingNode } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useStyle } from "../../styles";
+import { useClock } from "../../hooks";
 
 // Convert to cartesian coordinates from polar coordinates.
 const polarToCartesian = (
   centerX: number,
   centerY: number,
   radius: number,
-  angleInDegree: Animated.Adaptable<number>
+  angleInDegree: number
 ): {
-  x: Animated.Adaptable<number>;
-  y: Animated.Adaptable<number>;
+  x: number;
+  y: number;
 } => {
-  const angleInRadian = Animated.divide(
-    Animated.multiply(angleInDegree, Math.PI),
-    180
-  );
-
+  const angleInRadian = (angleInDegree * Math.PI) / 180;
   return {
-    x: Animated.add(
-      centerX,
-      Animated.multiply(radius, Animated.cos(angleInRadian))
-    ),
-    y: Animated.add(
-      centerY,
-      Animated.multiply(radius, Animated.sin(angleInRadian))
-    ),
+    x: centerX + radius * Math.cos(angleInRadian),
+    y: centerY + radius * Math.sin(angleInRadian),
   };
 };
 
@@ -53,8 +41,8 @@ const describeArc = (
   x: number,
   y: number,
   radius: number,
-  startAngleInDegree: Animated.Adaptable<number>,
-  endAngleInDegree: Animated.Adaptable<number>
+  startAngleInDegree: number,
+  endAngleInDegree: number
 ) => {
   const start = polarToCartesian(x, y, radius, startAngleInDegree);
   const end = polarToCartesian(
@@ -63,14 +51,14 @@ const describeArc = (
     radius,
     // Can't draw an arc from the same point to the same point in svg.
     // Due to this problem, it only allows up to 359.9 degree.
-    Animated.min(endAngleInDegree, Animated.add(startAngleInDegree, 359.9))
+    Math.min(endAngleInDegree, startAngleInDegree + 359.9)
   );
-
-  const largeArcFlag = Animated.cond(
-    Animated.lessThan(Animated.sub(endAngleInDegree, startAngleInDegree), 180),
-    0,
-    1
-  );
+  const largeArcFlag = endAngleInDegree - startAngleInDegree < 180 ? 0 : 1;
+  // const largeArcFlag = Animated.cond(
+  //   Animated.lessThan(Animated.sub(endAngleInDegree - startAngleInDegree), 180),
+  //   0,
+  //   1
+  // );
 
   const d = [
     "M",
@@ -114,7 +102,7 @@ const describeArc = (
     y,
   ];
 
-  return Animated.concat(...d);
+  return d.join(" ");
 };
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -127,69 +115,53 @@ const minArcAngleInDegree = 0.2;
 //       It doesn't react whenever these values change.
 //       Therefore, use constant `velocitySec` and `minDurationMs` as much as possible.
 const useAnimated = (
-  toValue: Animated.Adaptable<number>,
+  toValue: number,
   velocitySec: number,
   minDurationMs: number = 0
 ) => {
-  const [prevToValue] = useState(() => new Animated.Value<number>());
+  const prevToValue = useSharedValue(0);
+  const clock = useClock();
+  const finished = useSharedValue(0);
+  const position = useSharedValue(0);
+  const time = useSharedValue(0);
+  const frameTime = useSharedValue(0);
 
-  const [clock] = useState(() => new Animated.Clock());
-  const [state] = useState(() => {
-    return {
-      finished: new Animated.Value<number>(0),
-      position: new Animated.Value<number>(),
-      time: new Animated.Value<number>(0),
-      frameTime: new Animated.Value<number>(0),
-    };
-  });
+  const state = {
+    finished,
+    position,
+    time,
+    frameTime,
+  };
+  const duration = useSharedValue(0);
+  const config = {
+    duration,
+    easing: Easing.out(Easing.cubic),
+  };
 
-  const config = useMemo(() => {
-    return {
-      duration: new Animated.Value(0),
-      toValue,
-      easing: EasingNode.out(EasingNode.cubic),
-    };
-  }, [toValue]);
+  return useMemo(() => {
+    if (state.position) {
+      state.position.value = toValue;
+      prevToValue.value = toValue;
+    }
 
-  return useMemo(
-    () =>
-      Animated.block([
-        Animated.cond(Animated.not(Animated.defined(state.position)), [
-          Animated.set(state.position, toValue),
-          Animated.set(prevToValue, toValue),
-        ]),
+    if (!(prevToValue.value === toValue)) {
+      state.time.value = 0;
+      state.frameTime.value = 0;
+      state.time.value = 0;
+      if (!clock.isRunning) {
+        state.finished.value = 0;
+        clock.start();
+      }
+      config.duration.value = Math.max(
+        (Math.abs(toValue - prevToValue.value) / velocitySec) * 1000,
+        minDurationMs
+      );
+      prevToValue.value = toValue;
+    }
 
-        Animated.cond(Animated.not(Animated.eq(prevToValue, toValue)), [
-          Animated.set(state.time, 0),
-          Animated.set(state.frameTime, 0),
-          Animated.cond(Animated.not(Animated.clockRunning(clock)), [
-            Animated.set(state.finished, 0),
-            Animated.startClock(clock),
-          ]),
-          Animated.set(
-            config.duration,
-            Animated.multiply(
-              Animated.divide(
-                Animated.abs(Animated.sub(toValue, prevToValue)),
-                velocitySec
-              ),
-              1000
-            )
-          ),
-          Animated.set(
-            config.duration,
-            Animated.max(config.duration, minDurationMs)
-          ),
-
-          Animated.set(prevToValue, toValue),
-        ]),
-
-        Animated.timing(clock, state, config),
-        Animated.cond(state.finished, Animated.stopClock(clock)),
-        state.position,
-      ]),
-    [clock, config, minDurationMs, prevToValue, state, toValue, velocitySec]
-  );
+    if (state.finished.value > 0) clock.stop();
+    return toValue;
+  }, [clock, config, minDurationMs, prevToValue, state, toValue, velocitySec]);
 };
 
 export const DoubleDoughnutChart: FunctionComponent<{
@@ -197,24 +169,16 @@ export const DoubleDoughnutChart: FunctionComponent<{
   // Only two data are allowed. If it is [0, 0], a gray ring is shown behind. If undefined, nothing is displayed.
   data: [number, number] | undefined;
 }> = ({ data, size = 188 }) => {
-  const [targetFirstRatio] = useState(() => new Animated.Value<number>(0));
-  const [targetSecondRatio] = useState(() => new Animated.Value<number>(0));
+  const targetFirstRatio = useSharedValue(0);
+  const targetSecondRatio = useSharedValue(0);
 
-  const [valueDataIsLoaded] = useState(() => new Animated.Value(data ? 1 : 0));
-  const [backRingOpacity] = useState(() => new Animated.Value(0));
+  const valueDataIsLoaded = useSharedValue(data ? 1 : 0);
+  const backRingOpacity = useSharedValue(0);
 
-  const [targetFirstArcStartAngleInDegree] = useState(
-    () => new Animated.Value(90)
-  );
-  const [targetFirstArcEndAngleInDegree] = useState(
-    () => new Animated.Value(90)
-  );
-  const [targetSecondArcStartAngleInDegree] = useState(
-    () => new Animated.Value(90)
-  );
-  const [targetSecondArcEndAngleInDegree] = useState(
-    () => new Animated.Value(90)
-  );
+  const targetFirstArcStartAngleInDegree = useSharedValue(90);
+  const targetFirstArcEndAngleInDegree = useSharedValue(90);
+  const targetSecondArcStartAngleInDegree = useSharedValue(90);
+  const targetSecondArcEndAngleInDegree = useSharedValue(90);
 
   const dataIsLoaded = !!data;
   const firstData = data ? data[0] : 0;
@@ -241,17 +205,17 @@ export const DoubleDoughnutChart: FunctionComponent<{
         clearTimeout(debouncer.current);
 
         debouncer.current = setTimeout(() => {
-          targetFirstRatio.setValue(firstRatio);
-          targetSecondRatio.setValue(secondRatio);
-          valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
+          targetFirstRatio.value = firstRatio;
+          targetSecondRatio.value = secondRatio;
+          valueDataIsLoaded.value = dataIsLoaded ? 1 : 0;
 
           debouncer.current = undefined;
         }, 250) as any;
       } else {
         debouncer.current = setTimeout(() => {
-          targetFirstRatio.setValue(firstRatio);
-          targetSecondRatio.setValue(secondRatio);
-          valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
+          targetFirstRatio.value = firstRatio;
+          targetSecondRatio.value = secondRatio;
+          valueDataIsLoaded.value = dataIsLoaded ? 1 : 0;
 
           debouncer.current = undefined;
         }, 100) as any;
@@ -262,9 +226,9 @@ export const DoubleDoughnutChart: FunctionComponent<{
       }
 
       debouncer.current = setTimeout(() => {
-        targetFirstRatio.setValue(firstRatio);
-        targetSecondRatio.setValue(secondRatio);
-        valueDataIsLoaded.setValue(dataIsLoaded ? 1 : 0);
+        targetFirstRatio.value = firstRatio;
+        targetSecondRatio.value = secondRatio;
+        valueDataIsLoaded.value = dataIsLoaded ? 1 : 0;
 
         debouncer.current = undefined;
       }, 500) as any;
@@ -279,100 +243,195 @@ export const DoubleDoughnutChart: FunctionComponent<{
     valueDataIsLoaded,
   ]);
 
-  Animated.useCode(() => {
-    return Animated.block([
-      Animated.cond(
-        Animated.greaterThan(targetSecondRatio, 0),
-        [
-          Animated.cond(
-            Animated.greaterThan(targetFirstRatio, 0),
-            [
-              Animated.set(
-                targetFirstArcStartAngleInDegree,
-                90 + gapAngleInDegree / 2
-              ),
-              Animated.set(
-                targetFirstArcEndAngleInDegree,
-                Animated.add(
-                  Animated.max(
-                    Animated.min(
-                      Animated.sub(
-                        Animated.multiply(360, targetFirstRatio),
-                        gapAngleInDegree
-                      ),
-                      360 - gapAngleInDegree * 2 - minArcAngleInDegree
-                    ),
-                    minArcAngleInDegree
-                  ),
-                  90 + gapAngleInDegree / 2
-                )
-              ),
-            ],
-            [
-              Animated.set(targetFirstArcStartAngleInDegree, 90),
-              Animated.set(targetFirstArcEndAngleInDegree, 90),
-            ]
+  if (targetSecondRatio.value > 0) {
+    if (targetFirstRatio.value > 0) {
+      targetFirstArcStartAngleInDegree.value = withTiming(
+        90 + gapAngleInDegree / 2,
+        {
+          duration: 0,
+        }
+      );
+      targetFirstArcEndAngleInDegree.value = withTiming(
+        90 +
+          gapAngleInDegree / 2 +
+          Math.max(
+            minArcAngleInDegree,
+            Math.min(
+              360 - gapAngleInDegree * 2 - minArcAngleInDegree,
+              360 * targetFirstRatio.value - gapAngleInDegree
+            )
           ),
-        ],
-        [
-          Animated.set(targetFirstArcStartAngleInDegree, 90),
-          Animated.set(
-            targetFirstArcEndAngleInDegree,
-            Animated.add(Animated.multiply(360, targetFirstRatio), 90)
-          ),
-        ]
-      ),
-      Animated.cond(
-        Animated.greaterThan(targetFirstRatio, 0),
-        [
-          Animated.cond(
-            Animated.greaterThan(targetSecondRatio, 0),
-            [
-              Animated.set(
-                targetSecondArcStartAngleInDegree,
-                Animated.add(targetFirstArcEndAngleInDegree, gapAngleInDegree)
-              ),
-              Animated.set(
-                targetSecondArcEndAngleInDegree,
-                360 + 90 - gapAngleInDegree / 2
-              ),
-            ],
-            [
-              Animated.set(targetSecondArcStartAngleInDegree, 360 + 90),
-              Animated.set(targetSecondArcEndAngleInDegree, 360 + 90),
-            ]
-          ),
-        ],
-        [
-          Animated.cond(
-            Animated.greaterThan(targetSecondRatio, 0),
-            [
-              Animated.set(
-                targetSecondArcStartAngleInDegree,
-                Animated.add(
-                  Animated.sub(360, Animated.multiply(360, targetSecondRatio)),
-                  90
-                )
-              ),
-              Animated.set(targetSecondArcEndAngleInDegree, 360 + 90),
-            ],
-            [
-              Animated.set(targetSecondArcStartAngleInDegree, 90),
-              Animated.set(targetSecondArcEndAngleInDegree, 90),
-            ]
-          ),
-        ]
-      ),
-      Animated.cond(
-        Animated.and(
-          Animated.greaterThan(valueDataIsLoaded, 0),
-          Animated.lessOrEq(targetFirstRatio, 0),
-          Animated.lessOrEq(targetSecondRatio, 0)
-        ),
-        [Animated.set(backRingOpacity, 1)],
-        [Animated.set(backRingOpacity, 0)]
-      ),
-    ]);
+        {
+          duration: 0,
+        }
+      );
+    } else {
+      targetFirstArcStartAngleInDegree.value = withTiming(90, {
+        duration: 0,
+      });
+      targetFirstArcEndAngleInDegree.value = withTiming(90, {
+        duration: 0,
+      });
+    }
+  } else {
+    targetFirstArcEndAngleInDegree.value = withTiming(
+      360 * targetFirstRatio.value + 90,
+      {
+        duration: 0,
+      }
+    );
+  }
+  if (targetFirstRatio.value > 0) {
+    if (targetSecondRatio.value > 0) {
+      targetSecondArcStartAngleInDegree.value = withTiming(
+        targetFirstArcEndAngleInDegree.value + gapAngleInDegree,
+        {
+          duration: 0,
+        }
+      );
+      targetSecondArcEndAngleInDegree.value = withTiming(
+        360 + 90 - gapAngleInDegree / 2,
+        {
+          duration: 0,
+        }
+      );
+    } else {
+      targetSecondArcStartAngleInDegree.value = withTiming(360 + 90, {
+        duration: 0,
+      });
+      targetSecondArcEndAngleInDegree.value = withTiming(360 + 90, {
+        duration: 0,
+      });
+    }
+  } else {
+    if (targetSecondRatio.value > 0) {
+      targetSecondArcStartAngleInDegree.value = withTiming(
+        360 - 360 / targetSecondRatio.value + 90,
+        {
+          duration: 0,
+        }
+      );
+      targetSecondArcEndAngleInDegree.value = withTiming(360 + 90, {
+        duration: 0,
+      });
+    } else {
+      targetSecondArcStartAngleInDegree.value = withTiming(90, {
+        duration: 0,
+      });
+      targetSecondArcEndAngleInDegree.value = withTiming(90, {
+        duration: 0,
+      });
+    }
+  }
+  if (
+    valueDataIsLoaded.value > 0 &&
+    targetFirstRatio.value <= 0 &&
+    targetSecondRatio.value <= 0
+  ) {
+    backRingOpacity.value = withTiming(1, {
+      duration: 0,
+    });
+  } else {
+    backRingOpacity.value = withTiming(1, {
+      duration: 0,
+    });
+  }
+  useEffect(() => {
+    if (targetSecondRatio.value > 0) {
+      if (targetFirstRatio.value > 0) {
+        targetFirstArcStartAngleInDegree.value = withTiming(
+          90 + gapAngleInDegree / 2,
+          {
+            duration: 0,
+          }
+        );
+        targetFirstArcEndAngleInDegree.value = withTiming(
+          90 +
+            gapAngleInDegree / 2 +
+            Math.max(
+              minArcAngleInDegree,
+              Math.min(
+                360 - gapAngleInDegree * 2 - minArcAngleInDegree,
+                360 * targetFirstRatio.value - gapAngleInDegree
+              )
+            ),
+          {
+            duration: 0,
+          }
+        );
+      } else {
+        targetFirstArcStartAngleInDegree.value = withTiming(90, {
+          duration: 0,
+        });
+        targetFirstArcEndAngleInDegree.value = withTiming(90, {
+          duration: 0,
+        });
+      }
+    } else {
+      targetFirstArcEndAngleInDegree.value = withTiming(
+        360 * targetFirstRatio.value + 90,
+        {
+          duration: 0,
+        }
+      );
+    }
+
+    if (targetFirstRatio.value > 0) {
+      if (targetSecondRatio.value > 0) {
+        targetSecondArcStartAngleInDegree.value = withTiming(
+          targetFirstArcEndAngleInDegree.value + gapAngleInDegree,
+          {
+            duration: 0,
+          }
+        );
+        targetSecondArcEndAngleInDegree.value = withTiming(
+          360 + 90 - gapAngleInDegree / 2,
+          {
+            duration: 0,
+          }
+        );
+      } else {
+        targetSecondArcStartAngleInDegree.value = withTiming(360 + 90, {
+          duration: 0,
+        });
+        targetSecondArcEndAngleInDegree.value = withTiming(360 + 90, {
+          duration: 0,
+        });
+      }
+    } else {
+      if (targetSecondRatio.value > 0) {
+        targetSecondArcStartAngleInDegree.value = withTiming(
+          360 - 360 / targetSecondRatio.value + 90,
+          {
+            duration: 0,
+          }
+        );
+        targetSecondArcEndAngleInDegree.value = withTiming(360 + 90, {
+          duration: 0,
+        });
+      } else {
+        targetSecondArcStartAngleInDegree.value = withTiming(90, {
+          duration: 0,
+        });
+        targetSecondArcEndAngleInDegree.value = withTiming(90, {
+          duration: 0,
+        });
+      }
+    }
+
+    if (
+      valueDataIsLoaded.value > 0 &&
+      targetFirstRatio.value <= 0 &&
+      targetSecondRatio.value <= 0
+    ) {
+      backRingOpacity.value = withTiming(1, {
+        duration: 0,
+      });
+    } else {
+      backRingOpacity.value = withTiming(0, {
+        duration: 0,
+      });
+    }
   }, [
     targetFirstRatio,
     targetSecondRatio,
@@ -384,25 +443,25 @@ export const DoubleDoughnutChart: FunctionComponent<{
     backRingOpacity,
   ]);
 
-  const animBackRingOpacity = useAnimated(backRingOpacity, 2);
+  const animBackRingOpacity = useAnimated(backRingOpacity.value, 2);
 
   const animFirstArcStartAngleInDegree = useAnimated(
-    targetFirstArcStartAngleInDegree,
+    targetFirstArcStartAngleInDegree.value,
     330,
     600
   );
   const animFirstArcEndAngleInDegree = useAnimated(
-    targetFirstArcEndAngleInDegree,
+    targetFirstArcEndAngleInDegree.value,
     330,
     600
   );
   const animSecondArcStartAngleInDegree = useAnimated(
-    targetSecondArcStartAngleInDegree,
+    targetSecondArcStartAngleInDegree.value,
     330,
     600
   );
   const animSecondArcEndAngleInDegree = useAnimated(
-    targetSecondArcEndAngleInDegree,
+    targetSecondArcEndAngleInDegree.value,
     330,
     600
   );
@@ -422,12 +481,12 @@ export const DoubleDoughnutChart: FunctionComponent<{
 const DoubleDoughnutChartInnerSVG: FunctionComponent<{
   size: number;
 
-  backRingOpacity?: Animated.Adaptable<number>;
+  backRingOpacity?: number;
 
-  firstArcStartAngleInDegree: Animated.Adaptable<number>;
-  firstArcEndAngleInDegree: Animated.Adaptable<number>;
-  secondArcStartAngleInDegree: Animated.Adaptable<number>;
-  secondArcEndAngleInDegree: Animated.Adaptable<number>;
+  firstArcStartAngleInDegree: number;
+  firstArcEndAngleInDegree: number;
+  secondArcStartAngleInDegree: number;
+  secondArcEndAngleInDegree: number;
   // eslint-disable-next-line react/display-name
 }> = React.memo(
   ({
@@ -481,29 +540,17 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
     }, [centerLocation, radius, secondArcEndAngleInDegree]);
 
     const hideFirstArcCaps = useMemo(() => {
-      return Animated.cond(
-        Animated.lessThan(
-          Animated.abs(
-            Animated.sub(firstArcEndAngleInDegree, firstArcStartAngleInDegree)
-          ),
-          0.1
-        ),
-        1,
-        0
-      );
+      return Math.abs(firstArcEndAngleInDegree - firstArcStartAngleInDegree) <
+        0.1
+        ? 1
+        : 0;
     }, [firstArcEndAngleInDegree, firstArcStartAngleInDegree]);
 
     const hideSecondArcCaps = useMemo(() => {
-      return Animated.cond(
-        Animated.lessThan(
-          Animated.abs(
-            Animated.sub(secondArcEndAngleInDegree, secondArcStartAngleInDegree)
-          ),
-          0.1
-        ),
-        1,
-        0
-      );
+      return Math.abs(secondArcEndAngleInDegree - secondArcStartAngleInDegree) <
+        0.1
+        ? 1
+        : 0;
     }, [secondArcEndAngleInDegree, secondArcStartAngleInDegree]);
 
     return (
@@ -517,7 +564,7 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
           }
           strokeWidth="14"
           fill="transparent"
-          opacity={(backRingOpacity ? backRingOpacity : 0) as NumberProp}
+          opacity={backRingOpacity ? backRingOpacity : 0}
         />
         <Defs>
           <LinearGradient id="grad1" x1="1" y1="0" x2="0" y2="0">
@@ -546,23 +593,15 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={firstStartCapPosition.x as NumberProp}
-              cy={firstStartCapPosition.y as NumberProp}
-              r={Animated.cond(
-                Animated.greaterThan(hideFirstArcCaps, 0),
-                0,
-                capRadius
-              )}
+              cx={firstStartCapPosition.x}
+              cy={firstStartCapPosition.y}
+              r={hideFirstArcCaps > 0 ? 0 : capRadius}
               fill="white"
             />
             <AnimatedCircle
-              cx={firstEndCapPosition.x as NumberProp}
-              cy={firstEndCapPosition.y as NumberProp}
-              r={Animated.cond(
-                Animated.greaterThan(hideFirstArcCaps, 0),
-                0,
-                capRadius
-              )}
+              cx={firstEndCapPosition.x}
+              cy={firstEndCapPosition.y}
+              r={hideFirstArcCaps > 0 ? 0 : capRadius}
               fill="white"
             />
           </ClipPath>
@@ -578,29 +617,25 @@ const DoubleDoughnutChartInnerSVG: FunctionComponent<{
               fill="white"
             />
             <AnimatedCircle
-              cx={secondStartCapPosition.x as NumberProp}
-              cy={secondStartCapPosition.y as NumberProp}
+              cx={secondStartCapPosition.x}
+              cy={secondStartCapPosition.y}
               r={
                 hideSecondArcCaps
-                  ? Animated.cond(
-                      Animated.greaterThan(hideSecondArcCaps, 0),
-                      0,
-                      capRadius
-                    )
+                  ? hideSecondArcCaps > 0
+                    ? 0
+                    : capRadius
                   : capRadius
               }
               fill="white"
             />
             <AnimatedCircle
-              cx={secondEndCapPosition.x as NumberProp}
-              cy={secondEndCapPosition.y as NumberProp}
+              cx={secondEndCapPosition.x}
+              cy={secondEndCapPosition.y}
               r={
                 hideSecondArcCaps
-                  ? Animated.cond(
-                      Animated.greaterThan(hideSecondArcCaps, 0),
-                      0,
-                      capRadius
-                    )
+                  ? hideSecondArcCaps > 0
+                    ? 0
+                    : capRadius
                   : capRadius
               }
               fill="white"

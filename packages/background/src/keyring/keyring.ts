@@ -691,7 +691,6 @@ export class KeyRing {
     message: Uint8Array,
     useEthereumSigning: boolean
   ): Promise<Uint8Array> {
-    console.log(env);
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
     }
@@ -912,7 +911,6 @@ export class KeyRing {
         "Key ring is locked or not initialized"
       );
     }
-    console.log(mnemonic);
     const keyStore = await KeyRing.CreateMnemonicKeyStore(
       this.crypto,
       kdf,

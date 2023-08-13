@@ -1,8 +1,4 @@
 PODS:
-  - Amplitude (8.7.1)
-  - amplitude-react-native (2.7.0):
-    - Amplitude (= 8.7.1)
-    - React-Core
   - appcenter-analytics (4.4.5):
     - AppCenter/Analytics (~> 4.0)
     - AppCenterReactNativeShared (~> 4.0)
@@ -26,32 +22,21 @@ PODS:
     - React-Core
     - SSZipArchive (~> 2.2.2)
   - DoubleConversion (1.1.6)
-  - EXAppleAuthentication (3.2.1):
-    - UMCore
-  - EXConstants (11.0.1):
+  - Expo (48.0.20):
     - ExpoModulesCore
-    - UMCore
-  - EXFileSystem (11.1.3):
+  - ExpoAppleAuthentication (6.1.0):
     - ExpoModulesCore
-    - UMCore
-  - EXImageLoader (2.2.0):
+  - ExpoClipboard (4.3.1):
     - ExpoModulesCore
+  - ExpoCrypto (12.4.1):
+    - ExpoModulesCore
+  - ExpoModulesCore (1.5.9):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
-    - UMCore
-  - ExpoModulesCore (0.2.0):
-    - ExpoModulesCore/Core (= 0.2.0)
-    - ExpoModulesCore/Interfaces (= 0.2.0)
-    - UMCore
-  - ExpoModulesCore/Core (0.2.0):
-    - UMCore
-  - ExpoModulesCore/Interfaces (0.2.0):
-    - ExpoModulesCore/Core
-    - UMCore
-  - EXSplashScreen (0.11.4):
-    - React-Core
-    - UMCore
-  - EXWebBrowser (9.2.0):
-    - UMCore
+    - React-RCTAppDelegate
+    - ReactCommon/turbomodule/core
+  - ExpoWebBrowser (12.3.2):
+    - ExpoModulesCore
   - FBLazyVector (0.71.6)
   - FBReactNativeSpec (0.71.6):
     - RCT-Folly (= 2021.07.22.00)
@@ -557,33 +542,23 @@ PODS:
     - SDWebImage/Core (~> 5.7)
   - SocketRocket (0.6.1)
   - SSZipArchive (2.2.3)
-  - UMAppLoader (2.2.0)
-  - UMCore (7.1.1)
-  - UMReactNativeAdapter (6.3.5):
-    - ExpoModulesCore
-    - React-Core
-    - UMCore
-  - UMTaskManagerInterface (6.2.0):
-    - UMCore
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
 
 DEPENDENCIES:
-  - "amplitude-react-native (from `../node_modules/@amplitude/react-native`)"
   - appcenter-analytics (from `../../../node_modules/appcenter-analytics`)
   - appcenter-core (from `../../../node_modules/appcenter`)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - "BugsnagReactNative (from `../node_modules/@bugsnag/react-native`)"
   - CodePush (from `../node_modules/react-native-code-push`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - EXAppleAuthentication (from `../node_modules/expo-apple-authentication/ios`)
-  - EXConstants (from `../node_modules/expo-constants/ios`)
-  - EXFileSystem (from `../node_modules/expo-file-system/ios`)
-  - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
-  - ExpoModulesCore (from `../node_modules/expo-modules-core/ios`)
-  - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
-  - EXWebBrowser (from `../node_modules/expo-web-browser/ios`)
+  - Expo (from `../../../node_modules/expo`)
+  - ExpoAppleAuthentication (from `../node_modules/expo-apple-authentication/ios`)
+  - ExpoClipboard (from `../node_modules/expo-clipboard/ios`)
+  - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
+  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - Flipper (= 0.125.0)
@@ -660,15 +635,10 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNScrypt (from `../node_modules/react-native-scrypt`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
-  - "UMCore (from `../node_modules/@unimodules/core/ios`)"
-  - "UMReactNativeAdapter (from `../node_modules/@unimodules/react-native-adapter/ios`)"
-  - UMTaskManagerInterface (from `../node_modules/unimodules-task-manager-interface/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
-    - Amplitude
     - AppCenter
     - AppCenterReactNativeShared
     - Base64
@@ -694,8 +664,6 @@ SPEC REPOS:
     - YogaKit
 
 EXTERNAL SOURCES:
-  amplitude-react-native:
-    :path: "../node_modules/@amplitude/react-native"
   appcenter-analytics:
     :path: "../../../node_modules/appcenter-analytics"
   appcenter-core:
@@ -708,19 +676,17 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-code-push"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
-  EXAppleAuthentication:
+  Expo:
+    :path: "../../../node_modules/expo"
+  ExpoAppleAuthentication:
     :path: "../node_modules/expo-apple-authentication/ios"
-  EXConstants:
-    :path: "../node_modules/expo-constants/ios"
-  EXFileSystem:
-    :path: "../node_modules/expo-file-system/ios"
-  EXImageLoader:
-    :path: "../node_modules/expo-image-loader/ios"
+  ExpoClipboard:
+    :path: "../node_modules/expo-clipboard/ios"
+  ExpoCrypto:
+    :path: "../node_modules/expo-crypto/ios"
   ExpoModulesCore:
-    :path: "../node_modules/expo-modules-core/ios"
-  EXSplashScreen:
-    :path: "../node_modules/expo-splash-screen/ios"
-  EXWebBrowser:
+    :path: "../node_modules/expo-modules-core"
+  ExpoWebBrowser:
     :path: "../node_modules/expo-web-browser/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
@@ -824,37 +790,26 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-scrypt"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  UMAppLoader:
-    :path: "../node_modules/unimodules-app-loader/ios"
-  UMCore:
-    :path: "../node_modules/@unimodules/core/ios"
-  UMReactNativeAdapter:
-    :path: "../node_modules/@unimodules/react-native-adapter/ios"
-  UMTaskManagerInterface:
-    :path: "../node_modules/unimodules-task-manager-interface/ios"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: 834c7332dfb9640a751e21c13efb22a07c0c12d4
-  amplitude-react-native: 0ed8cab759aafaa94961b82122bf56297da607ad
   AppCenter: 3fd04aa1b166e16fdb03ec81dabe488aece83fbd
   appcenter-analytics: 1aea9ada8922d2e2df3e069a28eda21157c9d30d
   appcenter-core: c593b2e4ac28d6a21b6a217c4a5e6b3de7b0b00f
   AppCenterReactNativeShared: f395caeabde0dc3a11609dbcb737d0f14cd40e79
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
-  boost: a7c83b31436843459a1961bfd74b96033dc77234
+  boost: 57d2868c099736d80fcd648bf211b4431e51a558
   BugsnagReactNative: bd1c905fb868fae8448a913b87356dbf2b02dc80
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: b51b7ac64c07d4eacfc8cc5750a1dd28adbf2528
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
-  EXAppleAuthentication: e8c537fcbe80670dd76fde7a07acb94af70ada00
-  EXConstants: 3babb61f8f4bb7dffe85b8b7d6eaa31d903e4d7e
-  EXFileSystem: 0a04aba8da751b9ac954065911bcf166503f8267
-  EXImageLoader: d3531a3fe530b22925c19977cb53bb43e3821fe6
-  ExpoModulesCore: 2734852616127a6c1fc23012197890a6f3763dc7
-  EXSplashScreen: 847e0d8026731c1090bf269ede3e15ac87d88958
-  EXWebBrowser: 76783ba5dcb8699237746ecf41a9643d428a4cc5
+  Expo: b7d2843b0a0027d0ce76121a63085764355a16ed
+  ExpoAppleAuthentication: 7bdf1a2962ebfe9b00eb4183a17b78d736e57185
+  ExpoClipboard: 695f274f8e028cd113837f917da40c76850877eb
+  ExpoCrypto: a382ab9a2fa91f0b511ce1fe4d6baecee40a1615
+  ExpoModulesCore: af228cd4b0469c9833496d4d8574f599a46a5e1c
+  ExpoWebBrowser: 2c788f9c07718a780fe6d8bf2f6195c47609faaa
   FBLazyVector: a83ceaa8a8581003a623facdb3c44f6d4f342ac5
   FBReactNativeSpec: 85eee79837cb797ab6176f0243a2b40511c09158
   Flipper: 26fc4b7382499f1281eb8cb921e5c3ad6de91fe0
@@ -924,13 +879,9 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
-  UMAppLoader: 21af63390e55c82e037fb9752d93114a80ecf16e
-  UMCore: 2f671796d7439604a1cf8ac7bbe5809cd5c50437
-  UMReactNativeAdapter: f808906d586a16cebdc3844d86e1bdb8f114a873
-  UMTaskManagerInterface: 2be431101b73604e64fbfffcf759336f9d8fccbb
   Yoga: ba09b6b11e6139e3df8229238aa794205ca6a02a
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: e71ed206a040172c7c1fa62be78b9f35bd4baffc
+PODFILE CHECKSUM: 6669e4942dc1ec491e98581c67050de6ca0c2d15
 
 COCOAPODS: 1.12.1

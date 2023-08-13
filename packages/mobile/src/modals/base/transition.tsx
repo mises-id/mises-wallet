@@ -1,8 +1,14 @@
-import React, { FunctionComponent, useState } from "react";
-import Animated, { SharedValue, useSharedValue } from "react-native-reanimated";
+import React, { FunctionComponent } from "react";
+import { SharedValue, useSharedValue } from "react-native-reanimated";
+import { useClock } from "../../hooks";
 
 export type ModalTransition = {
-  // clock: Animated.Clock;
+  clock: {
+    value: SharedValue<number>;
+    isRunning: boolean;
+    start: () => void;
+    stop: () => void;
+  };
   startY: SharedValue<number>;
 
   translateY: SharedValue<number>;
@@ -26,25 +32,7 @@ export const ModalTransisionContext = React.createContext<ModalTransition | null
 );
 
 export const ModalTransisionProvider: FunctionComponent = ({ children }) => {
-  // const [state] = useState(() => {
-  //   return {
-  //     clock: new Animated.Clock(),
-  //     startY: new SharedValue<number>(0),
-
-  //     translateY: new SharedValue<number>(0),
-  //     finished: new SharedValue<number>(0),
-  //     time: new SharedValue<number>(0),
-  //     frameTime: new SharedValue<number>(0),
-
-  //     isOpen: new SharedValue<number>(1),
-  //     isInitialized: new SharedValue<number>(0),
-  //     isPaused: new SharedValue<number>(0),
-
-  //     duration: new SharedValue<number>(0),
-  //     durationSetOnExternal: new SharedValue<number>(0),
-  //   };
-  // });
-  // const clock = useSharedValue(0);
+  const clock = useClock();
   const startY = useSharedValue(0);
   const translateY = useSharedValue(0);
   const finished = useSharedValue(0);
@@ -57,7 +45,7 @@ export const ModalTransisionProvider: FunctionComponent = ({ children }) => {
   const durationSetOnExternal = useSharedValue(0);
 
   const state = {
-    // clock,
+    clock,
     startY,
     translateY,
     finished,

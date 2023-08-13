@@ -31,7 +31,6 @@ export const useInteractionInfo = (
       // if (!options.enableScroll) {
       //   disableScroll();
       // }
-      console.log(options);
       fitPopupWindow();
     }
   }, [result.interaction, result.interactionInternal]);

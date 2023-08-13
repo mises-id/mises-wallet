@@ -5,14 +5,16 @@ import Animated, {
   useDerivedValue,
   withTiming,
   Easing,
+  useAnimatedReaction,
+  useSharedValue,
 } from "react-native-reanimated";
-import { AlertIcon } from "../../components/icon";
+import { AlertIcon, RefreshIcon } from "../../components/icon";
 import { useStyle } from "../../styles";
 import { useNetInfo } from "@react-native-community/netinfo";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
-// import { useSpinAnimated } from "../../components/spinner";
+import { useSpinAnimated } from "../../components/spinner";
 import { ObservableQuery } from "@keplr-wallet/stores";
 
 export const NetworkErrorView: FunctionComponent = observer(() => {
@@ -93,7 +95,7 @@ export const NetworkErrorView: FunctionComponent = observer(() => {
   ]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // const spinAnimated = useSpinAnimated(isRefreshing);
+  const spinAnimated = useSpinAnimated(isRefreshing);
 
   useEffect(() => {
     if (isRefreshing) {
@@ -120,46 +122,28 @@ export const NetworkErrorView: FunctionComponent = observer(() => {
     height: 0,
   });
 
-  // const animatedValue = useSharedValue(0);
+  const progress = useSharedValue(0);
 
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     withTiming(childLayout.height + extraHeight, {
-  //       duration: 500,
-  //       easing: Easing.out(Easing.cubic),
-  //     });
-  //   } else {
-  //     withTiming(0, {
-  //       duration: 330,
-  //       easing: Easing.out(Easing.sin),
-  //     });
-  //   }
-  // }, [isOpen]);
-
-  const progress = useDerivedValue(() => {
-    if (isOpen) {
-      return withTiming(1, {
-        duration: 500,
-        easing: Easing.out(Easing.cubic),
-      });
-    } else {
-      return withTiming(0, {
-        duration: 330,
-        easing: Easing.out(Easing.sin),
-      });
+  useAnimatedReaction(
+    () => isOpen,
+    (value) => {
+      progress.value = value
+        ? withTiming(1, {
+            duration: 500,
+            easing: Easing.out(Easing.cubic),
+          })
+        : withTiming(0, {
+            duration: 330,
+            easing: Easing.out(Easing.sin),
+          });
     }
-  }, [isOpen]);
+  );
+
   const animatedHeight = useAnimatedStyle(() => {
     return {
-      height: progress.value >= 1 ? childLayout.height + extraHeight : 0,
+      height: progress.value === 1 ? childLayout.height + extraHeight : 0,
     };
   });
-  // const animatedHeight = useMemo(() => {
-  //   return animatedValue.interpolate({
-  //     inputRange: [0, 1],
-  //     outputRange: [0, childLayout.height + extraHeight],
-  //   });
-  // }, [animatedValue, childLayout.height]);
 
   return (
     <Animated.View
@@ -218,17 +202,9 @@ export const NetworkErrorView: FunctionComponent = observer(() => {
               "margin-left-16",
             ])}
           >
-            {/* <Animated.View
-              style={{
-                transform: [
-                  {
-                    rotate: spinAnimated,
-                  },
-                ],
-              }}
-            >
+            <Animated.View style={spinAnimated}>
               <RefreshIcon color={style.get("color-red-300").color} size={24} />
-            </Animated.View> */}
+            </Animated.View>
           </TouchableOpacity>
         ) : null}
       </View>

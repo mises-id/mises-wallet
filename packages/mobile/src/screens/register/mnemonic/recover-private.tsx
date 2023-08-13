@@ -11,10 +11,26 @@ import { StyleSheet, View } from "react-native";
 import { Button } from "../../../components/button";
 import Clipboard from "expo-clipboard";
 import { useStore } from "../../../stores";
-import { useBIP44Option } from "../bip44";
+// import { useBIP44Option } from "../bip44";
+import { Buffer } from "buffer/";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const bip39 = require("bip39");
+// const bip39 = require("bip39");
+
+// function isPrivateKey(str: string): boolean {
+//   if (str.startsWith("0x")) {
+//     return true;
+//   }
+
+//   if (str.length === 64) {
+//     try {
+//       return Buffer.from(str, "hex").length === 32;
+//     } catch {
+//       return false;
+//     }
+//   }
+//   return false;
+// }
 
 function trimWordsStr(str: string): string {
   str = str.trim();
@@ -33,7 +49,7 @@ interface FormData {
   confirmPassword: string;
 }
 
-export const RecoverMnemonicScreen: FunctionComponent = observer(() => {
+export const RecoverPrivateScreen: FunctionComponent = observer(() => {
   const route = useRoute<
     RouteProp<
       Record<
@@ -53,7 +69,7 @@ export const RecoverMnemonicScreen: FunctionComponent = observer(() => {
   const smartNavigation = useSmartNavigation();
 
   const registerConfig: RegisterConfig = route.params.registerConfig;
-  const bip44Option = useBIP44Option();
+  // const bip44Option = useBIP44Option();
   const [mode] = useState(registerConfig.mode);
 
   const {
@@ -72,16 +88,29 @@ export const RecoverMnemonicScreen: FunctionComponent = observer(() => {
 
     const mnemonic = trimWordsStr(getValues("mnemonic"));
 
-    await registerConfig.createMnemonic(
+    // if (!isPrivateKey(mnemonic)) {
+    //   await registerConfig.createMnemonic(
+    //     getValues("name"),
+    //     mnemonic,
+    //     getValues("password"),
+    //     bip44Option.bip44HDPath
+    //   );
+    //   analyticsStore.setUserProperties({
+    //     registerType: "seed",
+    //     accountType: "mnemonic",
+    //   });
+    // } else {
+    const privateKey = Buffer.from(mnemonic.trim().replace("0x", ""), "hex");
+    await registerConfig.createPrivateKey(
       getValues("name"),
-      mnemonic,
-      getValues("password"),
-      bip44Option.bip44HDPath
+      privateKey,
+      getValues("password")
     );
     analyticsStore.setUserProperties({
       registerType: "seed",
-      accountType: "mnemonic",
+      accountType: "privateKey",
     });
+    // }
 
     smartNavigation.reset({
       index: 0,
@@ -105,22 +134,40 @@ export const RecoverMnemonicScreen: FunctionComponent = observer(() => {
       <Controller
         control={control}
         rules={{
-          required: "Mnemonic is required",
+          required: "PrivateKey is required",
           validate: (value: string) => {
             value = trimWordsStr(value);
-            if (value.split(" ").length < 8) {
-              return "Too short mnemonic";
+            // if (!isPrivateKey(value)) {
+            //   if (value.split(" ").length < 8) {
+            //     return "Too short mnemonic";
+            //   }
+
+            //   if (!bip39.validateMnemonic(value)) {
+            //     return "Invalid mnemonic";
+            //   }
+            // } else {
+            value = value.replace("0x", "");
+            if (value.length !== 64) {
+              return "Invalid length of private key";
             }
 
-            if (!bip39.validateMnemonic(value)) {
-              return "Invalid mnemonic";
+            try {
+              if (
+                Buffer.from(value, "hex").toString("hex").toLowerCase() !==
+                value.toLowerCase()
+              ) {
+                return "Invalid private key";
+              }
+            } catch {
+              return "Invalid private key";
             }
+            // }
           },
         }}
         render={({ field: { onChange, onBlur, value, ref } }) => {
           return (
             <TextInput
-              label="Mnemonic seed"
+              label="Wallet privateKey"
               returnKeyType="next"
               multiline={true}
               numberOfLines={4}

@@ -182,7 +182,7 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
     analyticsStore.logEvent("Import account started", {
       registerType: "seed",
     });
-    smartNavigation.navigateSmart("Register.RecoverMnemonic", {
+    smartNavigation.navigateSmart("Register.RecoverPrivateKey", {
       registerConfig,
     });
   };
@@ -216,8 +216,11 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
   const [showDeletePop, setshowDeletePop] = useState(false);
 
   const itemClick = (key: string) => {
+    setIsOpenModal(false);
     if (key === "viewPrivateKey") {
-      setshowPrivatePop(true);
+      setTimeout(() => {
+        setshowPrivatePop(true);
+      }, 500);
     }
     if (key === "changeName") {
       smartNavigation.navigateSmart("Setting.RenameAccount", {
@@ -225,9 +228,10 @@ export const SettingSelectAccountScreen: FunctionComponent = observer(() => {
       });
     }
     if (key === "delete") {
-      setshowDeletePop(true);
+      setTimeout(() => {
+        setshowDeletePop(true);
+      }, 500);
     }
-    setIsOpenModal(false);
   };
   return (
     <PageWithScrollViewInBottomTabView backgroundMode="secondary">

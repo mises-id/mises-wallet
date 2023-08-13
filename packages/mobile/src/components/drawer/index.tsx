@@ -2,27 +2,20 @@ import React, { FunctionComponent } from "react";
 import { observer } from "mobx-react-lite";
 import {
   DrawerContentComponentProps,
-  DrawerContentOptions,
   DrawerContentScrollView,
 } from "@react-navigation/drawer";
 import { useStore } from "../../stores";
-import {
-  DrawerActions,
-  StackActions,
-  useNavigation,
-} from "@react-navigation/native";
+import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { StyleSheet, Text, View } from "react-native";
 import { useStyle } from "../../styles";
 import { RectButton } from "../rect-button";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { VectorCharacter } from "../vector-character";
 import FastImage from "react-native-fast-image";
-import { BorderlessButton } from "react-native-gesture-handler";
-import Svg, { Path } from "react-native-svg";
 
-export type DrawerContentProps = DrawerContentComponentProps<DrawerContentOptions>;
+export type DrawerContentProps = DrawerContentComponentProps;
 
-export const DrawerContent: FunctionComponent<DrawerContentProps> = observer(
+export const DrawerContent: FunctionComponent<DrawerContentComponentProps> = observer(
   (props) => {
     const { chainStore, analyticsStore } = useStore();
     const navigation = useNavigation();
@@ -58,7 +51,7 @@ export const DrawerContent: FunctionComponent<DrawerContentProps> = observer(
               Networks
             </Text>
             <View style={style.get("flex-1")} />
-            <View
+            {/* <View
               style={style.flatten([
                 "height-1",
                 "justify-center",
@@ -87,7 +80,7 @@ export const DrawerContent: FunctionComponent<DrawerContentProps> = observer(
                   />
                 </Svg>
               </BorderlessButton>
-            </View>
+            </View> */}
           </View>
           {chainStore.chainInfosInUI.map((chainInfo) => {
             const selected = chainStore.current.chainId === chainInfo.chainId;

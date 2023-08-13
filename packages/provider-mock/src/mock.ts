@@ -112,6 +112,7 @@ export class MockKeplr implements Keplr {
       bech32Address: new Bech32Address(
         wallet.getPubKey().getAddress()
       ).toBech32(
+        // eslint-disable-next-line
         this.chainInfos.find((c) => c.chainId === chainId)!.bech32Config
           .bech32PrefixAccAddr
       ),

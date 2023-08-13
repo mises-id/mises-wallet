@@ -39,7 +39,9 @@ export const SettingThemeItem: FunctionComponent<{
     <React.Fragment>
       <SelectorModal
         isOpen={isOpenModal}
-        close={() => setIsOpenModal(false)}
+        close={() => {
+          setIsOpenModal(false);
+        }}
         maxItemsToShow={4}
         selectedKey={selectedKey}
         setSelectedKey={(key) => {

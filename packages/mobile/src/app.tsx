@@ -10,7 +10,6 @@ import codePush from "react-native-code-push";
 import { InteractionModalsProivder } from "./providers/interaction-modals-provider";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { LoadingScreenProvider } from "./providers/loading-screen";
-import * as SplashScreen from "expo-splash-screen";
 import { ConfirmModalProvider } from "./providers/confirm-modal";
 import Bugsnag from "@bugsnag/react-native";
 
@@ -55,13 +54,6 @@ if (Platform.OS === "android") {
   // Disable the timezone until finding the solution.
 }
 
-// Prevent native splash screen from autohiding.
-// UnlockScreen will hide the splash screen
-SplashScreen.preventAutoHideAsync()
-  .then((result) =>
-    console.log(`SplashScreen.preventAutoHideAsync() succeeded: ${result}`)
-  )
-  .catch(console.warn);
 
 const ThemeStatusBar: FunctionComponent = () => {
   const style = useStyle();

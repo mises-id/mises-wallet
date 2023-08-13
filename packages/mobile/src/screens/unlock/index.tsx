@@ -5,21 +5,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Dimensions, Image, StatusBar, StyleSheet, View } from "react-native";
-import Animated, {
-  Easing,
-  cancelAnimation,
-  interpolate,
-  runOnJS,
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { observer } from "mobx-react-lite";
 import { useStyle, useStyleThemeController } from "../../styles";
-import * as SplashScreen from "expo-splash-screen";
 import { TextInput } from "../../components/input";
 import { Button } from "../../components/button";
 import delay from "delay";
@@ -31,16 +19,6 @@ import { KeychainStore } from "../../stores/keychain";
 import { IAccountStore } from "@keplr-wallet/stores";
 import { autorun } from "mobx";
 import { SimpleGradient } from "../../components/svg";
-
-let splashScreenHided = false;
-async function hideSplashScreen() {
-  if (!splashScreenHided) {
-    console.log("Hide Splash screen");
-    if (await SplashScreen.hideAsync()) {
-      splashScreenHided = true;
-    }
-  }
-}
 
 async function waitAccountLoad(
   accountStore: IAccountStore,
@@ -116,22 +94,9 @@ export const UnlockScreen: FunctionComponent = observer(() => {
 
   const navigation = useNavigation();
 
-  const [isSplashEnd, setIsSplashEnd] = useState(false);
+  // const [isSplashEnd, setIsSplashEnd] = useState(true);
 
-  const animatedContinuityEffectOpacityValue = useSharedValue(1);
-
-  const animatedContinuityEffectOpacity = useAnimatedStyle(() => {
-    return {
-      opacity: animatedContinuityEffectOpacityValue.value,
-    };
-  });
-
-  const startAnimation = useCallback(() => {
-    animatedContinuityEffectOpacityValue.value = withTiming(0, {
-      duration: 600,
-      easing: Easing.ease,
-    });
-  }, [animatedContinuityEffectOpacityValue.value]);
+  // const animatedContinuityEffectOpacity = useSharedValue(0);
 
   const navigateToHomeOnce = useRef(false);
   const navigateToHome = useCallback(async () => {
@@ -143,36 +108,32 @@ export const UnlockScreen: FunctionComponent = observer(() => {
     navigateToHomeOnce.current = true;
   }, [accountStore, chainStore, navigation]);
 
-  const autoBiometryStatus = useAutoBiomtric(
-    keychainStore,
-    keyRingStore.status === KeyRingStatus.LOCKED && isSplashEnd
-  );
+  // const autoBiometryStatus = useAutoBiomtric(
+  //   keychainStore,
+  //   keyRingStore.status === KeyRingStatus.LOCKED && isSplashEnd
+  // );
 
-  useEffect(() => {
-    if (isSplashEnd && autoBiometryStatus === AutoBiomtricStatus.SUCCESS) {
-      (async () => {
-        await hideSplashScreen();
-      })();
-    }
-  }, [autoBiometryStatus, isSplashEnd, navigation]);
+  // const timingConfig = {
+  //   duration: 600,
+  //   easing: Easing.ease,
+  // };
 
-  useEffect(() => {
-    if (
-      isSplashEnd &&
-      keyRingStore.status === KeyRingStatus.LOCKED &&
-      (autoBiometryStatus === AutoBiomtricStatus.NO_NEED ||
-        autoBiometryStatus === AutoBiomtricStatus.FAILED)
-    ) {
-      setTimeout(() => {
-        startAnimation();
-      }, 700);
-    }
-  }, [
-    animatedContinuityEffectOpacity,
-    autoBiometryStatus,
-    isSplashEnd,
-    keyRingStore.status,
-  ]);
+  // const startAnimation = () => {
+  //   animatedContinuityEffectOpacity.value = withTiming(0, timingConfig);
+  // };
+  // useEffect(() => {
+  //   if (
+  //     isSplashEnd &&
+  //     keyRingStore.status === KeyRingStatus.LOCKED &&
+  //     (autoBiometryStatus === AutoBiomtricStatus.NO_NEED ||
+  //       autoBiometryStatus === AutoBiomtricStatus.FAILED)
+  //   ) {
+  //     setTimeout(() => {
+  //       startAnimation();
+  //     }, 700);
+  //   }
+  //   // eslint-disable-next-line
+  // }, [autoBiometryStatus, isSplashEnd, keyRingStore.status]);
 
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -186,8 +147,6 @@ export const UnlockScreen: FunctionComponent = observer(() => {
       // So to make sure that the loading state changes, just wait very short time.
       await delay(10);
       await keychainStore.tryUnlockWithBiometry();
-
-      await hideSplashScreen();
     } catch (e) {
       console.log(e);
       setIsBiometricLoading(false);
@@ -203,8 +162,6 @@ export const UnlockScreen: FunctionComponent = observer(() => {
       // So to make sure that the loading state changes, just wait very short time.
       await delay(10);
       await keyRingStore.unlock(password);
-
-      await hideSplashScreen();
     } catch (e) {
       console.log(e);
       setIsLoading(false);
@@ -218,11 +175,9 @@ export const UnlockScreen: FunctionComponent = observer(() => {
     // route to the register screen.
     if (
       !routeToRegisterOnce.current &&
-      isSplashEnd &&
       keyRingStore.status === KeyRingStatus.EMPTY
     ) {
       (async () => {
-        await hideSplashScreen();
         routeToRegisterOnce.current = true;
         navigation.dispatch(
           StackActions.replace("Register", {
@@ -231,14 +186,11 @@ export const UnlockScreen: FunctionComponent = observer(() => {
         );
       })();
     }
-  }, [isSplashEnd, keyRingStore.status, navigation]);
+  }, [keyRingStore.status, navigation]);
 
   useEffect(() => {
     if (keyRingStore.status === KeyRingStatus.UNLOCKED) {
-      (async () => {
-        await hideSplashScreen();
-        navigateToHome();
-      })();
+      navigateToHome();
     }
   }, [keyRingStore.status, navigateToHome]);
 
@@ -292,337 +244,220 @@ export const UnlockScreen: FunctionComponent = observer(() => {
           <View style={style.get("flex-7")} />
         </KeyboardAwareScrollView>
       </View>
-      <Animated.View
+      {/* <Animated.View
         style={StyleSheet.flatten([
           style.flatten(["absolute-fill"]),
-          animatedContinuityEffectOpacity,
+          {
+            opacity: animatedContinuityEffectOpacity.value,
+          },
         ])}
         pointerEvents={isSplashEnd ? "none" : "auto"}
       >
-        <SplashContinuityEffectView
+        <SplashContinuityEffectView 
           onAnimationEnd={() => {
             setIsSplashEnd(true);
           }}
         />
-      </Animated.View>
+      </Animated.View> */}
     </React.Fragment>
   );
 });
 
-const useAnimationState = () => {
-  const finished = useSharedValue(0);
-  const position = useSharedValue(0);
-  const time = useSharedValue(0);
-  const frameTime = useSharedValue(0);
+// const SplashContinuityEffectView: FunctionComponent<{
+//   onAnimationEnd: () => void;
+// }> = ({ onAnimationEnd }) => {
+//   const themeController = useStyleThemeController();
+//   const style = useStyle();
 
-  const [state] = useState(() => {
-    return {
-      finished,
-      position,
-      time,
-      frameTime,
-    };
-  });
+//   const windowDimensions = Dimensions.get("window");
 
-  return state;
-};
-export const SplashContinuityEffectView: FunctionComponent<{
-  onAnimationEnd: () => void;
-}> = ({ onAnimationEnd }) => {
-  const themeController = useStyleThemeController();
-  const style = useStyle();
+//   const isBackgroundLoaded = useSharedValue(true);
+//   const logoSize = useSharedValue<
+//     | {
+//         width: number;
+//         height: number;
+//       }
+//     | undefined
+//   >(undefined);
 
-  const onAnimationEndRef = useRef(onAnimationEnd);
-  onAnimationEndRef.current = onAnimationEnd;
+//   const isStarted = useSharedValue(0);
+//   const backgroundClippingWidth = useSharedValue(0);
+//   const backgroundClippingHeight = useSharedValue(0);
+//   const backgroundClippingRadius = useSharedValue(0);
+//   const backgroundDone = useSharedValue(0);
+//   const backgroundWidth = useSharedValue(0);
+//   const backgroundHeight = useSharedValue(0);
 
-  const [isBackgroundLoaded, setIsBackgroundLoaded] = useState(false);
-  const [logoSize, setLogoSize] = useState<
-    | {
-        width: number;
-        height: number;
-      }
-    | undefined
-  >({
-    width: 100,
-    height: 100,
-  });
+//   const backgroundClippingAnimationDuration = 700;
+//   const backgroundAnimationDuration = 900;
+//   const backgroundAnimationDelay = 300;
 
-  const isStarted = useSharedValue(0);
-  const backgroundDone = useSharedValue(0);
-  const backgroundClippingDone = useSharedValue(0);
-  const backgroundClockValue = useSharedValue(0);
-  const backgroundClock = useDerivedValue(() => {
-    let isRunning = false;
-    const value = backgroundClockValue;
+//   const expectedLogoSize = logoSize.value
+//     ? logoSize.value.height * (windowDimensions.width / logoSize.value.width)
+//     : 0;
 
-    const start = () => {
-      value.value = withTiming(1, {
-        duration: backgroundAnimationDuration,
-        easing: Easing.out(Easing.quad),
-      });
-      isRunning = true;
-    };
+//   const expectedBorderRadius = expectedLogoSize / 4.45;
+//   useAnimatedReaction(
+//     () => {
+//       return isStarted.value;
+//     },
+//     (value) => {
+//       if (value) {
+//         backgroundClippingWidth.value = withTiming(1, {
+//           duration: backgroundClippingAnimationDuration,
+//           easing: Easing.out(Easing.cubic),
+//         });
+//         backgroundClippingHeight.value = withTiming(1, {
+//           duration: backgroundClippingAnimationDuration,
+//           easing: Easing.out(Easing.cubic),
+//         });
+//         backgroundClippingRadius.value = withTiming(1, {
+//           duration: backgroundClippingAnimationDuration,
+//           easing: Easing.out(Easing.cubic),
+//         });
 
-    const stop = () => {
-      cancelAnimation(value);
-      runOnJS(onAnimationEnd)();
-      isRunning = false;
-    };
+//         if (
+//           backgroundClippingWidth.value === 1 &&
+//           backgroundClippingHeight.value === 1 &&
+//           backgroundClippingRadius.value === 1
+//         ) {
+//           backgroundDone.value = 1;
+//         }
+//       }
+//     },
+//     [isStarted.value]
+//   );
 
-    return { value, start, stop, isRunning };
-  });
+//   useAnimatedReaction(
+//     () => {
+//       return isStarted.value;
+//     },
+//     (value) => {
+//       if (value) {
+//         backgroundWidth.value = withDelay(
+//           backgroundAnimationDelay,
+//           withTiming(1, {
+//             duration: backgroundAnimationDuration,
+//             easing: Easing.out(Easing.quad),
+//           })
+//         );
+//         backgroundHeight.value = withDelay(
+//           backgroundAnimationDelay,
+//           withTiming(1, {
+//             duration: backgroundAnimationDuration,
+//             easing: Easing.out(Easing.quad),
+//           })
+//         );
+//         console.log(backgroundWidth.value, backgroundHeight.value);
+//         if (backgroundWidth.value === 1 && backgroundHeight.value === 1) {
+//           backgroundDone.value = 1;
+//           runOnJS(onAnimationEnd)();
+//         }
+//       }
+//     },
+//     [isStarted.value]
+//   );
 
-  const backgroundClippingClockValue = useSharedValue(0);
-  const backgroundClippingClock = useDerivedValue(() => {
-    let isRunning = false;
-    const value = backgroundClippingClockValue;
+//   const backgroundClippingStyle = useAnimatedStyle(() => {
+//     const width = interpolate(
+//       backgroundClippingWidth.value,
+//       [0, 1],
+//       [0, windowDimensions.width],
+//       Extrapolate.CLAMP
+//     );
+//     const height = interpolate(
+//       backgroundClippingHeight.value,
+//       [0, 1],
+//       [0, windowDimensions.height],
+//       Extrapolate.CLAMP
+//     );
+//     const borderRadius = interpolate(
+//       backgroundClippingRadius.value,
+//       [0, 1],
+//       [0, expectedBorderRadius],
+//       Extrapolate.CLAMP
+//     );
 
-    const start = () => {
-      value.value = withTiming(1, {
-        duration: backgroundClippingAnimationDuration,
-        easing: Easing.out(Easing.quad),
-      });
-      isRunning = true;
-    };
+//     return {
+//       width,
+//       height,
+//       borderRadius,
+//     };
+//   });
 
-    const stop = () => {
-      cancelAnimation(value);
-      isRunning = false;
-    };
-    return { value, start, stop, isRunning };
-  });
+//   const backgroundStyle = useAnimatedStyle(() => {
+//     const width = interpolate(
+//       backgroundWidth.value,
+//       [0, 1],
+//       [0, windowDimensions.width],
+//       Extrapolate.CLAMP
+//     );
+//     const height = interpolate(
+//       backgroundHeight.value,
+//       [0, 1],
+//       [0, windowDimensions.height],
+//       Extrapolate.CLAMP
+//     );
 
-  const [animation] = useState(() => {
-    return {
-      isStarted,
-      backgroundDone,
-      backgroundClippingDone,
-      backgroundClock,
-      backgroundClippingClock,
-    };
-  });
+//     return {
+//       width,
+//       height,
+//     };
+//   });
 
-  const backgroundClippingWidth = useAnimationState();
-  const backgroundClippingHeight = useAnimationState();
-  const backgroundClippingRadius = useAnimationState();
-
-  const backgroundDelay = useAnimationState();
-  const backgroundWidth = useAnimationState();
-  const backgroundHeight = useAnimationState();
-
-  useEffect(() => {
-    // When the splash screen disappears and the transition starts, the color should change according to the theme.
-    // In most cases, there is no problem because the theme is loaded very quickly, but it waits for an asynchronous load just in case.
-    if (!themeController.isInitializing && isBackgroundLoaded && logoSize) {
-      (async () => {
-        await hideSplashScreen();
-
-        animation.isStarted.value = 1;
-      })();
-    }
-  }, [
-    themeController.isInitializing,
-    animation.isStarted,
-    isBackgroundLoaded,
-    logoSize,
-  ]);
-
-  const backgroundClippingAnimationDuration = 700;
-  const backgroundAnimationDuration = 900;
-  const backgroundAnimationDelay = 300;
-
-  const expectedLogoSize = logoSize
-    ? logoSize.height * (Dimensions.get("window").width / logoSize.width)
-    : 0;
-
-  const expectedBorderRadius = expectedLogoSize / 4.45;
-
-  useAnimatedReaction(
-    () => {
-      if (
-        animation.isStarted.value > 0 &&
-        animation.backgroundClippingDone.value === 0
-      ) {
-        if (!animation.backgroundClippingClock.value.isRunning) {
-          animation.backgroundClippingClock.value.start();
-        }
-
-        if (
-          backgroundClippingWidth.finished &&
-          backgroundClippingHeight.finished &&
-          backgroundClippingRadius.finished
-        ) {
-          animation.backgroundClippingDone.value = 1;
-          console.debug("Background clipping animation is done");
-          animation.backgroundClippingClock.value.stop();
-          cancelAnimation(animation.backgroundClippingClock.value);
-        } else {
-          animation.backgroundClippingClock.value.start();
-
-          console.debug("Background clipping animation is in progress");
-        }
-      }
-    },
-    () => {},
-    [
-      animation.isStarted.value,
-      animation.backgroundClippingDone.value,
-      animation.backgroundClippingClock,
-      backgroundClippingWidth.finished,
-      backgroundClippingHeight.finished,
-      backgroundClippingRadius.finished,
-    ]
-  );
-
-  useAnimatedReaction(
-    () => {
-      if (
-        animation.isStarted.value > 0 &&
-        animation.backgroundDone.value === 0
-      ) {
-        if (!animation.backgroundClock.value.isRunning) {
-          animation.backgroundClock.value.start();
-        }
-
-        if (backgroundDelay.finished) {
-          animation.backgroundClock.value.start();
-
-          if (backgroundWidth.finished && backgroundHeight.finished) {
-            animation.backgroundDone.value = 1;
-            console.debug("Background animation is done");
-            animation.backgroundClock.value.stop();
-            // onAnimationEndRef.current();
-          }
-        } else {
-          animation.backgroundClock.value.start();
-          // animation.backgroundClock.value.value = withTiming(1, {
-          //   duration: backgroundAnimationDelay,
-          //   easing: Easing.ease,
-          // });
-
-          console.debug("Delay for background animation is reached");
-        }
-      }
-    },
-    () => {},
-    [
-      animation.isStarted.value,
-      animation.backgroundDone.value,
-      animation.backgroundClock,
-      backgroundDelay.finished,
-      backgroundWidth.finished,
-      backgroundHeight.finished,
-    ]
-  );
-
-  return (
-    <React.Fragment>
-      <UnlockScreenGradientBackground />
-      <View
-        style={style.flatten([
-          "absolute-fill",
-          "items-center",
-          "justify-center",
-        ])}
-      >
-        <Animated.View
-          style={StyleSheet.flatten([
-            style.flatten([
-              "width-full",
-              "height-full",
-              "overflow-hidden",
-              "items-center",
-              "justify-center",
-            ]),
-            {
-              width: interpolate(
-                backgroundClippingWidth.position.value,
-                [0, 1],
-                [Dimensions.get("window").width, expectedLogoSize]
-              ),
-              height: interpolate(
-                backgroundClippingHeight.position.value,
-                [0, 1],
-                [
-                  Dimensions.get("window").height +
-                    (StatusBar.currentHeight ?? 0),
-                  expectedLogoSize,
-                ]
-              ),
-              borderRadius: interpolate(
-                backgroundClippingRadius.position.value,
-                [0, 1],
-                [0, expectedBorderRadius]
-              ),
-              // width: backgroundClippingWidth.position.interpolate({
-              //   inputRange: [0, 1],
-              //   outputRange: [Dimensions.get("window").width, expectedLogoSize],
-              // }),
-              // height: backgroundClippingHeight.position.interpolate({
-              //   inputRange: [0, 1],
-              //   outputRange: [
-              //     Dimensions.get("window").height +
-              //       (StatusBar.currentHeight ?? 0),
-              //     expectedLogoSize,
-              //   ],
-              // }),
-              // borderRadius: backgroundClippingRadius.position.interpolate({
-              //   inputRange: [0, 1],
-              //   outputRange: [0, expectedBorderRadius],
-              // }),
-            },
-          ])}
-        >
-          <Animated.Image
-            style={StyleSheet.flatten([
-              style.flatten(["width-full", "height-full"]),
-              {
-                width: interpolate(
-                  backgroundWidth.position.value,
-                  [0, 1],
-                  [Dimensions.get("window").width, expectedLogoSize]
-                ),
-                height: interpolate(
-                  backgroundHeight.position.value,
-                  [0, 1],
-                  [
-                    Dimensions.get("window").height +
-                      (StatusBar.currentHeight ?? 0),
-                    expectedLogoSize,
-                  ]
-                ),
-              },
-            ])}
-            source={require("../../assets/logo/splash-screen-only-background.png")}
-            resizeMode="stretch"
-            fadeDuration={0}
-            onLoadEnd={() => {
-              setIsBackgroundLoaded(true);
-            }}
-          />
-        </Animated.View>
-      </View>
-      <View
-        style={style.flatten([
-          "absolute-fill",
-          "items-center",
-          "justify-center",
-        ])}
-      >
-        <Image
-          style={style.flatten(["width-full", "height-full"])}
-          source={require("../../assets/logo/splash-screen-only-k.png")}
-          resizeMode="contain"
-          fadeDuration={0}
-          onLoad={(e) => {
-            console.log(e.nativeEvent.source, "1232132");
-            setLogoSize(e.nativeEvent.source);
-          }}
-        />
-      </View>
-    </React.Fragment>
-  );
-};
+//   return (
+//     <React.Fragment>
+//       <UnlockScreenGradientBackground />
+//       <View
+//         style={style.flatten([
+//           "absolute-fill",
+//           "items-center",
+//           "justify-center",
+//         ])}
+//       >
+//         <Animated.View
+//           style={StyleSheet.flatten([
+//             style.flatten([
+//               "width-full",
+//               "height-full",
+//               "overflow-hidden",
+//               "items-center",
+//               "justify-center",
+//             ]),
+//             backgroundClippingStyle,
+//           ])}
+//         >
+//           <Animated.Image
+//             style={StyleSheet.flatten([
+//               style.flatten(["width-full", "height-full"]),
+//               backgroundStyle,
+//             ])}
+//             source={require("../../assets/logo/splash-screen-only-background.png")}
+//             resizeMode="stretch"
+//             fadeDuration={0}
+//             onLoadEnd={() => {
+//               isBackgroundLoaded.value = true;
+//             }}
+//           />
+//         </Animated.View>
+//       </View>
+//       <View
+//         style={style.flatten([
+//           "absolute-fill",
+//           "items-center",
+//           "justify-center",
+//         ])}
+//       >
+//         <Image
+//           style={style.flatten(["width-full", "height-full"])}
+//           source={require("../../assets/logo/splash-screen-only-k.png")}
+//           resizeMode="contain"
+//           fadeDuration={0}
+//         />
+//       </View>
+//     </React.Fragment>
+//   );
+// };
 
 const UnlockScreenGradientBackground: FunctionComponent = () => {
   const style = useStyle();

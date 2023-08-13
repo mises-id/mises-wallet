@@ -456,7 +456,6 @@ export class MisesService {
     }
 
     const balance = await this.activeUser?.getBalanceUMIS();
-    console.log(balance, "2132132");
     const toCoinUMIS = this.mises.coinDefine.toCoinUMIS(balance || Long.ZERO);
     this.userInfo.balance = toCoinUMIS;
     this.save();
