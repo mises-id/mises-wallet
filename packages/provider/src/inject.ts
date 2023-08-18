@@ -700,7 +700,7 @@ export class InjectedKeplr implements IKeplr, KeplrCoreTypes {
     return Promise.resolve();
     // return this.requestMethod<any>("verifyDomain", [params]);
   }
-  
+
   async getChainInfosWithoutEndpoints(): Promise<ChainInfoWithoutEndpoints[]> {
     return await this.requestMethod("getChainInfosWithoutEndpoints", []);
   }

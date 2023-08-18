@@ -11,6 +11,7 @@ export const useInteractionInfo = (
     enableScroll?: boolean;
   } = {}
 ) => {
+  console.log(options);
   const location = useLocation();
   let search = location.search;
   if (search.startsWith("?")) {

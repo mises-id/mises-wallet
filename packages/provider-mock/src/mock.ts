@@ -13,6 +13,8 @@ import {
   OfflineDirectSigner,
   DirectSignResponse,
   MisesAccountData,
+  SecretUtils,
+  ICNSAdr36Signatures,
 } from "@keplr-wallet/types";
 import {
   Bech32Address,
@@ -330,6 +332,16 @@ export class MockKeplr implements Keplr {
   }
 
   async verifyDomain(_params: any): Promise<any> {
+    return true;
+  }
+
+  disable(_params: any): any {
+    return true;
+  }
+  getChainInfosWithoutEndpoints(): any {
+    return true;
+  }
+  changeKeyRingName(): any {
     return true;
   }
 }

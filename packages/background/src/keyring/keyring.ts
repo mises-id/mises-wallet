@@ -663,7 +663,7 @@ export class KeyRing {
         pubKey: pubKey.toBytes(),
         address: Buffer.from(wallet.address.replace("0x", ""), "hex"),
         isNanoLedger: false,
-        isKeystone: false
+        isKeystone: false,
       };
     }
 
@@ -673,7 +673,7 @@ export class KeyRing {
       pubKey: pubKey.toBytes(),
       address: pubKey.getAddress(),
       isNanoLedger: false,
-      isKeystone: false
+      isKeystone: false,
     };
   }
 
@@ -735,6 +735,7 @@ export class KeyRing {
     useEthereumSigning: boolean,
     mode: SignMode = SignMode.Amino
   ): Promise<Uint8Array> {
+    console.log(env, mode);
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
     }
@@ -948,6 +949,7 @@ export class KeyRing {
   ): Promise<{
     multiKeyStoreInfo: MultiKeyStoreInfoWithSelected;
   }> {
+    console.log(mnemonic);
     if (this.status !== KeyRingStatus.UNLOCKED || this.password == "") {
       throw new KeplrError(
         "keyring",

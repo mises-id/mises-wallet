@@ -489,7 +489,7 @@ export class Keplr implements IKeplr, KeplrCoreTypes {
       new VerifyDomainMsg(params)
     );
   }
-  
+
   __core__getAnalyticsId(): Promise<string> {
     const msg = new GetAnalyticsIdMsg();
     return this.requester.sendMessage(BACKGROUND_PORT, msg);

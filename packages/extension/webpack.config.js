@@ -9,7 +9,7 @@ const WriteFilePlugin = require("write-file-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
 const fs = require("fs");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+// const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 const isEnvDevelopment = process.env.NODE_ENV !== "production";
 const isEnvAnalyzer = process.env.ANALYZER === "true";
@@ -106,14 +106,13 @@ const extensionConfig = (env, args) => {
     name: "extension",
     mode: isEnvDevelopment ? "development" : "production",
     // In development environment, turn on source map.
-    devtool: false,
+    devtool: isEnvDevelopment ? "cheap-source-map" : false,
     // In development environment, webpack watch the file changes, and recompile
     watch: isEnvDevelopment,
     entry: {
       background: ["./src/background/background.ts"],
       popup: ["./src/index.tsx"],
       background: ["./src/background/background.ts"],
-      blocklist: ["./src/pages/blocklist/index.tsx"],
       injectedScript: ["./src/content-scripts/inject/injected-script.ts"],
       safeInjectedScript: ["./src/content-scripts/safe-inject/index.ts"],
     },
@@ -186,46 +185,12 @@ const extensionConfig = (env, args) => {
       new HtmlWebpackPlugin({
         template: "./src/background.html",
         filename: "background.html",
-        excludeChunks: [
-          "popup",
-          "blocklist",
-          "ledgerGrant",
-          "contentScripts",
-          "injectedScript",
-        ],
+        excludeChunks: ["popup", "contentScripts", "injectedScript"],
       }),
       new HtmlWebpackPlugin({
         template: "./src/index.html",
         filename: "popup.html",
-        excludeChunks: [
-          "background",
-          "blocklist",
-          "ledgerGrant",
-          "contentScripts",
-          "injectedScript",
-        ],
-      }),
-      new HtmlWebpackPlugin({
-        template: "./src/index.html",
-        filename: "blocklist.html",
-        excludeChunks: [
-          "background",
-          "popup",
-          "ledgerGrant",
-          "contentScripts",
-          "injectedScript",
-        ],
-      }),
-      new HtmlWebpackPlugin({
-        template: "./src/index.html",
-        filename: "ledger-grant.html",
-        excludeChunks: [
-          "background",
-          "popup",
-          "blocklist",
-          "contentScripts",
-          "injectedScript",
-        ],
+        excludeChunks: ["background", "contentScripts", "injectedScript"],
       }),
       new WriteFilePlugin(),
       new webpack.EnvironmentPlugin([

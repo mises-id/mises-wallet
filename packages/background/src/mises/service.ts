@@ -909,12 +909,13 @@ export class MisesService {
   }
 
   openWallet() {
-    if (typeof browser === "undefined") return false;
+    if (typeof browser === "undefined") return;
     if (browser) {
       browser.tabs.create({
         url: browser.runtime.getURL("popup.html"),
       });
     }
+    return;
   }
 
   handleMessage(msg: any) {

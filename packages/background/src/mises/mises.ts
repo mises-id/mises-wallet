@@ -1,4 +1,4 @@
-import { MSdk as MisesSdk } from "mises-js-sdk/dist/lib/msdk";
+import { MSdk as MisesSdk } from "mises-js-sdk";
 import {
   MAppMgr,
   MUserMgr,

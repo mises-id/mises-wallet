@@ -93,7 +93,7 @@ export class BackgroundTxService {
       });
 
       return txHash;
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
       BackgroundTxService.processTxErrorNotification(this.notification, e);
       throw e;
@@ -136,7 +136,7 @@ export class BackgroundTxService {
 
   private static processTxErrorNotification(
     notification: Notification,
-    e: Error
+    e: any
   ): void {
     console.log(e);
     let message = e.message;

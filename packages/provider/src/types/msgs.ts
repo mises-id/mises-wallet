@@ -8,6 +8,7 @@ import {
   StdSignature,
   StdSignDoc,
   MisesAccountData,
+  ChainInfoWithoutEndpoints,
 } from "@keplr-wallet/types";
 
 export class EnableAccessMsg extends Message<void> {
@@ -935,5 +936,79 @@ export class VerifyDomainMsg extends Message<void> {
 
   type(): string {
     return VerifyDomainMsg.type();
+  }
+}
+
+export class ChangeKeyRingNameMsg extends Message<string> {
+  public static type() {
+    return "change-keyring-name-msg";
+  }
+
+  constructor(
+    public readonly defaultName: string,
+    public readonly editable: boolean
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    // Not allow empty name.
+    if (!this.defaultName) {
+      throw new Error("default name not set");
+    }
+  }
+
+  route(): string {
+    return "keyring";
+  }
+
+  type(): string {
+    return ChangeKeyRingNameMsg.type();
+  }
+}
+
+export class GetChainInfosWithoutEndpointsMsg extends Message<{
+  chainInfos: ChainInfoWithoutEndpoints[];
+}> {
+  public static type() {
+    return "get-chain-infos-without-endpoints";
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+
+  route(): string {
+    return "chains";
+  }
+
+  type(): string {
+    return GetChainInfosWithoutEndpointsMsg.type();
+  }
+}
+
+export class GetAnalyticsIdMsg extends Message<string> {
+  public static type() {
+    return "get-analytics-id";
+  }
+
+  constructor() {
+    super();
+  }
+
+  validateBasic(): void {
+    // noop
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return "analytics";
+  }
+
+  type(): string {
+    return GetAnalyticsIdMsg.type();
   }
 }

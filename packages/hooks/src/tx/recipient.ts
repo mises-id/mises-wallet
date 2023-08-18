@@ -225,7 +225,7 @@ export class RecipientConfig
             "Failed to fetch the address from ICNS"
           );
         }
-      } catch (e) {
+      } catch (e: any) {
         return e;
       }
     }
