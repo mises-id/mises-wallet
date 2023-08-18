@@ -14,7 +14,12 @@ import {
   encodeSecp256k1Signature,
   serializeSignDoc,
 } from "@keplr-wallet/cosmos";
-import { BIP44HDPath, CommonCrypto, ExportKeyRingData } from "./types";
+import {
+  BIP44HDPath,
+  CommonCrypto,
+  ExportKeyRingData,
+  SignMode,
+} from "./types";
 
 import { escapeHTML, KVStore, sortObjectByKey } from "@keplr-wallet/common";
 
@@ -33,11 +38,16 @@ import { APP_PORT, Env, KeplrError, WEBPAGE_PORT } from "@keplr-wallet/router";
 import { InteractionService } from "../interaction";
 import { PermissionService } from "../permission";
 
-import { SignDoc } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
+import {
+  SignDoc,
+} from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
 import Long from "long";
 import { Buffer } from "buffer/";
 import { trimAminoSignDoc } from "./amino-sign-doc";
 import { MisesService } from "../mises";
+import { RequestICNSAdr36SignaturesMsg } from "./messages";
+import { PubKeySecp256k1 } from "@keplr-wallet/crypto";
+import { closePopupWindow } from "@keplr-wallet/popup";
 
 export class KeyRingService {
   private keyRing!: KeyRing;
@@ -208,9 +218,10 @@ export class KeyRingService {
     const ethereumKeyFeatures = await this.chainsService.getChainEthereumKeyFeatures(
       chainId
     );
+
     if (ethereumKeyFeatures.address || ethereumKeyFeatures.signing) {
       // Check the comment on the method itself.
-      this.keyRing.throwErrorIfEthermintWithLedgerButNotEvmos(chainId);
+      this.keyRing.throwErrorIfEthermintWithLedgerButNotSupported(chainId);
     }
 
     return this.keyRing.getKey(
@@ -255,7 +266,7 @@ export class KeyRingService {
 
     if (ethereumKeyFeatures.address || ethereumKeyFeatures.signing) {
       // Check the comment on the method itself.
-      this.keyRing.throwErrorIfEthermintWithLedgerButNotEvmos(chainId);
+      this.keyRing.throwErrorIfEthermintWithLedgerButNotSupported(chainId);
     }
 
     const key = await this.keyRing.getKey(
@@ -370,7 +381,8 @@ export class KeyRingService {
         chainId,
         coinType,
         serializeSignDoc(newSignDoc),
-        ethereumKeyFeatures.signing
+        ethereumKeyFeatures.signing,
+        SignMode.Amino
       );
 
       return {
@@ -410,7 +422,7 @@ export class KeyRingService {
 
     if (ethereumKeyFeatures.address || ethereumKeyFeatures.signing) {
       // Check the comment on the method itself.
-      this.keyRing.throwErrorIfEthermintWithLedgerButNotEvmos(chainId);
+      this.keyRing.throwErrorIfEthermintWithLedgerButNotSupported(chainId);
     }
 
     const key = await this.keyRing.getKey(
@@ -490,7 +502,7 @@ export class KeyRingService {
 
     if (ethereumKeyFeatures.address || ethereumKeyFeatures.signing) {
       // Check the comment on the method itself.
-      this.keyRing.throwErrorIfEthermintWithLedgerButNotEvmos(chainId);
+      this.keyRing.throwErrorIfEthermintWithLedgerButNotSupported(chainId);
     }
 
     const key = await this.keyRing.getKey(
@@ -528,8 +540,10 @@ export class KeyRingService {
         chainId,
         coinType,
         newSignDocBytes,
-        ethereumKeyFeatures.signing
+        ethereumKeyFeatures.signing,
+        SignMode.Direct
       );
+
       return {
         signed: {
           ...newSignDoc,
@@ -540,6 +554,160 @@ export class KeyRingService {
     } finally {
       this.interactionService.dispatchEvent(APP_PORT, "request-sign-end", {});
     }
+  }
+
+  async requestICNSAdr36Signatures(
+    env: Env,
+    chainId: string,
+    contractAddress: string,
+    owner: string,
+    username: string,
+    addressChainIds: string[]
+  ): Promise<
+    {
+      chainId: string;
+      bech32Prefix: string;
+      bech32Address: string;
+      addressHash: "cosmos" | "ethereum";
+      pubKey: Uint8Array;
+      signatureSalt: number;
+      signature: Uint8Array;
+    }[]
+  > {
+    const r: {
+      chainId: string;
+      bech32Prefix: string;
+      bech32Address: string;
+      addressHash: "cosmos" | "ethereum";
+      pubKey: Uint8Array;
+      signatureSalt: number;
+      signature: Uint8Array;
+    }[] = [];
+
+    const interactionInfo = {
+      chainId,
+      owner,
+      username,
+      accountInfos: [] as {
+        chainId: string;
+        bech32Prefix: string;
+        bech32Address: string;
+        pubKey: Uint8Array;
+      }[],
+    };
+
+    {
+      // Do this on other code block to avoid variable conflict.
+      const chainInfo = await this.chainsService.getChainInfo(chainId);
+
+      Bech32Address.validate(
+        contractAddress,
+        chainInfo.bech32Config.bech32PrefixAccAddr
+      );
+
+      const key = await this.getKey(chainId);
+      const bech32Address = new Bech32Address(key.address).toBech32(
+        chainInfo.bech32Config.bech32PrefixAccAddr
+      );
+
+      if (bech32Address !== owner) {
+        throw new Error(
+          `Unmatched owner: (expected: ${bech32Address}, actual: ${owner})`
+        );
+      }
+    }
+    const salt = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+
+    for (const chainId of addressChainIds) {
+      const chainInfo = await this.chainsService.getChainInfo(chainId);
+
+      const key = await this.getKey(chainId);
+
+      const bech32Address = new Bech32Address(key.address).toBech32(
+        chainInfo.bech32Config.bech32PrefixAccAddr
+      );
+
+      interactionInfo.accountInfos.push({
+        chainId: chainInfo.chainId,
+        bech32Prefix: chainInfo.bech32Config.bech32PrefixAccAddr,
+        bech32Address: bech32Address,
+        pubKey: key.pubKey,
+      });
+    }
+
+    await this.interactionService.waitApprove(
+      env,
+      "/icns/adr36-signatures",
+      RequestICNSAdr36SignaturesMsg.type(),
+      interactionInfo
+    );
+
+    const ownerBech32 = Bech32Address.fromBech32(owner);
+    for (const accountInfo of interactionInfo.accountInfos) {
+      if (
+        ownerBech32.toHex(false) !==
+        Bech32Address.fromBech32(accountInfo.bech32Address).toHex(false)
+      ) {
+        // When only the address is different with owner, the signature is necessary.
+        const data = `The following is the information for ICNS registration for ${username}.${accountInfo.bech32Prefix}.
+
+Chain id: ${chainId}
+Contract Address: ${contractAddress}
+Owner: ${owner}
+Salt: ${salt}`;
+
+        const signDoc = makeADR36AminoSignDoc(accountInfo.bech32Address, data);
+
+        const coinType = await this.chainsService.getChainCoinType(
+          accountInfo.chainId
+        );
+        const ethereumKeyFeatures = await this.chainsService.getChainEthereumKeyFeatures(
+          accountInfo.chainId
+        );
+
+        const signature = await this.keyRing
+          .sign(
+            env,
+            accountInfo.chainId,
+            coinType,
+            serializeSignDoc(signDoc),
+            ethereumKeyFeatures.signing,
+            SignMode.Message
+          )
+          .finally(() => {
+            if (this.keyRing.type === "keystone") {
+              closePopupWindow("default");
+            }
+          });
+
+        r.push({
+          chainId: accountInfo.chainId,
+          bech32Prefix: accountInfo.bech32Prefix,
+          bech32Address: accountInfo.bech32Address,
+          addressHash: ethereumKeyFeatures.signing ? "ethereum" : "cosmos",
+          pubKey: new PubKeySecp256k1(accountInfo.pubKey).toBytes(),
+          signatureSalt: salt,
+          signature,
+        });
+      } else {
+        // If address is same with owner, there is no need to sign.
+        const ethereumKeyFeatures = await this.chainsService.getChainEthereumKeyFeatures(
+          accountInfo.chainId
+        );
+
+        r.push({
+          chainId: accountInfo.chainId,
+          bech32Prefix: accountInfo.bech32Prefix,
+          bech32Address: accountInfo.bech32Address,
+          addressHash: ethereumKeyFeatures.signing ? "ethereum" : "cosmos",
+          pubKey: new PubKeySecp256k1(accountInfo.pubKey).toBytes(),
+          signatureSalt: 0,
+          signature: new Uint8Array(0),
+        });
+      }
+    }
+
+    return r;
   }
 
   async verifyADR36AminoSignDoc(
@@ -583,7 +751,8 @@ export class KeyRingService {
       bech32Prefix,
       signDoc,
       Buffer.from(signature.pub_key.value, "base64"),
-      Buffer.from(signature.signature, "base64")
+      Buffer.from(signature.signature, "base64"),
+      ethereumKeyFeatures.address ? "ethsecp256k1" : "secp256k1"
     );
   }
 
@@ -710,5 +879,22 @@ export class KeyRingService {
 
   async restoreKeyStore() {
     return await this.keyRing.restoreKeyStore();
+  }
+
+  async changeKeyRingName(
+    env: Env,
+    index: number,
+    { defaultName, editable }: { defaultName: string; editable: boolean }
+  ): Promise<string> {
+    const newName = (await this.interactionService.waitApprove(
+      env,
+      `/setting/keyring/change/name/${index}`,
+      "change-keyring-name",
+      { defaultName, editable }
+    )) as string;
+
+    await this.updateNameKeyRing(index, newName);
+
+    return newName;
   }
 }

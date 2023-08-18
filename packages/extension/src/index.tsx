@@ -58,7 +58,6 @@ import manifest from "./manifest.json";
 import { Keplr } from "@keplr-wallet/provider";
 import { InExtensionMessageRequester } from "@keplr-wallet/router-extension";
 import { ExportToMobilePage } from "./pages/setting/export-to-mobile";
-import { LogPageViewWrapper } from "./components/analytics";
 import { SettingEndpointsPage } from "./pages/setting/endpoints";
 import { SettingAutoLockPage } from "./pages/setting/autolock";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
@@ -140,7 +139,7 @@ const StateRenderer: FunctionComponent = observer(() => {
 
 const RenderRoutes = () => {
   const routes = (
-    <LogPageViewWrapper>
+    <>
       <Route exact path="/" component={StateRenderer} />
       <Route exact path="/unlock" component={LockPage} />
       <Route exact path="/access" component={AccessPage} />
@@ -196,7 +195,7 @@ const RenderRoutes = () => {
       <Route path="/sign" component={SignPage} />
       <Route path="/suggest-chain" component={ChainSuggestedPage} />
       <Route path="/transfer" component={TransferPage} />
-    </LogPageViewWrapper>
+    </>
   );
   const { misesStore } = useStore();
 

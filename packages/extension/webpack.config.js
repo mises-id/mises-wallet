@@ -110,9 +110,10 @@ const extensionConfig = (env, args) => {
     // In development environment, webpack watch the file changes, and recompile
     watch: isEnvDevelopment,
     entry: {
+      background: ["./src/background/background.ts"],
       popup: ["./src/index.tsx"],
       background: ["./src/background/background.ts"],
-      contentScripts: ["./src/content-scripts/content-scripts.ts"],
+      blocklist: ["./src/pages/blocklist/index.tsx"],
       injectedScript: ["./src/content-scripts/inject/injected-script.ts"],
       safeInjectedScript: ["./src/content-scripts/safe-inject/index.ts"],
     },
@@ -123,11 +124,35 @@ const extensionConfig = (env, args) => {
     optimization: {
       splitChunks: {
         chunks(chunk) {
-          return chunk.name === "popup";
+          if (chunk.name === "reactChartJS") {
+            return false;
+          }
+
+          return (
+            chunk.name !== "contentScripts" && chunk.name !== "injectedScript"
+          );
         },
+
         cacheGroups: {
+          background: {
+            maxSize: 3_000_000,
+            maxInitialRequests: 100,
+            maxAsyncRequests: 100,
+          },
           popup: {
             maxSize: 3_000_000,
+            maxInitialRequests: 100,
+            maxAsyncRequests: 100,
+          },
+          blocklist: {
+            maxSize: 3_000_000,
+            maxInitialRequests: 100,
+            maxAsyncRequests: 100,
+          },
+          ledgerGrant: {
+            maxSize: 3_000_000,
+            maxInitialRequests: 100,
+            maxAsyncRequests: 100,
           },
         },
       },
@@ -159,15 +184,62 @@ const extensionConfig = (env, args) => {
         { copyUnmodified: true }
       ),
       new HtmlWebpackPlugin({
+        template: "./src/background.html",
+        filename: "background.html",
+        excludeChunks: [
+          "popup",
+          "blocklist",
+          "ledgerGrant",
+          "contentScripts",
+          "injectedScript",
+        ],
+      }),
+      new HtmlWebpackPlugin({
         template: "./src/index.html",
         filename: "popup.html",
-        excludeChunks: ["background", "contentScripts", "injectedScript"],
+        excludeChunks: [
+          "background",
+          "blocklist",
+          "ledgerGrant",
+          "contentScripts",
+          "injectedScript",
+        ],
+      }),
+      new HtmlWebpackPlugin({
+        template: "./src/index.html",
+        filename: "blocklist.html",
+        excludeChunks: [
+          "background",
+          "popup",
+          "ledgerGrant",
+          "contentScripts",
+          "injectedScript",
+        ],
+      }),
+      new HtmlWebpackPlugin({
+        template: "./src/index.html",
+        filename: "ledger-grant.html",
+        excludeChunks: [
+          "background",
+          "popup",
+          "blocklist",
+          "contentScripts",
+          "injectedScript",
+        ],
       }),
       new WriteFilePlugin(),
       new webpack.EnvironmentPlugin([
         "NODE_ENV",
         "KEPLR_EXT_ETHEREUM_ENDPOINT",
+        "KEPLR_EXT_LEGACY_AMPLITUDE_API_KEY",
         "KEPLR_EXT_AMPLITUDE_API_KEY",
+        "KEPLR_EXT_ANALYTICS_API_AUTH_TOKEN",
+        "KEPLR_EXT_ANALYTICS_API_URL",
+        "KEPLR_EXT_TRANSAK_API_KEY",
+        "KEPLR_EXT_MOONPAY_API_KEY",
+        "KEPLR_EXT_KADO_API_KEY",
+        "KEPLR_EXT_COINGECKO_ENDPOINT",
+        "KEPLR_EXT_COINGECKO_GETPRICE",
       ]),
       new BundleAnalyzerPlugin({
         analyzerMode: isEnvAnalyzer ? "server" : "disabled",

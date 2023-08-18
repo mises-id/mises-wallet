@@ -10,6 +10,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useLanguage } from "../../languages";
 import classnames from "classnames";
 import { userInfo } from "@keplr-wallet/background";
+import { AppCurrency } from "@keplr-wallet/types";
+import { ChainIdHelper } from "@keplr-wallet/cosmos";
 
 const LazyDoughnut = React.lazy(async () => {
   const module = await import(
@@ -129,11 +131,34 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
 
   const accountInfo = accountStore.getAccount(current.chainId);
 
-  const balanceStakableQuery = queries.queryBalances.getQueryBech32Address(
+  const balanceQuery = queries.queryBalances.getQueryBech32Address(
     accountInfo.bech32Address
-  ).stakable;
+  );
+  const balanceStakableQuery = balanceQuery.stakable;
 
-  const stakable = balanceStakableQuery.balance;
+  const isNoble =
+    ChainIdHelper.parse(chainStore.current.chainId).identifier === "noble";
+  const hasUSDC = chainStore.current.currencies.find(
+    (currency: AppCurrency) => currency.coinMinimalDenom === "uusdc"
+  );
+
+  const isNeutron =
+    ChainIdHelper.parse(chainStore.current.chainId).identifier === "neutron";
+  const hasNTRN = chainStore.current.currencies.find(
+    (currency: AppCurrency) => currency.coinMinimalDenom === "untrn"
+  );
+
+  const stakable = (() => {
+    if (isNoble && hasUSDC) {
+      return balanceQuery.getBalanceFromCurrency(hasUSDC);
+    }
+
+    if (isNeutron && hasNTRN) {
+      return balanceQuery.getBalanceFromCurrency(hasNTRN);
+    }
+
+    return balanceStakableQuery.balance;
+  })();
 
   const delegated = queries.cosmos.queryDelegations
     .getQueryBech32Address(accountInfo.bech32Address)
@@ -348,23 +373,34 @@ export const AssetStakedChartView: FunctionComponent = observer(() => {
             {stakableBalance.shrink(true).maxDecimals(6).toString()}
           </div>
         </div>
-        <div className={styleAsset.legend}>
-          <div className={styleAsset.label} style={{ color: "#11cdef" }}>
-            <span className="badge-dot badge badge-secondary">
-              <i className="bg-info" />
-            </span>
-            <FormattedMessage id="main.account.chart.staked-balance" />
+        {(isNoble && hasUSDC) || (isNeutron && hasNTRN) ? null : (
+          <div className={styleAsset.legend}>
+            <div className={styleAsset.label} style={{ color: "#11cdef" }}>
+              <span className="badge-dot badge badge-secondary">
+                <i className="bg-info" />
+              </span>
+              <FormattedMessage id="main.account.chart.staked-balance" />
+            </div>
+            <div style={{ minWidth: "16px" }} />
+            <div
+              className={styleAsset.value}
+              style={{
+                color: "#525f7f",
+              }}
+            >
+              {stakedSum.shrink(true).maxDecimals(6).toString()}
+            </div>
+            <div style={{ minWidth: "16px" }} />
+            <div
+              className={styleAsset.value}
+              style={{
+                color: "#525f7f",
+              }}
+            >
+              {stakedSumBalance.shrink(true).maxDecimals(6).toString()}
+            </div>
           </div>
-          <div style={{ minWidth: "16px" }} />
-          <div
-            className={styleAsset.value}
-            style={{
-              color: "#525f7f",
-            }}
-          >
-            {stakedSumBalance.shrink(true).maxDecimals(6).toString()}
-          </div>
-        </div>
+        )}
       </div>
     </React.Fragment>
   );

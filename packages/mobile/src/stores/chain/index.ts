@@ -70,9 +70,7 @@ class ObservableKVStore<Value> {
   }
 }
 
-export class ChainStore extends BaseChainStore<
-  ChainInfoWithEmbed & AppChainInfo
-> {
+export class ChainStore extends BaseChainStore<ChainInfoWithEmbed & AppChainInfo> {
   @observable
   protected selectedChainId: string;
 
@@ -436,8 +434,12 @@ export class ChainStore extends BaseChainStore<
   @flow
   *tryUpdateChain(chainId: string) {
     const msg = new TryUpdateChainMsg(chainId);
-    yield this.requester.sendMessage(BACKGROUND_PORT, msg);
-    yield this.getChainInfosFromBackground();
+    const result = yield* toGenerator(
+      this.requester.sendMessage(BACKGROUND_PORT, msg)
+    );
+    if (result.updated) {
+      yield this.getChainInfosFromBackground();
+    }
   }
 
   protected setChainInfos(chainInfos: (ChainInfoWithEmbed & AppChainInfo)[]) {

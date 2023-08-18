@@ -31,6 +31,8 @@ import {
   AddAccountMsg,
   MigratorKeyRingMsg,
   RestoreKeyStoreMsg,
+  RequestICNSAdr36SignaturesMsg,
+  ChangeKeyRingNameMsg,
 } from "./messages";
 import { KeyRingService } from "./service";
 import { Bech32Address } from "@keplr-wallet/cosmos";
@@ -95,6 +97,11 @@ export const getHandler: (service: KeyRingService) => Handler = (
           env,
           msg as RequestSignDirectMsg
         );
+      case RequestICNSAdr36SignaturesMsg:
+        return handleRequestICNSAdr36SignaturesMsg(service)(
+          env,
+          msg as RequestICNSAdr36SignaturesMsg
+        );
       case GetMultiKeyStoreInfoMsg:
         return handleGetMultiKeyStoreInfoMsg(service)(
           env,
@@ -125,6 +132,11 @@ export const getHandler: (service: KeyRingService) => Handler = (
         return handleMigratorKeyRing(service)(env, msg as MigratorKeyRingMsg);
       case RestoreKeyStoreMsg:
         return handleRestoreKeyStore(service)(env, msg as RestoreKeyStoreMsg);
+      case ChangeKeyRingNameMsg:
+        return handleChangeKeyNameMsg(service)(
+          env,
+          msg as ChangeKeyRingNameMsg
+        );
       default:
         throw new KeplrError("keyring", 221, "Unknown msg type");
     }
@@ -258,7 +270,8 @@ const handleGetKeyMsg: (
         (await service.chainsService.getChainInfo(msg.chainId)).bech32Config
           .bech32PrefixAccAddr
       ),
-      isNanoLedger: false,
+      isNanoLedger: key.isNanoLedger,
+      isKeystone: key.isKeystone,
     };
   };
 };
@@ -363,6 +376,27 @@ const handleRequestSignDirectMsg: (
   };
 };
 
+const handleRequestICNSAdr36SignaturesMsg: (
+  service: KeyRingService
+) => InternalHandler<RequestICNSAdr36SignaturesMsg> = (service) => {
+  return async (env, msg) => {
+    await service.permissionService.checkOrGrantBasicAccessPermission(
+      env,
+      msg.chainId,
+      msg.origin
+    );
+
+    return service.requestICNSAdr36Signatures(
+      env,
+      msg.chainId,
+      msg.contractAddress,
+      msg.owner,
+      msg.username,
+      msg.addressChainIds
+    );
+  };
+};
+
 const handleGetMultiKeyStoreInfoMsg: (
   service: KeyRingService
 ) => InternalHandler<GetMultiKeyStoreInfoMsg> = (service) => {
@@ -437,5 +471,30 @@ const handleRestoreKeyStore: (
 ) => InternalHandler<RestoreKeyStoreMsg> = (service) => {
   return async () => {
     return await service.restoreKeyStore();
+  };
+};
+
+const handleChangeKeyNameMsg: (
+  service: KeyRingService
+) => InternalHandler<ChangeKeyRingNameMsg> = (service) => {
+  return async (env, msg) => {
+    // Ensure that keyring is unlocked and selected.
+    await service.enable(env);
+
+    let index = -1;
+    service.getMultiKeyStoreInfo().forEach(({ selected }, idx) => {
+      if (selected) {
+        index = idx;
+      }
+    });
+
+    if (index === -1) {
+      throw new Error("No account selected");
+    }
+
+    return await service.changeKeyRingName(env, index, {
+      defaultName: msg.defaultName,
+      editable: msg.editable,
+    });
   };
 };

@@ -16,19 +16,22 @@ import {
   DirectSignResponse,
   OfflineDirectSigner,
   MisesAccountData,
+  ICNSAdr36Signatures,
+  ChainInfoWithoutEndpoints,
+  SecretUtils,
 } from "@keplr-wallet/types";
 import { Result, JSONUint8Array } from "@keplr-wallet/router";
-import { SecretUtils } from "secretjs/types/enigmautils";
 import { KeplrEnigmaUtils } from "./enigma";
 import { CosmJSOfflineSigner, CosmJSOfflineSignerOnlyAmino } from "./cosmjs";
 import deepmerge from "deepmerge";
 import Long from "long";
 import { MisesWeb3Client } from "./mises";
+import { KeplrCoreTypes } from "./core-types";
 
 export interface ProxyRequest {
   type: "mises-proxy-request";
   id: string;
-  method: keyof Keplr;
+  method: keyof (Keplr & KeplrCoreTypes);
   args: any[];
 }
 
@@ -140,9 +143,9 @@ export function injectKeplrToWindow(keplr: IKeplr): void {
  * So, to request some methods of the extension, this will proxy the request to the content script that is injected to webpage on the extension level.
  * This will use `window.postMessage` to interact with the content script.
  */
-export class InjectedKeplr implements IKeplr {
+export class InjectedKeplr implements IKeplr, KeplrCoreTypes {
   static startProxy(
-    keplr: IKeplr,
+    keplr: IKeplr & KeplrCoreTypes,
     eventListener: {
       addMessageListener: (fn: (e: any) => void) => void;
       postMessage: (message: any) => void;
@@ -267,7 +270,7 @@ export class InjectedKeplr implements IKeplr {
   }
 
   protected requestMethod<T = any>(
-    method: keyof IKeplr,
+    method: keyof (IKeplr & KeplrCoreTypes),
     args: any[]
   ): Promise<T> {
     const bytes = new Uint8Array(8);
@@ -389,6 +392,10 @@ export class InjectedKeplr implements IKeplr {
     await this.requestMethod("enable", [chainIds]);
   }
 
+  async disable(chainIds?: string | string[]): Promise<void> {
+    await this.requestMethod("disable", [chainIds]);
+  }
+
   async experimentalSuggestChain(chainInfo: ChainInfo): Promise<void> {
     if (
       chainInfo.features?.includes("stargate") ||
@@ -487,6 +494,22 @@ export class InjectedKeplr implements IKeplr {
     data: string | Uint8Array
   ): Promise<StdSignature> {
     return await this.requestMethod("signArbitrary", [chainId, signer, data]);
+  }
+
+  signICNSAdr36(
+    chainId: string,
+    contractAddress: string,
+    owner: string,
+    username: string,
+    addressChainIds: string[]
+  ): Promise<ICNSAdr36Signatures> {
+    return this.requestMethod("signICNSAdr36", [
+      chainId,
+      contractAddress,
+      owner,
+      username,
+      addressChainIds,
+    ]);
   }
 
   async verifyArbitrary(
@@ -676,5 +699,25 @@ export class InjectedKeplr implements IKeplr {
     console.log(params);
     return Promise.resolve();
     // return this.requestMethod<any>("verifyDomain", [params]);
+  }
+  
+  async getChainInfosWithoutEndpoints(): Promise<ChainInfoWithoutEndpoints[]> {
+    return await this.requestMethod("getChainInfosWithoutEndpoints", []);
+  }
+
+  __core__getAnalyticsId(): Promise<string> {
+    return this.requestMethod("__core__getAnalyticsId", []);
+  }
+
+  async changeKeyRingName({
+    defaultName,
+    editable = true,
+  }: {
+    defaultName: string;
+    editable?: boolean;
+  }): Promise<string> {
+    return await this.requestMethod("changeKeyRingName", [
+      { defaultName, editable },
+    ]);
   }
 }

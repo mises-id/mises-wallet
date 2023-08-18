@@ -14,6 +14,9 @@ import {
   StdSignature,
   DirectSignResponse,
   OfflineDirectSigner,
+  ICNSAdr36Signatures,
+  ChainInfoWithoutEndpoints,
+  SecretUtils,
 } from "@keplr-wallet/types";
 import { BACKGROUND_PORT, MessageRequester } from "@keplr-wallet/router";
 import {
@@ -42,8 +45,12 @@ import {
   StakingMsg,
   OpenWalletMsg,
   VerifyDomainMsg,
+  GetAnalyticsIdMsg,
+  RequestICNSAdr36SignaturesMsg,
+  GetChainInfosWithoutEndpointsMsg,
+  DisableAccessMsg,
+  ChangeKeyRingNameMsg,
 } from "./types";
-import { SecretUtils } from "secretjs/types/enigmautils";
 
 import { KeplrEnigmaUtils } from "./enigma";
 
@@ -52,8 +59,9 @@ import deepmerge from "deepmerge";
 import Long from "long";
 import { Buffer } from "buffer/";
 import { MisesWeb3Client } from "./mises";
+import { KeplrCoreTypes } from "./core-types";
 
-export class Keplr implements IKeplr {
+export class Keplr implements IKeplr, KeplrCoreTypes {
   protected enigmaUtils: Map<string, SecretUtils> = new Map();
 
   public defaultOptions: KeplrIntereactionOptions = {};
@@ -76,6 +84,17 @@ export class Keplr implements IKeplr {
     await this.requester.sendMessage(
       BACKGROUND_PORT,
       new EnableAccessMsg(chainIds)
+    );
+  }
+
+  async disable(chainIds?: string | string[]): Promise<void> {
+    if (typeof chainIds === "string") {
+      chainIds = [chainIds];
+    }
+
+    await this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new DisableAccessMsg(chainIds ?? [])
     );
   }
 
@@ -118,6 +137,11 @@ export class Keplr implements IKeplr {
   async getKey(chainId: string): Promise<Key> {
     const msg = new GetKeyMsg(chainId);
     return await this.requester.sendMessage(BACKGROUND_PORT, msg);
+  }
+
+  async getChainInfosWithoutEndpoints(): Promise<ChainInfoWithoutEndpoints[]> {
+    const msg = new GetChainInfosWithoutEndpointsMsg();
+    return (await this.requester.sendMessage(BACKGROUND_PORT, msg)).chainInfos;
   }
 
   async sendTx(
@@ -234,6 +258,25 @@ export class Keplr implements IKeplr {
     const signature = (await this.requester.sendMessage(BACKGROUND_PORT, msg))
       .signature;
     return Buffer.from(signature.signature, "base64");
+  }
+
+  signICNSAdr36(
+    chainId: string,
+    contractAddress: string,
+    owner: string,
+    username: string,
+    addressChainIds: string[]
+  ): Promise<ICNSAdr36Signatures> {
+    return this.requester.sendMessage(
+      BACKGROUND_PORT,
+      new RequestICNSAdr36SignaturesMsg(
+        chainId,
+        contractAddress,
+        owner,
+        username,
+        addressChainIds
+      )
+    );
   }
 
   getOfflineSigner(chainId: string): OfflineAminoSigner & OfflineDirectSigner {
@@ -445,5 +488,22 @@ export class Keplr implements IKeplr {
       BACKGROUND_PORT,
       new VerifyDomainMsg(params)
     );
+  }
+  
+  __core__getAnalyticsId(): Promise<string> {
+    const msg = new GetAnalyticsIdMsg();
+    return this.requester.sendMessage(BACKGROUND_PORT, msg);
+  }
+
+  async changeKeyRingName({
+    defaultName,
+    editable = true,
+  }: {
+    defaultName: string;
+    editable?: boolean;
+  }): Promise<string> {
+    const msg = new ChangeKeyRingNameMsg(defaultName, editable);
+
+    return await this.requester.sendMessage(BACKGROUND_PORT, msg);
   }
 }

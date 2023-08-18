@@ -1,7 +1,12 @@
 import { Crypto, KeyStore } from "./crypto";
 import { Hash, Mnemonic, PrivKeySecp256k1 } from "@keplr-wallet/crypto";
 import { KVStore } from "@keplr-wallet/common";
-import { BIP44HDPath, CommonCrypto, ExportKeyRingData } from "./types";
+import {
+  BIP44HDPath,
+  CommonCrypto,
+  ExportKeyRingData,
+  SignMode,
+} from "./types";
 import { ChainInfo, EthSignType } from "@keplr-wallet/types";
 import { Env, KeplrError } from "@keplr-wallet/router";
 
@@ -15,6 +20,7 @@ import { EIP712MessageValidator } from "./eip712";
 // import { _TypedDataEncoder } from "@ethersproject/hash";
 import { MisesService } from "../mises";
 import { keyringParmas, Migrator } from "../migrator";
+import { KeystoneKeyringData } from "../keystone/cosmos-keyring";
 
 export enum KeyRingStatus {
   NOTLOADED,
@@ -28,6 +34,7 @@ export interface Key {
   algo: string;
   pubKey: Uint8Array;
   address: Uint8Array;
+  isKeystone: boolean;
   isNanoLedger: boolean;
 }
 
@@ -60,6 +67,7 @@ export class KeyRing {
   private _privateKey?: Uint8Array;
   private _mnemonicMasterSeed?: Uint8Array;
   private _ledgerPublicKeyCache?: Record<string, Uint8Array | undefined>;
+  private _keystonePublicKeyCache?: KeystoneKeyringData;
 
   private keyStore: KeyStore | null;
 
@@ -91,20 +99,30 @@ export class KeyRing {
 
   public static getTypeOfKeyStore(
     keyStore: Omit<KeyStore, "crypto">
-  ): "mnemonic" | "privateKey" | "ledger" {
+  ): "mnemonic" | "privateKey" | "ledger" | "keystone" {
     const type = keyStore.type;
     if (type == null) {
       return "mnemonic";
     }
 
-    if (type !== "mnemonic" && type !== "privateKey" && type !== "ledger") {
+    if (
+      type !== "mnemonic" &&
+      type !== "privateKey" &&
+      type !== "ledger" &&
+      type !== "keystone"
+    ) {
       throw new KeplrError("keyring", 132, "Invalid type of key store");
     }
 
     return type;
   }
 
-  public get type(): "mnemonic" | "privateKey" | "ledger" | "none" {
+  public get type():
+    | "mnemonic"
+    | "privateKey"
+    | "ledger"
+    | "keystone"
+    | "none" {
     if (!this.keyStore) {
       return "none";
     } else {
@@ -116,7 +134,8 @@ export class KeyRing {
     return (
       this.privateKey == null &&
       this.mnemonicMasterSeed == null &&
-      this.ledgerPublicKeyCache == null
+      this.ledgerPublicKeyCache == null &&
+      this.keystonePublicKey == null
     );
   }
 
@@ -128,6 +147,7 @@ export class KeyRing {
     this._privateKey = privateKey;
     this._mnemonicMasterSeed = undefined;
     this._ledgerPublicKeyCache = undefined;
+    this._keystonePublicKeyCache = undefined;
     this.cached = new Map();
   }
 
@@ -137,6 +157,19 @@ export class KeyRing {
 
   private set mnemonicMasterSeed(masterSeed: Uint8Array | undefined) {
     this._mnemonicMasterSeed = masterSeed;
+    this._privateKey = undefined;
+    this._ledgerPublicKeyCache = undefined;
+    this._keystonePublicKeyCache = undefined;
+    this.cached = new Map();
+  }
+
+  private get keystonePublicKey(): KeystoneKeyringData | undefined {
+    return this._keystonePublicKeyCache;
+  }
+
+  private set keystonePublicKey(publicKey: KeystoneKeyringData | undefined) {
+    this._keystonePublicKeyCache = publicKey;
+    this._mnemonicMasterSeed = undefined;
     this._privateKey = undefined;
     this._ledgerPublicKeyCache = undefined;
     this.cached = new Map();
@@ -214,6 +247,13 @@ export class KeyRing {
   ): number {
     if (!this.keyStore) {
       throw new KeplrError("keyring", 130, "Key store is empty");
+    }
+
+    // Fix a coin type if it is 60 (metamask compatibility).
+    // XXX: Actually, this is required because there are users who the coin type was set as not 60 for evmos on mobile.
+    //      The reason of this problem is unknown, maybe the reason is from the difference of handling suggesting chain on extension and mobile.
+    if (defaultCoinType === 60) {
+      return 60;
     }
 
     return this.keyStore.coinTypeForChain
@@ -318,6 +358,7 @@ export class KeyRing {
     this.mnemonicMasterSeed = undefined;
     this.privateKey = undefined;
     this.ledgerPublicKeyCache = undefined;
+    this.keystonePublicKey = undefined;
     this.password = "";
     this.misesService.lockAll();
   }
@@ -622,6 +663,7 @@ export class KeyRing {
         pubKey: pubKey.toBytes(),
         address: Buffer.from(wallet.address.replace("0x", ""), "hex"),
         isNanoLedger: false,
+        isKeystone: false
       };
     }
 
@@ -631,6 +673,7 @@ export class KeyRing {
       pubKey: pubKey.toBytes(),
       address: pubKey.getAddress(),
       isNanoLedger: false,
+      isKeystone: false
     };
   }
 
@@ -689,7 +732,8 @@ export class KeyRing {
     chainId: string,
     defaultCoinType: number,
     message: Uint8Array,
-    useEthereumSigning: boolean
+    useEthereumSigning: boolean,
+    mode: SignMode = SignMode.Amino
   ): Promise<Uint8Array> {
     if (this.status !== KeyRingStatus.UNLOCKED) {
       throw new KeplrError("keyring", 143, "Key ring is not unlocked");
@@ -1212,9 +1256,9 @@ export class KeyRing {
   //      They make unnecessary and silly minor changes to ethermint spec.
   //      Thus, there is a probability that it will potentially not work on other chains and they blame us.
   //      So, block them explicitly for now.
-  public throwErrorIfEthermintWithLedgerButNotEvmos(chainId: string) {
+  public throwErrorIfEthermintWithLedgerButNotSupported(chainId: string) {
     if (this.keyStore && this.keyStore.type === "ledger") {
-      if (!chainId.startsWith("evmos_")) {
+      if (!chainId.startsWith("evmos_") && !chainId.startsWith("injective")) {
         throw new KeplrError(
           "keyring",
           152,

@@ -10,8 +10,11 @@ import {
   ADDITIONAL_INTL_MESSAGES,
 } from "alt-sign-in";
 
-export const CoinGeckoAPIEndPoint = "https://api.coingecko.com/api/v3";
-export const CoinGeckoGetPrice = "/simple/price";
+export const CoinGeckoAPIEndPoint =
+  process.env["KEPLR_EXT_COINGECKO_ENDPOINT"] ||
+  "https://api.coingecko.com/api/v3";
+export const CoinGeckoGetPrice =
+  process.env["KEPLR_EXT_COINGECKO_GETPRICE"] || "/simple/price";
 export const AutoFetchingFiatValueInterval = 300 * 1000; // 5min
 
 export const AutoFetchingAssetsInterval = 15 * 1000; // 15sec
@@ -103,4 +106,59 @@ export const AdditionalSignInPrepend:
 
 export const AdditionalIntlMessages: IntlMessages = ADDITIONAL_INTL_MESSAGES;
 
+export const LegacyAmplitudeApiKey =
+  process.env["KEPLR_EXT_LEGACY_AMPLITUDE_API_KEY"] || "";
+
 export const AmplitudeApiKey = process.env["KEPLR_EXT_AMPLITUDE_API_KEY"] || "";
+
+export const ICNSInfo = {
+  chainId: "osmosis-1",
+  resolverContractAddress:
+    "osmo1xk0s8xgktn9x5vwcgtjdxqzadg88fgn33p8u9cnpdxwemvxscvast52cdd",
+};
+
+// If not needed, just set as empty string ("")
+export const ICNSFrontendLink: string = "https://app.icns.xyz";
+
+export interface FiatOnRampServiceInfo {
+  serviceId: string;
+  serviceName: string;
+  buyOrigin: string;
+  buySupportCoinDenomsByChainId: Record<string, string[] | undefined>;
+  apiKey?: string;
+}
+
+export const FiatOnRampServiceInfos: FiatOnRampServiceInfo[] = [
+  {
+    serviceId: "kado",
+    serviceName: "Kado",
+    buyOrigin: "https://app.kado.money",
+    buySupportCoinDenomsByChainId: {
+      "osmosis-1": ["USDC"],
+      "juno-1": ["USDC"],
+      "phoenix-1": ["USDC"],
+      "cosmoshub-4": ["ATOM"],
+      "injective-1": ["USDT"],
+    },
+  },
+  {
+    serviceId: "transak",
+    serviceName: "Transak",
+    buyOrigin: "https://global.transak.com",
+    buySupportCoinDenomsByChainId: {
+      "osmosis-1": ["OSMO"],
+      "cosmoshub-4": ["ATOM"],
+      "secret-4": ["SCRT"],
+      "injective-1": ["INJ"],
+    },
+  },
+  {
+    serviceId: "moonpay",
+    serviceName: "Moonpay",
+    buyOrigin: "https://buy.moonpay.com",
+    buySupportCoinDenomsByChainId: {
+      "cosmoshub-4": ["ATOM"],
+      "kava_2222-10": ["KAVA"],
+    },
+  },
+];

@@ -10,7 +10,11 @@ import { ScryptParams } from "@keplr-wallet/background";
 // import scrypt from "scrypt-js";
 // import { Buffer } from "buffer/";
 
-import { EmbedChainInfos, PrivilegedOrigins } from "../config";
+import {
+  CommunityChainInfoRepo,
+  EmbedChainInfos,
+  PrivilegedOrigins,
+} from "../config";
 
 // browser.runtime.onInstalled.addListener(() => {
 //   console.log("mises wallet installed");

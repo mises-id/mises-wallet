@@ -13,8 +13,23 @@ import { WalletStatus } from "@keplr-wallet/stores";
 import { KeplrError } from "@keplr-wallet/router";
 
 export const AccountView: FunctionComponent = observer(() => {
-  const { accountStore, chainStore } = useStore();
+  const { accountStore, chainStore, queriesStore, uiConfigStore } = useStore();
   const accountInfo = accountStore.getAccount(chainStore.current.chainId);
+
+  const icnsPrimaryName = (() => {
+    if (
+      uiConfigStore.icnsInfo &&
+      chainStore.hasChain(uiConfigStore.icnsInfo.chainId)
+    ) {
+      const queries = queriesStore.get(uiConfigStore.icnsInfo.chainId);
+      const icnsQuery = queries.icns.queryICNSNames.getQueryContract(
+        uiConfigStore.icnsInfo.resolverContractAddress,
+        accountStore.getAccount(chainStore.current.chainId).bech32Address
+      );
+
+      return icnsQuery.primaryName;
+    }
+  })();
 
   const intl = useIntl();
 
@@ -46,15 +61,38 @@ export const AccountView: FunctionComponent = observer(() => {
       <div className={styleAccount.containerName}>
         <div style={{ flex: 1 }} />
         <div className={styleAccount.name}>
-          {accountInfo.walletStatus === WalletStatus.Loaded
-            ? accountInfo.name ||
-              intl.formatMessage({
+          {(() => {
+            if (accountInfo.walletStatus === WalletStatus.Loaded) {
+              if (icnsPrimaryName) {
+                return icnsPrimaryName;
+              }
+
+              if (accountInfo.name) {
+                return accountInfo.name;
+              }
+              return intl.formatMessage({
                 id: "setting.keyring.unnamed-account",
-              })
-            : accountInfo.walletStatus === WalletStatus.Rejected
-            ? "Unable to Load Key"
-            : "Loading..."}
+              });
+            } else if (accountInfo.walletStatus === WalletStatus.Rejected) {
+              return "Unable to Load Key";
+            } else {
+              return "Loading...";
+            }
+          })()}
         </div>
+        {icnsPrimaryName ? (
+          <div style={{ display: "flex", alignItems: "center", height: "1px" }}>
+            <img
+              style={{
+                width: "24px",
+                height: "24px",
+                marginLeft: "2px",
+              }}
+              src={require("../../public/assets/img/icns-mark.png")}
+              alt="icns-registered"
+            />
+          </div>
+        ) : null}
         <div style={{ flex: 1 }} />
       </div>
       {accountInfo.walletStatus === WalletStatus.Rejected && (
@@ -105,7 +143,8 @@ export const AccountView: FunctionComponent = observer(() => {
           <div style={{ flex: 1 }} />
         </div>
       )}
-      {accountInfo.hasEthereumHexAddress && (
+      {accountInfo.hasEthereumHexAddress &&
+      !chainStore.current.chainId.startsWith("injective") ? (
         <div
           className={styleAccount.containerAccount}
           style={{ marginTop: "2px" }}
@@ -132,7 +171,7 @@ export const AccountView: FunctionComponent = observer(() => {
           </div>
           <div style={{ flex: 1 }} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 });

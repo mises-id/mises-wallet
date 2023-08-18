@@ -2,6 +2,8 @@
   "main.account.chart.total-balance": "Total Balance",
   "main.account.chart.available-balance": "Available",
   "main.account.chart.staked-balance": "Staked",
+  "main.account.button.buy": "Buy",
+  "main.account.button.buy.not-support": "Unavailable on this chain",
   "main.account.button.deposit": "Deposit",
   "main.account.button.send": "Send",
   "main.account.tooltip.no-asset": "No token in your account. Deposit some tokens to send.",
@@ -25,7 +27,13 @@
   "main.ibc.transfer.paragraph": "Send tokens over IBC",
   "main.ibc.transfer.button": "Transfer",
 
+  "main.evmos.dashboard.title": "Dashboard",
+  "main.evmos.dashboard.paragraph": "View ERC-20 and IBC tokens",
+  "main.evmos.dashboard.button": "View",
+
   "main.address.copied": "Address copied!",
+
+  "main.suggest.chain.link": "Add Suggest Chains",
 
   "main.menu.settings": "Settings",
   "main.menu.address-book": "Address Book",
@@ -37,6 +45,15 @@
   "main.update-chain.confirm.yes": "Proceed",
   "main.update-chain.confirm.no": "Ignore",
 
+  "main.authz.title": "AuthZ",
+  "main.authz.grant.grantee.information": "You authorized",
+  "main.authz.grant.grantee.address": "Grantee Address",
+  "main.authz.grant.expiration.title": "Expiration dates",
+  "main.authz.grant.expiration.information": "Expiration dates: ",
+  "main.authz.grant.expiration.expired": "Expired",
+  "main.authz.grant.expiration.infinite": "Your Authz delegation will not be expired until you revoke it.",
+  "main.authz.grant.revoke": "Revoke",
+
   "setting.language": "Language",
   "setting.language.automatic": "Automatic (Browser default)",
   "setting.language.automatic-with-language": "Automatic ({language})",
@@ -47,10 +64,15 @@
   "setting.fiat.automatic": "Automatic",
   "setting.fiat.automatic-with-fiat": "Automatic ({fiat})",
 
-  "setting.connections": "Manage Connections",
-  "setting.connections.paragraph": "Manage websites connected to your wallet",
+  "setting.security-privacy": "Security & Privacy",
+
+  "setting.connections": "Wallet Access Permissions",
+  "setting.connections.paragraph": "Websites that can access address/signing",
   "setting.connections.confirm.delete-connection.title": "Disable Connection",
   "setting.connections.confirm.delete-connection.paragraph": "Are you sure you want to disable this connection?",
+
+  "setting.permissions.get-chain-infos": "Chain List Access",
+  "setting.permissions.get-chain-infos.paragraph": "Websites that can access your active chain list",
 
   "setting.address-book.button.add": "Add New",
   "setting.address-book.add-address.title": "Add Address",
@@ -128,6 +150,9 @@
 
   "setting.token.manage.confirm.remove-token": "Are you sure you’d like to disable this token? You will not be able to see your balance or transfer until you register again.",
   "setting.token.manage.notification.viewing-key.copy": "Viewing key copied!",
+  "setting.token.manage.notification.viewing-key.copy.hover": "Viewing key copy",
+  "setting.token.manage.notification.contract-address.copy": "Contract address copied!",
+  "setting.token.manage.notification.contract-address.copy.hover": "Contract address copy",
 
   "setting.endpoints": "Endpoints",
   "setting.endpoints.paragraph": "Change into the node you wish to connect",
@@ -139,6 +164,10 @@
   "setting.autolock.description": "With Auto-Lock enabled, Mises Wallet will lock when the device is in sleep mode",
   "setting.autolock.error.required": "Duration is required",
   "setting.autolock.error.out-of-range": "It cannot be less than 0 or greater than 4320(3days)",
+
+  "setting.developer-mode": "Developer Mode",
+
+  "setting.chain-active.title": "Show/Hide Chains",
 
   "register.name": "Account name",
   "register.name.error.required": "Account name is required",
@@ -179,8 +208,11 @@
   "register.import.textarea.private-key.error.invalid": "Invalid private key",
   "register.import.textarea.private-key.error.invalid-length": "Invalid length of private key",
   "register.create.button.next": "Next",
+  "register.create.button.ledger.terra": "Use Terra Ledger app",
 
-  "register.ledger.title": "Import ledger",
+  "register.keystone.title": "Connect Keystone",
+
+  "register.ledger.title": "Connect ledger",
 
   "register.verify.button.register": "Register",
 
@@ -190,8 +222,17 @@
 
   "chain.suggested.title": "Chain Add Request",
   "chain.suggested.paragraph": "<b>{host}</b> would like to add blockchain <b>{chainId}</b> to Mises.",
+  "chain.suggested.tooltip": "Chain info being added is from this web",
+  "chain.suggested.developer.checkbox": "Use this as the preferred code string and override info registered on the community repo",
+  "chain.suggested.approve-info.title": "Before You Approve",
+  "chain.suggested.approve-info.content": "Keplr recommends that ‘suggest chain’ info be managed by the community. At this time, this chain’s info has not been registered.",
+  "chain.suggested.approve-info.link": "Click here to update chain info on Github ->",
+  "chain.suggested.approve-alert.content": "Adding this chain requires information from a web page not managed by Keplr.",
   "chain.suggested.button.approve": "Approve",
   "chain.suggested.button.reject": "Reject",
+  "chain.suggested.community-driven": "Community Driven",
+  "chain.suggested.add-chain-as-suggested": "Add chain as suggested",
+  "chain.suggested.chain-info-is-from": "Chain info being added is from",
 
   "chain.remove.confirm.paragraph": "Are you sure to remove the {chainName}?",
 
@@ -203,6 +244,9 @@
   "access.permission.secret": "Be able to encrypt/decrypt your messages",
   "access.button.approve": "Approve",
   "access.button.reject": "Reject",
+
+  "permissions.grant.get-chain-infos.description.title": "<b>{host}</b> is requesting to connect to your Keplr.",
+  "permissions.grant.get-chain-infos.description.list1": "Get the list of all chains on your Keplr Wallet",
 
   "access.viewing-key.title": "Requesting Viewing Key",
   "access.viewing-key.paragraph": "<b>{host}</b> is requesting to get your token's viewing key on <b>{contractAddress}</b>.",
@@ -226,10 +270,6 @@
 
   "send.input.recipient": "Recipient",
   "send.input.recipient.error.invalid": "Invalid address",
-  "send.input.recipient.error.ens-invalid-name": "Invalid ENS name format",
-  "send.input.recipient.error.ens-not-found": "ENS name not found",
-  "sned.input.recipient.error.ens-unknown-error": "Failed to get address from ENS",
-  "send.input.recipient.error.ens-not-supported": "ENS not supported for this chain",
   "send.input.amount": "Amount",
   "send.input.amount.error.insufficient": "Insufficient asset",
   "send.input.memo": "Memo (Optional)",
@@ -297,6 +337,8 @@
   "sign.list.message.cyber/Link.title": "Cyberlink",
   "sign.list.message.cyber/Link.content": "<b>{neuron}</b> create link {br}<b>{link}</b>",
 
+  "sign.icns.registration.title": "Request registration",
+
   "ledger.step1": "Step 1",
   "ledger.step1.paragraph": "Connect and unlock your Ledger.",
   "ledger.step2": "Step 2",
@@ -316,8 +358,7 @@
   "fee-buttons.select.high": "High",
 
   "input.recipient.error.invalid-bech32": "Invalid address",
-  "input.recipient.error.ens-not-supported": "ENS not supported for this chain",
-  "input.recipient.error.ens-failed-to-fetch": "Failed to get address from ENS",
+  "input.recipient.error.icns-failed-to-fetch": "Failed to get address from ICNS",
   "input.recipient.error.invalid-hex": "Invalid hex address",
   "input.amount.error.invalid-number": "Invalid number",
   "input.amount.error.is-zero": "Amount should not be zero",

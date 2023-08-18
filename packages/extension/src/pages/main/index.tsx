@@ -19,18 +19,18 @@ import { TokensView } from "./token";
 import { BIP44SelectModal } from "./bip44-select-modal";
 import { useIntl } from "react-intl";
 import { useConfirm } from "../../components/confirm";
-import { ChainUpdaterService } from "@keplr-wallet/background";
 import { DenomHelper } from "@keplr-wallet/common";
 import { Dec } from "@keplr-wallet/unit";
 import { WalletStatus } from "@keplr-wallet/stores";
 import { VestingInfo } from "./vesting-info";
 import { useNotification } from "../../components/notification";
+import { ChainIdHelper } from "@keplr-wallet/cosmos";
 
 export const MainPage: FunctionComponent = observer(() => {
   const history = useHistory();
   const intl = useIntl();
 
-  const { chainStore, accountStore, queriesStore } = useStore();
+  const { chainStore, accountStore, queriesStore, uiConfigStore } = useStore();
 
   const confirm = useConfirm();
 
@@ -40,28 +40,10 @@ export const MainPage: FunctionComponent = observer(() => {
   useEffect(() => {
     if (!chainStore.isInitializing && prevChainId.current !== currentChainId) {
       (async () => {
-        const result = await ChainUpdaterService.checkChainUpdate(
-          chainStore.current
-        );
-        if (result.explicit) {
-          // If chain info has been changed, warning the user wether update the chain or not.
-          if (
-            await confirm.confirm({
-              paragraph: intl.formatMessage({
-                id: "main.update-chain.confirm.paragraph",
-              }),
-              yes: intl.formatMessage({
-                id: "main.update-chain.confirm.yes",
-              }),
-              no: intl.formatMessage({
-                id: "main.update-chain.confirm.no",
-              }),
-            })
-          ) {
-            await chainStore.tryUpdateChain(chainStore.current.chainId);
-          }
-        } else if (result.slient) {
+        try {
           await chainStore.tryUpdateChain(chainStore.current.chainId);
+        } catch (e) {
+          console.log(e);
         }
       })();
 
@@ -98,7 +80,27 @@ export const MainPage: FunctionComponent = observer(() => {
     .get(chainStore.current.chainId)
     .queryBalances.getQueryBech32Address(accountInfo.bech32Address);
 
-  const tokens = queryBalances.unstakables.filter((bal) => {
+  const queryAuthZGrants = queriesStore
+    .get(chainStore.current.chainId)
+    .cosmos.queryAuthZGranter.getGranter(accountInfo.bech32Address);
+
+  const tokens = queryBalances.unstakables.filter((bal: any) => {
+    if (
+      chainStore.current.features &&
+      chainStore.current.features.includes("terra-classic-fee")
+    ) {
+      // At present, can't handle stability tax well if it is not registered native token.
+      // So, for terra classic, disable other tokens.
+      const denom = new DenomHelper(bal.currency.coinMinimalDenom);
+      if (denom.type !== "native" || denom.denom.startsWith("ibc/")) {
+        return false;
+      }
+
+      if (denom.type === "native") {
+        return bal.balance.toDec().gt(new Dec("0"));
+      }
+    }
+
     // Temporary implementation for trimming the 0 balanced native tokens.
     // TODO: Remove this part.
     if (new DenomHelper(bal.currency.coinMinimalDenom).type === "native") {
@@ -168,6 +170,35 @@ export const MainPage: FunctionComponent = observer(() => {
           </div>
         </CardBody>
       </Card>
+      {uiConfigStore.needShowICNSFrontendLink(current.chainId) ? (
+        <a
+          href={uiConfigStore.icnsFrontendLink}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src={require("../../public/assets/img/icns-banner.png")}
+            style={{ width: "100%", marginBottom: "12px" }}
+          />
+        </a>
+      ) : null}
+      {ChainIdHelper.parse(current.chainId).identifier === "stargaze" ? (
+        <a
+          href="https://www.stargaze.zone/names"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            src={require("../../public/assets/img/stargaze_banner.png")}
+            style={{
+              width: "100%",
+              marginBottom: "12px",
+              borderRadius: "4px",
+            }}
+          />
+        </a>
+      ) : null}
+
       {showVestingInfo ? <VestingInfo /> : null}
       {chainStore.current.walletUrlForStaking ? (
         <Card className={classnames(style.card, "shadow")}>

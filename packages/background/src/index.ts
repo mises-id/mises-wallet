@@ -16,6 +16,9 @@ import * as MisesSafe from "./mises-safe/internal";
 
 export * from "./persistent-memory";
 export * from "./chains";
+import * as Analytics from "./analytics/internal";
+export * from "./persistent-memory";
+export * from "./chains";
 export * from "./keyring";
 export * from "./mises";
 export * from "./mises-safe";
@@ -43,6 +46,12 @@ export function init(
   embedChainInfos: ChainInfo[],
   // The origins that are able to pass any permission.
   privilegedOrigins: string[],
+  analyticsPrivilegedOrigins: string[],
+  communityChainInfoRepo: {
+    readonly organizationName: string;
+    readonly repoName: string;
+    readonly branchName: string;
+  },
   commonCrypto: CommonCrypto,
   notification: Notification,
   experimentalOptions: Partial<{
@@ -67,7 +76,8 @@ export function init(
   );
 
   const chainUpdaterService = new Updater.ChainUpdaterService(
-    storeCreator("updator")
+    storeCreator("updator"),
+    communityChainInfoRepo
   );
 
   const tokensService = new Tokens.TokensService(storeCreator("tokens"));
@@ -114,8 +124,12 @@ export function init(
     storeCreator("auto-lock-account"),
     eventMsgRequester
   );
+  const analyticsService = new Analytics.AnalyticsService(
+    storeCreator("background.analytics"),
+    commonCrypto.rng,
+    analyticsPrivilegedOrigins
+  );
 
-  interactionService.init();
   persistentMemoryService.init();
   permissionService.init(interactionService, chainsService, keyRingService);
   chainUpdaterService.init(chainsService);
@@ -143,6 +157,8 @@ export function init(
   // phishingListService.init();
   // No need to wait because user can't interact with app right after launch.
   autoLockAccountService.init(keyRingService);
+  // No need to wait because user can't interact with app right after launch.
+  analyticsService.init();
 
   Interaction.init(router, interactionService);
   PersistentMemory.init(router, persistentMemoryService);

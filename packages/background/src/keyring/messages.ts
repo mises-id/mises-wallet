@@ -26,6 +26,7 @@ import {
 const bip39 = require("bip39");
 import { SignDoc } from "@keplr-wallet/proto-types/cosmos/tx/v1beta1/tx";
 import { Buffer } from "buffer/";
+import { BigNumber } from "@ethersproject/bignumber";
 
 export class RestoreKeyRingMsg extends Message<{
   status: KeyRingStatus;
@@ -547,7 +548,8 @@ export class RequestSignEIP712CosmosTxMsg_v0 extends Message<AminoSignResponse> 
       }
 
       const { ethChainId } = EthermintChainIdHelper.parse(this.chainId);
-      if (parseFloat(this.eip712.domain.chainId) !== ethChainId) {
+
+      if (!BigNumber.from(this.eip712.domain.chainId).eq(ethChainId)) {
         throw new Error(
           `Unmatched chain id for eth (expected: ${ethChainId}, actual: ${this.eip712.domain.chainId})`
         );
@@ -571,6 +573,72 @@ export class RequestSignEIP712CosmosTxMsg_v0 extends Message<AminoSignResponse> 
 
   type(): string {
     return RequestSignEIP712CosmosTxMsg_v0.type();
+  }
+}
+
+export class RequestICNSAdr36SignaturesMsg extends Message<
+  {
+    chainId: string;
+    bech32Prefix: string;
+    bech32Address: string;
+    addressHash: "cosmos" | "ethereum";
+    pubKey: Uint8Array;
+    signatureSalt: number;
+    signature: Uint8Array;
+  }[]
+> {
+  public static type() {
+    return "request-icns-adr-36-signatures";
+  }
+
+  constructor(
+    readonly chainId: string,
+    readonly contractAddress: string,
+    readonly owner: string,
+    readonly username: string,
+    readonly addressChainIds: string[]
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    if (!this.chainId) {
+      throw new Error("chain id not set");
+    }
+
+    if (!this.contractAddress) {
+      throw new Error("contract address not set");
+    }
+
+    // Validate bech32 address.
+    Bech32Address.validate(this.contractAddress);
+
+    if (!this.owner) {
+      throw new Error("signer not set");
+    }
+
+    // Validate bech32 address.
+    Bech32Address.validate(this.owner);
+
+    if (!this.username) {
+      throw new Error("username not set");
+    }
+
+    if (!this.addressChainIds || this.addressChainIds.length === 0) {
+      throw new Error("address chain ids not set");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return RequestICNSAdr36SignaturesMsg.type();
   }
 }
 
@@ -954,5 +1022,37 @@ export class RestoreKeyStoreMsg extends Message<void> {
 
   type(): string {
     return RestoreKeyStoreMsg.type();
+  }
+}
+
+export class ChangeKeyRingNameMsg extends Message<string> {
+  public static type() {
+    return "change-keyring-name-msg";
+  }
+
+  constructor(
+    public readonly defaultName: string,
+    public readonly editable: boolean
+  ) {
+    super();
+  }
+
+  validateBasic(): void {
+    // Not allow empty name.
+    if (!this.defaultName) {
+      throw new Error("default name not set");
+    }
+  }
+
+  approveExternal(): boolean {
+    return true;
+  }
+
+  route(): string {
+    return ROUTE;
+  }
+
+  type(): string {
+    return ChangeKeyRingNameMsg.type();
   }
 }

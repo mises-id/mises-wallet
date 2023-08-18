@@ -149,6 +149,18 @@ export class KeyRingStore {
     this.restore();
   }
 
+  get waitingNameData() {
+    const data = this.interactionStore.getDatas<{
+      defaultName: string;
+      editable: boolean;
+      isExternal: boolean;
+    }>("change-keyring-name");
+
+    if (data.length > 0) {
+      return data[0];
+    }
+  }
+
   @computed
   get keyRingType(): string {
     const keyStore = this.multiKeyStoreInfo.find(
@@ -160,6 +172,20 @@ export class KeyRingStore {
     } else {
       return KeyRing.getTypeOfKeyStore(keyStore);
     }
+  }
+
+  @flow
+  *approveChangeName(changedName: string) {
+    const data = this.interactionStore.getDatas("change-keyring-name")[0];
+
+    yield this.interactionStore.approve(
+      "change-keyring-name",
+      data.id,
+      changedName
+    );
+
+    this.dispatchKeyStoreChangeEvent();
+    this.selectablesMap.forEach((selectables) => selectables.refresh());
   }
 
   @flow

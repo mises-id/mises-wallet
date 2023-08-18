@@ -95,7 +95,6 @@ export const SetKeyRingPage: FunctionComponent = observer(() => {
                 change: 0,
                 addressIndex: 0,
               };
-
           return (
             <PageButton
               key={i.toString()}

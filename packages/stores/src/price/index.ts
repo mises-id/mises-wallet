@@ -165,6 +165,7 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
   };
 
   protected _throttler: Throttler;
+  protected _optionUri: string;
 
   constructor(
     kvStore: KVStore,
@@ -174,6 +175,7 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
     defaultVsCurrency: string,
     options: {
       readonly baseURL?: string;
+      readonly uri?: string;
 
       // Default is 250ms
       readonly throttleDuration?: number;
@@ -183,7 +185,8 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
       baseURL: options.baseURL || "https://api.coingecko.com/api/v3",
     });
 
-    super(kvStore, instance, "/simple/price");
+    super(kvStore, instance, options.uri || "/simple/price");
+    this._optionUri = options.uri || "/simple/price";
 
     this.isInitialized = false;
 
@@ -303,7 +306,7 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
     const vsCurrenciesUpdated = this._vsCurrencies.add(...vsCurrencies);
 
     if (coinIdsUpdated || vsCurrenciesUpdated || forceSetUrl) {
-      const url = `/simple/price?ids=${this._coinIds.values.join(
+      const url = `${this._optionUri}?ids=${this._coinIds.values.join(
         ","
       )}&vs_currencies=${this._vsCurrencies.values.join(",")}`;
 
@@ -321,7 +324,7 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
     return `${this.instance.name}-${
       this.instance.defaults.baseURL
     }${this.instance.getUri({
-      url: "/simple/price",
+      url: this._optionUri,
     })}`;
   }
 
@@ -362,6 +365,10 @@ export class CoinGeckoPriceStore extends ObservableQuery<CoinGeckoSimplePrice> {
     const fiatCurrency = this.supportedVsCurrencies[vsCurrrency];
     if (!fiatCurrency) {
       return undefined;
+    }
+
+    if (coin.toDec().isZero()) {
+      return new PricePretty(fiatCurrency, 0);
     }
 
     const price = this.getPrice(coin.currency.coinGeckoId, vsCurrrency);
