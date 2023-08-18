@@ -10,7 +10,7 @@ import { Buffer } from "buffer/";
 import { getRandomBytesAsync } from "../common";
 import { BACKGROUND_PORT } from "@keplr-wallet/router";
 
-import { EmbedChainInfos } from "../config";
+import { CommunityChainInfoRepo, EmbedChainInfos } from "../config";
 
 const router = new RNRouterBackground(RNEnv.produceEnv);
 
@@ -26,6 +26,8 @@ init(
     "https://junoswap.com",
     "https://frontier.osmosis.zone",
   ],
+  [],
+  CommunityChainInfoRepo,
   {
     rng: getRandomBytesAsync,
     scrypt: async (text: string, params: ScryptParams) => {

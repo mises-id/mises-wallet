@@ -35,7 +35,6 @@ import { KVStore } from "@keplr-wallet/common";
 import { ChainInfo } from "@keplr-wallet/types";
 import { CommonCrypto } from "./keyring";
 import { Notification } from "./tx";
-//import { LedgerOptions } from "./ledger/options";
 //import { MisesSafe } from "./mises-safe/mises";
 
 export function init(
