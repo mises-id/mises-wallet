@@ -25,7 +25,7 @@ if (!global.atob || !global.btoa) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Buffer = require("buffer").Buffer;
   global.atob = (data) => {
-    return Buffer.from(data, "base64").toString();
+    return Buffer.from(data, "base64").toString("binary");
   };
 
   global.btoa = (data) => {
