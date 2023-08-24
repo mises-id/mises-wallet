@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
-  useDerivedValue,
   withTiming,
   Easing,
   useAnimatedReaction,

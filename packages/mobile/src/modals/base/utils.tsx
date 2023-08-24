@@ -17,6 +17,7 @@ export const registerModal: <P>(
       return () => {
         if (key.current) {
           globalModalRendererState.closeModal(key.current);
+          key.current = undefined;
         }
       };
     }, []);
@@ -35,6 +36,7 @@ export const registerModal: <P>(
       }
       if (!props.isOpen && key.current) {
         globalModalRendererState.closeModal(key.current);
+        key.current = undefined;
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.isOpen]);
@@ -43,7 +45,7 @@ export const registerModal: <P>(
       if (key.current) {
         globalModalRendererState.updateModal(key.current, props);
       }
-    });
+    }, [props]);
 
     return null;
   };

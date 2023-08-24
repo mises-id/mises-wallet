@@ -1115,7 +1115,7 @@ const BugsnagNavigationContainer = (() => {
 export const AppNavigation: FunctionComponent = observer(() => {
   const { keyRingStore, analyticsStore } = useStore();
 
-  const navigationRef = useRef<NavigationContainerRef | null>(null);
+  const navigationRef = useRef<NavigationContainerRef<any> | null>(null);
   const routeNameRef = useRef<string | null>(null);
 
   const style = useStyle();
