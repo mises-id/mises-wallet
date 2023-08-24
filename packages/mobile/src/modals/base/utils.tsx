@@ -45,7 +45,8 @@ export const registerModal: <P>(
       if (key.current) {
         globalModalRendererState.updateModal(key.current, props);
       }
-    }, [props]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return null;
   };
