@@ -182,8 +182,16 @@ const handlerSimulate: (
 
 const handlerMisesAccount: (
   service: MisesService
-) => InternalHandler<MisesAccountMsg> = (service: MisesService) => () => {
-  return service.misesAccount();
+) => InternalHandler<MisesAccountMsg> = (service: MisesService) => {
+  return async (env, msg) => {
+    await service.permissionService.checkOrGrantBasicAccessPermission(
+      env,
+      "mainnet",
+      msg.origin
+    );
+
+    return service.misesAccount();
+  };
 };
 
 const handlerHasWalletAccount: (

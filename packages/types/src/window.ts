@@ -4,6 +4,7 @@ import { SecretUtils } from "./secretjs";
 
 export interface Window {
   misesWallet?: Keplr;
+  Keplr?: Keplr;
   misesModule: {
     getWindowInformation: () => void;
   };

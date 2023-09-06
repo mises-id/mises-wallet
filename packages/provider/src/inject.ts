@@ -99,6 +99,7 @@ const __getFavicon = () => {
 
 export function injectKeplrToWindow(keplr: IKeplr): void {
   defineUnwritablePropertyIfPossible(window, "misesWallet", keplr);
+  defineUnwritablePropertyIfPossible(window, "keplr", keplr);
   defineUnwritablePropertyIfPossible(window, "misesModule", {
     getWindowInformation() {
       // const config = window.$misesShare;

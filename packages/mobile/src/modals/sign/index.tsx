@@ -4,7 +4,7 @@ import { CardModal } from "../card";
 import { ScrollView, Text, View } from "react-native";
 import { useStyle } from "../../styles";
 import { useStore } from "../../stores";
-import { MemoInput } from "../../components/input";
+// import { MemoInput } from "../../components/input";
 import {
   useFeeConfig,
   useMemoConfig,
@@ -17,10 +17,9 @@ import { Msg as AminoMsg } from "@keplr-wallet/types";
 import { Msg } from "./msg";
 import { observer } from "mobx-react-lite";
 import { useUnmount } from "../../hooks";
-import { FeeInSign } from "./fee";
-import { WCMessageRequester } from "../../stores/wallet-connect/msg-requester";
-import { WCAppLogoAndName } from "../../components/wallet-connect";
-import WalletConnect from "@walletconnect/client";
+// import { FeeInSign } from "./fee";
+// import { WCAppLogoAndName } from "../../components/wallet-connect";
+// import WalletConnect from "@walletconnect/client";
 import { renderAminoMessage } from "./amino";
 import { renderDirectMessage } from "./direct";
 import { AnyWithUnpacked } from "@keplr-wallet/cosmos";
@@ -35,7 +34,6 @@ export const SignModal: FunctionComponent<{
       chainStore,
       accountStore,
       queriesStore,
-      walletConnectStore,
       signInteractionStore,
     } = useStore();
     useUnmount(() => {
@@ -44,9 +42,9 @@ export const SignModal: FunctionComponent<{
 
     // Check that the request is from the wallet connect.
     // If this is undefiend, the request is not from the wallet connect.
-    const [wcSession, setWCSession] = useState<
-      WalletConnect["session"] | undefined
-    >();
+    // const [wcSession] = useState<
+    //   WalletConnect["session"] | undefined
+    // >();
 
     const style = useStyle();
 
@@ -77,12 +75,12 @@ export const SignModal: FunctionComponent<{
     const signDocHelper = useSignDocHelper(feeConfig, memoConfig);
     amountConfig.setSignDocHelper(signDocHelper);
 
-    const [isInternal, setIsInternal] = useState(false);
+    // const [isInternal, setIsInternal] = useState(false);
 
     useEffect(() => {
       if (signInteractionStore.waitingData) {
         const data = signInteractionStore.waitingData;
-        setIsInternal(data.isInternal);
+        // setIsInternal(data.isInternal);
         signDocHelper.setSignDocWrapper(data.data.signDocWrapper);
         setChainId(data.data.signDocWrapper.chainId);
         gasConfig.setGas(data.data.signDocWrapper.gas);
@@ -105,17 +103,17 @@ export const SignModal: FunctionComponent<{
         }
         setSigner(data.data.signer);
 
-        if (
-          data.data.msgOrigin &&
-          WCMessageRequester.isVirtualSessionURL(data.data.msgOrigin)
-        ) {
-          const sessionId = WCMessageRequester.getSessionIdFromVirtualURL(
-            data.data.msgOrigin
-          );
-          setWCSession(walletConnectStore.getSession(sessionId));
-        } else {
-          setWCSession(undefined);
-        }
+        // if (
+        //   data.data.msgOrigin &&
+        //   WCMessageRequester.isVirtualSessionURL(data.data.msgOrigin)
+        // ) {
+        //   const sessionId = WCMessageRequester.getSessionIdFromVirtualURL(
+        //     data.data.msgOrigin
+        //   );
+        //   setWCSession(walletConnectStore.getSession(sessionId));
+        // } else {
+        //   setWCSession(undefined);
+        // }
       }
     }, [
       feeConfig,
@@ -123,7 +121,6 @@ export const SignModal: FunctionComponent<{
       memoConfig,
       signDocHelper,
       signInteractionStore.waitingData,
-      walletConnectStore,
     ]);
 
     const mode = signDocHelper.signDocWrapper
@@ -138,8 +135,14 @@ export const SignModal: FunctionComponent<{
     const renderedMsgs = (() => {
       if (mode === "amino") {
         return (msgs as readonly AminoMsg[]).map((msg, i) => {
-          const account = accountStore.getAccount(chainId);
-          const chainInfo = chainStore.getChain(chainId);
+          console.log(
+            chainId,
+            "chainId-amino",
+            chainStore.current.chainId,
+            signInteractionStore.waitingData
+          );
+          const account = accountStore.getAccount(chainStore.current.chainId);
+          const chainInfo = chainStore.getChain(chainStore.current.chainId);
           const { title, content, scrollViewHorizontal } = renderAminoMessage(
             account,
             msg,
@@ -179,6 +182,12 @@ export const SignModal: FunctionComponent<{
         });
       } else if (mode === "direct") {
         return (msgs as AnyWithUnpacked[]).map((msg, i) => {
+          console.log(
+            chainId,
+            "chainId-direct",
+            chainStore.current.chainId,
+            signInteractionStore.waitingData
+          );
           const chainInfo = chainStore.getChain(chainId);
           const { title, content } = renderDirectMessage(
             msg,
@@ -212,12 +221,12 @@ export const SignModal: FunctionComponent<{
 
     return (
       <CardModal title="Confirm Transaction">
-        {wcSession ? (
+        {/* {wcSession ? (
           <WCAppLogoAndName
             containerStyle={style.flatten(["margin-y-14"])}
             peerMeta={wcSession.peerMeta}
           />
-        ) : null}
+        ) : null} */}
         <View style={style.flatten(["margin-bottom-16"])}>
           <Text style={style.flatten(["margin-bottom-3"])}>
             <Text style={style.flatten(["subtitle3", "color-blue-400"])}>
@@ -249,13 +258,13 @@ export const SignModal: FunctionComponent<{
             </ScrollView>
           </View>
         </View>
-        <MemoInput label="Memo" memoConfig={memoConfig} />
-        <FeeInSign
+        {/* <MemoInput label="Memo" memoConfig={memoConfig} /> */}
+        {/* <FeeInSign
           feeConfig={feeConfig}
           gasConfig={gasConfig}
           signOptions={signInteractionStore.waitingData?.data.signOptions}
           isInternal={isInternal}
-        />
+        /> */}
         <Button
           text="Approve"
           size="large"

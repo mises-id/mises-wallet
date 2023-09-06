@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from "react";
+import React, { FunctionComponent } from "react";
 import { observer } from "mobx-react-lite";
 import { Card, CardBody } from "../../components/card";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -16,7 +16,7 @@ import { Dec } from "@keplr-wallet/unit";
 export const AccountCard: FunctionComponent<{
   containerStyle?: ViewStyle;
 }> = observer(({ containerStyle }) => {
-  const { chainStore, accountStore, queriesStore, priceStore } = useStore();
+  const { chainStore, accountStore, queriesStore } = useStore();
 
   const style = useStyle();
 
@@ -42,9 +42,9 @@ export const AccountCard: FunctionComponent<{
 
   const stakedSum = delegated.add(unbonding);
 
-  const total = stakable.add(stakedSum);
+  // const total = stakable.add(stakedSum);
 
-  const totalPrice = priceStore.calculatePrice(total);
+  // const totalPrice = priceStore.calculatePrice(total);
 
   // In the `Double Doughnut Chart` component, if data is undefined, nothing is displayed.
   // And,  if the data is [0, 0], a gray ring is displayed behind it.

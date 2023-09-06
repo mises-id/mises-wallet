@@ -13,6 +13,7 @@ export class RNEnv {
         // But, in mobile environment, the background and frontend are running in the same proccess.
         // So, there is no need to open the popup from background.
         // The interaction should be handled via the interaction stores.
+        console.log(APP_PORT, msg, `requestInteraction`);
         return await new RNMessageRequesterInternalToUI().sendMessage(
           APP_PORT,
           msg

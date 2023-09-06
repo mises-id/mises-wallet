@@ -22,9 +22,9 @@ export class WCMessageRequester implements MessageRequester {
   };
 
   static getSessionIdFromVirtualURL = (url: string): string => {
-    if (!WCMessageRequester.isVirtualSessionURL(url)) {
-      throw new Error("URL is not for wallet connect");
-    }
+    // if (!WCMessageRequester.isVirtualSessionURL(url)) {
+    //   throw new Error("URL is not for wallet connect");
+    // }
 
     return url.replace("https://keplr_wc_virtual.", "").replace("/", "");
   };

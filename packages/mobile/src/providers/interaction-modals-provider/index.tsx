@@ -1,11 +1,10 @@
-import React, { FunctionComponent, useEffect } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../stores";
 import { SignModal } from "../../modals/sign";
 import { WalletConnectApprovalModal } from "../../modals/wallet-connect-approval";
-import { WCMessageRequester } from "../../stores/wallet-connect/msg-requester";
 import { WCGoBackToBrowserModal } from "../../modals/wc-go-back-to-browser";
-import { BackHandler, Platform } from "react-native";
+import { Platform } from "react-native";
 import { LoadingScreenModal } from "../loading-screen/modal";
 import { KeyRingStatus } from "@keplr-wallet/background";
 
@@ -17,24 +16,28 @@ export const InteractionModalsProivder: FunctionComponent = observer(
       signInteractionStore,
       walletConnectStore,
     } = useStore();
+    console.log(permissionStore.waitingDatas, "permissionStore.waitingDatas");
+    // useEffect(() => {
+    //   if (walletConnectStore.needGoBackToBrowser && Platform.OS === "android") {
+    //     BackHandler.exitApp();
+    //   }
+    // }, [walletConnectStore.needGoBackToBrowser]);
 
-    useEffect(() => {
-      if (walletConnectStore.needGoBackToBrowser && Platform.OS === "android") {
-        BackHandler.exitApp();
-      }
-    }, [walletConnectStore.needGoBackToBrowser]);
+    const [isOpenModal, setisOpenModal] = useState(false);
 
     useEffect(() => {
       for (const data of permissionStore.waitingDatas) {
         // Currently, there is no modal to permit the permission of external apps.
         // All apps should be embeded explicitly.
         // If such apps needs the permissions, add these origins to the privileged origins.
-        if (
-          data.data.origins.length !== 1 ||
-          !WCMessageRequester.isVirtualSessionURL(data.data.origins[0])
-        ) {
+        if (data.data.origins.length !== 1) {
           permissionStore.reject(data.id);
         }
+      }
+      if (permissionStore.waitingDatas.length > 0) {
+        setisOpenModal(true);
+      } else {
+        setisOpenModal(false);
       }
     }, [permissionStore, permissionStore.waitingDatas]);
 
@@ -73,24 +76,17 @@ export const InteractionModalsProivder: FunctionComponent = observer(
         ) : null*/}
         {permissionStore.waitingDatas.map((data) => {
           if (data.data.origins.length === 1) {
-            if (
-              WCMessageRequester.isVirtualSessionURL(data.data.origins[0]) &&
-              walletConnectStore.getSession(
-                WCMessageRequester.getSessionIdFromVirtualURL(
-                  data.data.origins[0]
-                )
-              )
-            ) {
-              return (
-                <WalletConnectApprovalModal
-                  key={data.id}
-                  isOpen={true}
-                  close={() => permissionStore.reject(data.id)}
-                  id={data.id}
-                  data={data.data}
-                />
-              );
-            }
+            // if (walletConnectStore.getSession(data.data.origins[0])) {
+            return (
+              <WalletConnectApprovalModal
+                key={data.id}
+                isOpen={isOpenModal}
+                close={() => permissionStore.reject(data.id)}
+                id={data.id}
+                data={data.data}
+              />
+            );
+            // }
           }
 
           return null;

@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 import { PageWithScrollViewInBottomTabView } from "../../components/page";
 import { AccountCard } from "./account-card";
@@ -23,6 +24,9 @@ import { usePrevious } from "../../hooks";
 import { BIP44Selectable } from "./bip44-selectable";
 import { useFocusEffect } from "@react-navigation/native";
 import { TransactionListCard } from "./transaction-list-card";
+import { initWallet } from "./test";
+import { Keplr } from "@keplr-wallet/types";
+import { Button } from "../../components/button";
 
 export const HomeScreen: FunctionComponent = observer(() => {
   const [refreshing, setRefreshing] = React.useState(false);
@@ -46,7 +50,8 @@ export const HomeScreen: FunctionComponent = observer(() => {
     if (!chainStoreIsInitializing) {
       (async () => {
         try {
-          await chainStore.tryUpdateChain(currentChainId);
+          if (currentChainId !== "mainnet")
+            await chainStore.tryUpdateChain(currentChainId);
         } catch (e) {
           console.log(e);
         }
@@ -119,6 +124,11 @@ export const HomeScreen: FunctionComponent = observer(() => {
 
     setRefreshing(false);
   }, [accountStore, chainStore, priceStore, queriesStore]);
+  const [misesWallet, setmisesWallet] = useState<Keplr | undefined>(undefined);
+  useEffect(() => {
+    const wallet = initWallet();
+    setmisesWallet(wallet);
+  }, []);
 
   return (
     <PageWithScrollViewInBottomTabView
@@ -143,6 +153,23 @@ export const HomeScreen: FunctionComponent = observer(() => {
           containerStyle={style.flatten(["margin-bottom-card-gap"])}
         />
       )}
+      <Button
+        text="misesWallet"
+        onPress={async () => {
+          console.log("enable");
+          await misesWallet?.enable("mainnet");
+          const aaa = await misesWallet?.misesAccount();
+          console.log(aaa);
+          if (aaa?.address) {
+            const data = await misesWallet?.signArbitrary(
+              "mainnet",
+              "mises1q3tp8u6rw8qh5ge5rvskf2esawnrwhaet4eknh",
+              "signxxxxx签名内容"
+            );
+            console.log(data);
+          }
+        }}
+      />
       {/* <GovernanceCard
         containerStyle={style.flatten(["margin-bottom-card-gap"])}
       /> */}

@@ -304,7 +304,7 @@ export class ChainStore<C extends ChainInfo = ChainInfo>
   }
 
   getChain(chainId: string): ChainInfoInner<C> {
-    const chainIdentifier = ChainIdHelper.parse(chainId);
+    const chainIdentifier = ChainIdHelper.parse(chainId || "mainnet");
 
     const find = this.chainInfos.find((info) => {
       return (
@@ -321,7 +321,7 @@ export class ChainStore<C extends ChainInfo = ChainInfo>
   }
 
   hasChain(chainId: string): boolean {
-    const chainIdentifier = ChainIdHelper.parse(chainId);
+    const chainIdentifier = ChainIdHelper.parse(chainId || "mainnet");
 
     const find = this.chainInfos.find((info) => {
       return (

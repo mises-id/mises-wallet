@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from "react";
+import React, { FunctionComponent } from "react";
 import { registerModal } from "../base";
 import { CardModal } from "../card";
 import { Text, View } from "react-native";
@@ -6,8 +6,7 @@ import { useStyle } from "../../styles";
 import { Button } from "../../components/button";
 import { useStore } from "../../stores";
 import { PermissionData } from "@keplr-wallet/background";
-import { WCMessageRequester } from "../../stores/wallet-connect/msg-requester";
-import { WCAppLogoAndName } from "../../components/wallet-connect";
+// import { WCAppLogoAndName } from "../../components/wallet-connect";
 
 export const WalletConnectApprovalModal: FunctionComponent<{
   isOpen: boolean;
@@ -16,29 +15,28 @@ export const WalletConnectApprovalModal: FunctionComponent<{
   data: PermissionData;
 }> = registerModal(
   ({ id, data }) => {
-    const { permissionStore, walletConnectStore } = useStore();
+    const { permissionStore } = useStore();
 
-    const session = useMemo(() => {
-      if (data.origins.length !== 1) {
-        throw new Error("Invalid origins");
-      }
+    // const session = useMemo(() => {
+    //   if (data.origins.length !== 1) {
+    //     throw new Error("Invalid origins");
+    //   }
 
-      return walletConnectStore.getSession(
-        WCMessageRequester.getSessionIdFromVirtualURL(data.origins[0])
-      );
-    }, [data.origins, walletConnectStore]);
+    //   return walletConnectStore.getSession(data.origins[0]);
+    // }, [data.origins, walletConnectStore]);
 
-    const appName =
-      session.peerMeta?.name || session.peerMeta?.url || "unknown";
+    const appName = data.origins[0] || "unknown";
 
     const style = useStyle();
 
     return (
       <CardModal title="Wallet Connect">
-        <WCAppLogoAndName
-          containerStyle={style.flatten(["margin-y-20"])}
-          peerMeta={session.peerMeta}
-        />
+        {/* {session?.peerMeta && (
+          <WCAppLogoAndName
+            containerStyle={style.flatten(["margin-y-20"])}
+            peerMeta={session.peerMeta}
+          />
+        )} */}
         <Text style={style.flatten(["margin-bottom-40", "text-center"])}>
           <Text
             style={style.flatten(["body1", "color-text-low", "font-semibold"])}
@@ -46,7 +44,7 @@ export const WalletConnectApprovalModal: FunctionComponent<{
             {appName}
           </Text>
           <Text style={style.flatten(["body1", "color-text-low"])}>
-            {" is requesting to connect to your Keplr account on "}
+            {" is requesting to connect to your Mises account on "}
           </Text>
           <Text
             style={style.flatten(["body1", "color-text-low", "font-semibold"])}

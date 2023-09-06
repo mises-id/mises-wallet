@@ -27,6 +27,7 @@ import Long from "long";
 import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
 import { Coin } from "@cosmjs/proto-signing";
 import MisesPrivate from "./mises-private";
+import { PermissionService } from "src/permission";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -109,6 +110,7 @@ export type IndexTx = {
 };
 const timeout = 5000;
 export class MisesService {
+  public permissionService!: PermissionService;
   activeUser!: MUser;
   userInfo: userInfo = defaultUserInfo;
   keepAlivePort: any;
@@ -126,8 +128,9 @@ export class MisesService {
     TxExtension;
   tmClient!: Tendermint34Client;
 
-  init() {
+  init(permissionService: PermissionService) {
     this.mises = new Mises();
+    this.permissionService = permissionService;
   }
 
   async initQueryClient() {
@@ -195,7 +198,7 @@ export class MisesService {
       priKey.replace("0x", "")
     );
 
-    // console.log("activateUser", this.activeUser);
+    console.log("activateUser", this.activeUser);
 
     const userInfo = await this.misesUserInfo();
 
@@ -222,17 +225,11 @@ export class MisesService {
       const nonce = new Date().getTime().toString();
       const { auth } = await this.generateAuth(nonce);
 
-      const token = await this.mises.queryFetchClient.fetchQuery(
-        "getServerToken",
-        () => {
-          return this.getServerToken({
-            provider: "mises",
-            user_authz: { auth },
-            referrer,
-          });
-        },
-        fetchConfig
-      );
+      const token = await this.getServerToken({
+        provider: "mises",
+        user_authz: { auth },
+        referrer,
+      });
       userInfo.token = token;
 
       userInfo.timestamp = new Date().getTime();

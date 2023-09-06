@@ -1,7 +1,7 @@
 const instance = {
   // set mises browser userinfo
   setToMisesPrivate(params: any): Promise<void> {
-    if (!browser) return Promise.resolve();
+    if (typeof browser === "undefined") return Promise.resolve();
     if ((browser as any).misesPrivate) {
       (browser as any).misesPrivate.setMisesId(JSON.stringify(params));
     }

@@ -149,7 +149,7 @@ export function init(
     permissionService,
     misesService
   );
-  misesService.init();
+  misesService.init(permissionService);
   misesSafeService.init();
   //secretWasmService.init(chainsService, keyRingService, permissionService);
   backgroundTxService.init(chainsService, permissionService);
