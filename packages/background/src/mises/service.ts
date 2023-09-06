@@ -26,6 +26,7 @@ import { PubKey } from "@keplr-wallet/types";
 import Long from "long";
 import { TxSearchParam, TxSearchResp } from "mises-js-sdk/dist/types/lcd";
 import { Coin } from "@cosmjs/proto-signing";
+import MisesPrivate from "./mises-private";
 
 type generateAuthParams = Record<"misesId" | "auth", string>;
 
@@ -217,7 +218,7 @@ export class MisesService {
       nowTimeStamp - userInfo.timestamp > 604800000; // 6 days
 
     if (!userInfo.token || expireTokenFlag) {
-      const referrer = await this.getinstallreferrer();
+      const referrer = await MisesPrivate.getinstallreferrer();
       const nonce = new Date().getTime().toString();
       const { auth } = await this.generateAuth(nonce);
 
@@ -274,14 +275,6 @@ export class MisesService {
       misesId: this.userInfo.misesId,
     };
   }
-  // set mises browser userinfo
-  setToMisesPrivate(params: userInfo): Promise<void> {
-    if (!browser) return Promise.resolve();
-    if ((browser as any).misesPrivate) {
-      (browser as any).misesPrivate.setMisesId(JSON.stringify(params));
-    }
-    return Promise.resolve();
-  }
 
   async setUnFollow(toUid: string): Promise<void> {
     console.log(toUid);
@@ -330,20 +323,6 @@ export class MisesService {
         propose_gasprice: 0,
       });
     }
-  }
-
-  getinstallreferrer(): Promise<string> {
-    if (typeof browser === "undefined") return Promise.resolve("");
-    return new Promise((resolve) => {
-      if (
-        (browser as any).misesPrivate &&
-        (browser as any).misesPrivate.getInstallReferrer
-      ) {
-        (browser as any).misesPrivate.getInstallReferrer(resolve);
-        return;
-      }
-      resolve("");
-    });
   }
 
   async setUserInfo(data: MUserInfo) {
@@ -436,7 +415,7 @@ export class MisesService {
     this.userInfo = userInfo;
 
     this.save();
-    userInfo.token && this.setToMisesPrivate(userInfo);
+    userInfo.token && MisesPrivate.setToMisesPrivate(userInfo);
   }
 
   save() {
