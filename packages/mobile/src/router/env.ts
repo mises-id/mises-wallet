@@ -1,5 +1,7 @@
 import { APP_PORT, Env, MessageSender } from "@keplr-wallet/router";
 import { RNMessageRequesterInternalToUI } from "./requester";
+import { NativeModules } from "react-native";
+const { MisesModule } = NativeModules;
 
 export class RNEnv {
   static readonly produceEnv = (sender: MessageSender): Env => {
@@ -14,6 +16,7 @@ export class RNEnv {
         // So, there is no need to open the popup from background.
         // The interaction should be handled via the interaction stores.
         console.log(APP_PORT, msg, `requestInteraction`);
+        if (typeof MisesModule !== undefined) MisesModule.popup("mises-wallet");
         return await new RNMessageRequesterInternalToUI().sendMessage(
           APP_PORT,
           msg

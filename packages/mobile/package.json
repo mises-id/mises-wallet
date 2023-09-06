@@ -17,8 +17,7 @@
     "start": "react-native start",
     "start:reset": "react-native start --reset-cache",
     "pod-install": "pod-install",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "postinstall": "sh ./scripts/fix-ios-blur-view.sh && sh ./scripts/force-export-ble-manager-from-ledger.sh"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@bugsnag/plugin-react-navigation": "^7.16.1",

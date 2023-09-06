@@ -26,7 +26,10 @@ export class RNInjectedKeplr extends InjectedKeplr {
         postMessage: (message) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          window.ReactNativeWebView.postMessage(JSON.stringify(message));
+          message.origin = window.location.origin;
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          window.RNMisesWalletWebView.postMessage(JSON.stringify(message));
         },
       },
       RNInjectedKeplr.parseWebviewMessage
