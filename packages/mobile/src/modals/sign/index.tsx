@@ -4,7 +4,7 @@ import { CardModal } from "../card";
 import { ScrollView, Text, View } from "react-native";
 import { useStyle } from "../../styles";
 import { useStore } from "../../stores";
-// import { MemoInput } from "../../components/input";
+import { MemoInput } from "../../components/input";
 import {
   useFeeConfig,
   useMemoConfig,
@@ -17,7 +17,7 @@ import { Msg as AminoMsg } from "@keplr-wallet/types";
 import { Msg } from "./msg";
 import { observer } from "mobx-react-lite";
 import { useUnmount } from "../../hooks";
-// import { FeeInSign } from "./fee";
+import { FeeInSign } from "./fee";
 // import { WCAppLogoAndName } from "../../components/wallet-connect";
 // import WalletConnect from "@walletconnect/client";
 import { renderAminoMessage } from "./amino";
@@ -75,12 +75,12 @@ export const SignModal: FunctionComponent<{
     const signDocHelper = useSignDocHelper(feeConfig, memoConfig);
     amountConfig.setSignDocHelper(signDocHelper);
 
-    // const [isInternal, setIsInternal] = useState(false);
+    const [isInternal, setIsInternal] = useState(false);
 
     useEffect(() => {
       if (signInteractionStore.waitingData) {
         const data = signInteractionStore.waitingData;
-        // setIsInternal(data.isInternal);
+        setIsInternal(data.isInternal);
         signDocHelper.setSignDocWrapper(data.data.signDocWrapper);
         setChainId(data.data.signDocWrapper.chainId);
         gasConfig.setGas(data.data.signDocWrapper.gas);
@@ -258,13 +258,13 @@ export const SignModal: FunctionComponent<{
             </ScrollView>
           </View>
         </View>
-        {/* <MemoInput label="Memo" memoConfig={memoConfig} /> */}
-        {/* <FeeInSign
+        <MemoInput label="Memo" memoConfig={memoConfig} />
+        <FeeInSign
           feeConfig={feeConfig}
           gasConfig={gasConfig}
           signOptions={signInteractionStore.waitingData?.data.signOptions}
           isInternal={isInternal}
-        /> */}
+        />
         <Button
           text="Approve"
           size="large"
